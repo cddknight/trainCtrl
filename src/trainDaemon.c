@@ -253,11 +253,6 @@ int main (int argc, char *argv[])
 			exit (1);
 		}
 	}
-	if (destAddr[0] == 0 && destFile[0] == 0)
-	{
-		putLogMessage (LOG_ERR, "No valid destination address specified");
-		exit (1);
-	}
 	if (goDaemon)
 	{
 		daemonize();
@@ -307,10 +302,8 @@ int main (int argc, char *argv[])
 					{
 						if (handleInfo[i].handle == -1)
 						{
-							putLogMessage (LOG_DEBUG, "Connected to %s:%d(%d)", destAddr, destPort, destSocket);
 							handleInfo[i].handle = newSocket;
 							strncpy (handleInfo[i].localName, inAddress, 40);
-							strncpy (handleInfo[i].remoteName, destAddr, 40);
 							break;
 						}
 					}
@@ -334,8 +327,8 @@ int main (int argc, char *argv[])
 						{
 							putLogMessage (LOG_DEBUG, "Sending %d bytes %s(%d) -> Serial", read,
 									handleInfo[i].localName, handleInfo[i].handle);
-							SendSerial (buffer, read);
-						}
+/*							SendSerial (buffer, read);
+*/						}
 						else if (read == 0)
 						{
 							putLogMessage (LOG_INFO, "Socket %s(%d) closed", handleInfo[i].localName, handleInfo[i].handle);
