@@ -218,11 +218,14 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	guint width, height;
 	GdkRGBA color;
 	GtkStyleContext *context;
-
-	context = gtk_widget_get_style_context (widget);
+	GdkRGBA trackCol = { 0.5, 0.5, 0.5, 1.0 };
+	GdkRGBA bufferCol = { 0.5, 0.0, 0.0, 1.0 };
+	GdkRGBA inactiveCol = { 0.0, 0.0, 0.5, 1.0 };
 
 	width = gtk_widget_get_allocated_width (widget);
 	height = gtk_widget_get_allocated_height (widget);
+
+	context = gtk_widget_get_style_context (widget);
 	gtk_render_background (context, cr, 0, 0, width, height);
 
 	rows = trackCtrl.trackLayout -> trackRows;
@@ -232,51 +235,88 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	{
 		for (j = 0; j < cols; ++j)
 		{
-			int posn = (i * cols) + j;
+			int posn = (i * cols) + j, count = 0;
 
 			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x01)
-			{ 
+			{
+				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40), (i * 40) + 20);
+				cairo_stroke (cr);
 			}
 			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x02)
-			{ 
+			{
+				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40) + 20, (i * 40));
+				cairo_stroke (cr);
 			}
 			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x04)
 			{ 
+				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40) + 40, (i * 40) + 20);
+				cairo_stroke (cr);
 			}
 			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x08)
 			{ 
+				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40) + 20, (i * 40) + 40);
+				cairo_stroke (cr);
 			}
 			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x10)
 			{ 
+				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40), (i * 40) + 40);
+				cairo_stroke (cr);
 			}
 			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x20)
 			{ 
+				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40), (i * 40));
+				cairo_stroke (cr);
 			}
 			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x40)
 			{ 
+				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40) + 40, (i * 40));
+				cairo_stroke (cr);
 			}
 			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x80)
 			{ 
+				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40) + 40, (i * 40) + 40);
+				cairo_stroke (cr);
+			}
+			if (count == 1)
+			{
+				gdk_cairo_set_source_rgba (cr, &bufferCol);
+				cairo_arc (cr, (j * 40) + 20, (i * 40) + 20, 5, 0, 2 * G_PI);
+				cairo_fill (cr);
+				cairo_stroke (cr);
+
+				gdk_cairo_set_source_rgba (cr, &trackCol);
+				cairo_arc (cr, (j * 40) + 20, (i * 40) + 20, 5, 0, 2 * G_PI);
+				cairo_stroke (cr);
+			}
+			if (count > 2)
+			{
+				gdk_cairo_set_source_rgba (cr, &inactiveCol);
+				cairo_arc (cr, (j * 40) + 20, (i * 40) + 20, 5, 0, 2 * G_PI);
+				cairo_fill (cr);
+				cairo_stroke (cr);
+
+				gdk_cairo_set_source_rgba (cr, &trackCol);
+				cairo_arc (cr, (j * 40) + 20, (i * 40) + 20, 5, 0, 2 * G_PI);
+				cairo_stroke (cr);
 			}
 		}
 	}
-	cairo_stroke (cr);
 
 	return FALSE;
 }
