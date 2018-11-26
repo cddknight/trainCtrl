@@ -21,6 +21,7 @@
  *  \brief Graphical DCC++ controller interface.
  */
 #include <gtk/gtk.h>
+#include <string.h>
 
 #include "trainCtrl.h"
 #include "socketC.h"
