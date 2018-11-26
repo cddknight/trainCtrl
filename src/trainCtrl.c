@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 
 #include "trainCtrl.h"
+#include "socketC.h"
 
 #define POWER_SRT	-1
 #define POWER_OFF	0
@@ -76,6 +77,25 @@ static void haltTrain (GtkWidget *widget, gpointer data)
 	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
 }
 
+void checkPowerOn ()
+{
+	int i;
+	gboolean state = (trackCtrl.powerState == POWER_ON ? TRUE : FALSE);
+	for (i = 0; i < trackCtrl.trainCount; ++i)
+	{
+		if (trackCtrl.trainCtrl[i].labelNum != NULL)
+			gtk_widget_set_sensitive (trackCtrl.trainCtrl[i].labelNum, state);
+		if (trackCtrl.trainCtrl[i].buttonHalt != NULL)
+			gtk_widget_set_sensitive (trackCtrl.trainCtrl[i].buttonHalt, state);
+		if (trackCtrl.trainCtrl[i].scaleSpeed != NULL)
+			gtk_widget_set_sensitive (trackCtrl.trainCtrl[i].scaleSpeed, state);
+		if (trackCtrl.trainCtrl[i].checkDir != NULL)
+			gtk_widget_set_sensitive (trackCtrl.trainCtrl[i].checkDir, state);
+		if (trackCtrl.trainCtrl[i].buttonStop != NULL)
+			gtk_widget_set_sensitive (trackCtrl.trainCtrl[i].buttonStop, state);
+	}
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  T R A C K  P O W E R                                                                                              *
@@ -90,6 +110,7 @@ static void haltTrain (GtkWidget *widget, gpointer data)
  */
 static void trackPower (GtkWidget *widget, gpointer data)
 {
+	int i;
 	char tempBuff[81];
 
 	trackCtrl.powerState = (trackCtrl.powerState == POWER_ON ? POWER_OFF : POWER_ON);
@@ -97,6 +118,12 @@ static void trackPower (GtkWidget *widget, gpointer data)
 	gtk_button_set_label (GTK_BUTTON(trackCtrl.buttonPower), tempBuff); 
 	sprintf (tempBuff, "Track power: %s", trackCtrl.powerState == POWER_ON ? "On" : "Off");
 	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
+	for (i = 0; i < trackCtrl.trainCount; ++i)
+	{
+		trackCtrl.trainCtrl[i].curSpeed = 0;
+		gtk_range_set_value (GTK_RANGE (trackCtrl.trainCtrl[i].scaleSpeed), 0.0);			
+	}
+	checkPowerOn ();
 }
 
 /**********************************************************************************************************************
@@ -355,6 +382,7 @@ static void activate (GtkApplication *app, gpointer user_data)
 		gtk_grid_attach(GTK_GRID(grid), trackCtrl.trainCtrl[i].buttonStop, i, 4, 1, 1);
 
 	}
+	checkPowerOn ();
 
 	gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 	trackCtrl.statusBar = gtk_statusbar_new();
@@ -383,10 +411,17 @@ int main (int argc, char **argv)
 
 	if (parseTrackXML ("track.xml"))
 	{
+		trackCtrl.serverHandle = ConnectClientSocket (trackCtrl.server, trackCtrl.serverPort);
+
 		app = gtk_application_new ("Train.Control", G_APPLICATION_FLAGS_NONE);
 		g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
 		status = g_application_run (G_APPLICATION (app), argc, argv);
 		g_object_unref (app);
+
+		if (trackCtrl.serverHandle != -1)
+		{
+			CloseSocket (&trackCtrl.serverHandle);
+		}
 	}
 	return status;
 }

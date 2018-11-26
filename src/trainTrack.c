@@ -72,6 +72,7 @@ void processTrains (xmlNode *inNode, int count)
 
 							if (num != -1 && id != -1)
 							{
+								trackCtrl.trainCtrl[loop].trainReg = loop + 1;
 								trackCtrl.trainCtrl[loop].trainID = id;
 								trackCtrl.trainCtrl[loop].trainNum = num;
 								++loop;
@@ -218,6 +219,17 @@ void parseTree(xmlNode *inNode, int level)
         {
 			if (level == 0 && strcmp ((char *)curNode->name, "track") == 0)
 			{
+				xmlChar *serverStr, *portStr;
+				if ((serverStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
+				{
+					strncpy (trackCtrl.server, serverStr, 80);
+					xmlFree (serverStr);
+					if ((portStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)
+					{
+						sscanf ((char *)portStr, "%d", &trackCtrl.serverPort);
+						xmlFree (portStr);
+					}
+				}
 				parseTree (curNode -> children, 1);
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "trains") == 0)

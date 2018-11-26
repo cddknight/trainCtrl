@@ -39,6 +39,7 @@ trackLayoutDef;
 
 typedef struct _trainCtrl
 {
+	int trainReg;
 	int trainID;
 	int trainNum;
 	int curSpeed;
@@ -56,6 +57,9 @@ typedef struct _trackCtrl
 {
 	int powerState;
 	int trainCount;
+	int serverHandle;
+	int serverPort;
+	char server[81];
 
 	GtkWidget *windowCtrl;
 	GtkWidget *windowTrack;
