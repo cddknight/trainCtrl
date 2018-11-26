@@ -52,6 +52,9 @@ static void stopTrain (GtkWidget *widget, gpointer data)
 	gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
 	sprintf (tempBuff, "Set speed: STOP for train %d", train -> trainNum);
 	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
+	sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, -1, train -> reverse);
+	printf ("Sending %s to %d\n", tempBuff, trackCtrl.serverHandle);
+	SendSocket (trackCtrl.serverHandle, tempBuff, strlen (tempBuff));	
 }
 
 /**********************************************************************************************************************
@@ -75,6 +78,9 @@ static void haltTrain (GtkWidget *widget, gpointer data)
 	gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
 	sprintf (tempBuff, "Set speed: 0 for train %d", train -> trainNum);
 	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
+	sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, train -> curSpeed, train -> reverse);
+	printf ("Sending %s to %d\n", tempBuff, trackCtrl.serverHandle);
+	SendSocket (trackCtrl.serverHandle, tempBuff, strlen (tempBuff));	
 }
 
 /**********************************************************************************************************************
@@ -128,6 +134,8 @@ static void trackPower (GtkWidget *widget, gpointer data)
 	gtk_button_set_label (GTK_BUTTON(trackCtrl.buttonPower), tempBuff); 
 	sprintf (tempBuff, "Track power: %s", trackCtrl.powerState == POWER_ON ? "On" : "Off");
 	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
+	printf ("Sending %s to %d\n", (trackCtrl.powerState == POWER_ON ? "<1>" : "<0>"), trackCtrl.serverHandle);
+	SendSocket (trackCtrl.serverHandle, (trackCtrl.powerState == POWER_ON ? "<1>" : "<0>"), 3);
 	for (i = 0; i < trackCtrl.trainCount; ++i)
 	{
 		trackCtrl.trainCtrl[i].curSpeed = 0;
@@ -158,6 +166,9 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 	train -> curSpeed = (int)value;
 	sprintf (tempBuff, "Set speed: %0.0f for train %d", value, train -> trainNum);
 	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
+	sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, train -> curSpeed, train -> reverse);
+	printf ("Sending %s to %d\n", tempBuff, trackCtrl.serverHandle);
+	SendSocket (trackCtrl.serverHandle, tempBuff, strlen (tempBuff));	
 }
 
 /**********************************************************************************************************************
@@ -428,6 +439,7 @@ int main (int argc, char **argv)
 		status = g_application_run (G_APPLICATION (app), argc, argv);
 		g_object_unref (app);
 
+		printf ("Close socket: %d\n", trackCtrl.serverHandle);
 		if (trackCtrl.serverHandle != -1)
 		{
 			CloseSocket (&trackCtrl.serverHandle);
