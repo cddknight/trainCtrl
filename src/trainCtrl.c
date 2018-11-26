@@ -21,58 +21,11 @@
  *  \brief Graphical DCC++ controller interface.
  */
 #include <gtk/gtk.h>
+#include "trainCtrl.h"
 
-#define TRAIN_NUM	2
 #define POWER_SRT	-1
 #define POWER_OFF	0
 #define POWER_ON	1
-
-int tempTrains[TRAIN_NUM][2] =
-{
-	{ 3, 47451 },
-	{ 6, 68035 }
-};
-
-int tempTrack[10][12] = 
-{
-	{	4,	5,	133,5,	5,	5,	5,	21,	5,	129,0,	0 },
-	{	4,	5,	133,37,	5,	5,	69,	21,	5,	129,160,0 },
-	{	4,	5,	5,	37,	5,	5,	65,	0,	0,	0,	40,	40 },
-	{	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	10,	26 },
-	{	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	74,	10 },
-	{	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	10,	10 },
-	{	0,	0,	0,	0,	0,	0,	0,	0,	0,	0,	138,10 },
-	{	4,	5,	5,	5,	129,0,	0,	0,	0,	0,	26,	42 },
-	{	4,	5,	21,	5,	5,	161,0,	0,	0,	80,	10,	10 },
-	{	4,	69,	5,	5,	5,	5,	37,	5,	65,	0,	2,	2 }
-};
-
-typedef struct _trainCtrl
-{
-	int trainID;
-	int trainNum;
-	int curSpeed;
-	int reverse;
-	
-	GtkWidget *buttonStop;
-	GtkWidget *buttonHalt;
-	GtkWidget *scaleSpeed;
-	GtkWidget *checkDir;
-}
-trainCtrlDef;
-
-typedef struct _trackCtrl
-{
-	int powerState;
-	GtkWidget *windowCtrl;
-	GtkWidget *windowTrack;
-	GtkWidget *buttonPower;
-	GtkWidget *buttonTrack;
-	GtkWidget *statusBar;
-	GtkWidget *drawingArea;
-	trainCtrlDef trainCtrl[TRAIN_NUM];
-}
-trackCtrlDef;
 
 trackCtrlDef trackCtrl;
 
@@ -211,7 +164,7 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
  */
 gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-	int i, j;
+	int i, j, rows, cols;
 	guint width, height;
 	GdkRGBA color;
 	GtkStyleContext *context;
@@ -222,53 +175,57 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	height = gtk_widget_get_allocated_height (widget);
 	gtk_render_background (context, cr, 0, 0, width, height);
 
-	for (i = 0; i < 10; ++i)
+	rows = trackCtrl.trackLayout -> trackRows;
+	cols = trackCtrl.trackLayout -> trackCols;
+
+	for (i = 0; i < rows; ++i)
 	{
-		for (j = 0; j < 12; ++j)
+		for (j = 0; j < cols; ++j)
 		{
-			if (tempTrack[i][j] & 0x01)
+			int posn = (i * cols) + j;
+
+			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x01)
 			{ 
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40), (i * 40) + 20);
 			}
-			if (tempTrack[i][j] & 0x02)
+			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x02)
 			{ 
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40) + 20, (i * 40));
 			}
-			if (tempTrack[i][j] & 0x04)
+			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x04)
 			{ 
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40) + 40, (i * 40) + 20);
 			}
-			if (tempTrack[i][j] & 0x08)
+			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x08)
 			{ 
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40) + 20, (i * 40) + 40);
 			}
-			if (tempTrack[i][j] & 0x10)
+			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x10)
 			{ 
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40), (i * 40) + 40);
 			}
-			if (tempTrack[i][j] & 0x20)
+			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x20)
 			{ 
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40), (i * 40));
 			}
-			if (tempTrack[i][j] & 0x40)
+			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x40)
 			{ 
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40) + 40, (i * 40));
 			}
-			if (tempTrack[i][j] & 0x80)
+			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x80)
 			{ 
 				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
 				cairo_line_to (cr, (j * 40) + 40, (i * 40) + 40);
 			}
 		}
 	}
-
 	cairo_stroke (cr);
 
 	return FALSE;
@@ -338,7 +295,7 @@ static void activate (GtkApplication *app, gpointer user_data)
 	int i;
 	char tempBuff[21];
 	GtkWidget *grid;
-	GtkWidget *vbox, *hbox, *labels[TRAIN_NUM];
+	GtkWidget *vbox, *hbox;
 
 	trackCtrl.windowCtrl = gtk_application_window_new (app);
 	gtk_window_set_title (GTK_WINDOW (trackCtrl.windowCtrl), "Train Control");
@@ -367,19 +324,19 @@ static void activate (GtkApplication *app, gpointer user_data)
 	gtk_widget_set_halign (grid, GTK_ALIGN_CENTER);
 	gtk_container_add (GTK_CONTAINER (vbox), grid);
 
-	for (i = 0; i < TRAIN_NUM; ++i)
+	for (i = 0; i < trackCtrl.trainCount; ++i)
 	{
-		sprintf (tempBuff, "%d", tempTrains[i][1]);
-		labels[i] = gtk_label_new (tempBuff);
-		gtk_widget_set_halign (labels[i], GTK_ALIGN_CENTER);
-		gtk_grid_attach(GTK_GRID(grid), labels[i], i, 0, 1, 1);
+		sprintf (tempBuff, "%d", trackCtrl.trainCtrl[i].trainNum);
+		trackCtrl.trainCtrl[i].labelNum = gtk_label_new (tempBuff);
+		gtk_widget_set_halign (trackCtrl.trainCtrl[i].labelNum, GTK_ALIGN_CENTER);
+		gtk_grid_attach(GTK_GRID(grid), trackCtrl.trainCtrl[i].labelNum, i, 0, 1, 1);
 
 		trackCtrl.trainCtrl[i].buttonHalt = gtk_button_new_with_label ("Halt");
 		g_signal_connect (trackCtrl.trainCtrl[i].buttonHalt, "clicked", G_CALLBACK (haltTrain), &trackCtrl.trainCtrl[i]);
 		gtk_widget_set_halign (trackCtrl.trainCtrl[i].buttonHalt, GTK_ALIGN_CENTER);
 		gtk_grid_attach(GTK_GRID(grid), trackCtrl.trainCtrl[i].buttonHalt, i, 1, 1, 1);
 
-		trackCtrl.trainCtrl[i].scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 128, 1);
+		trackCtrl.trainCtrl[i].scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 126, 1);
 		g_signal_connect (trackCtrl.trainCtrl[i].scaleSpeed, "value-changed", G_CALLBACK (moveTrain), &trackCtrl.trainCtrl[i]);
 		gtk_widget_set_vexpand (trackCtrl.trainCtrl[i].scaleSpeed, 1);
 		gtk_scale_set_value_pos (GTK_SCALE(trackCtrl.trainCtrl[i].scaleSpeed), 0);
@@ -420,22 +377,16 @@ static void activate (GtkApplication *app, gpointer user_data)
  */
 int main (int argc, char **argv)
 {
-	int i, status;
+	int i, status = 1;
 	GtkApplication *app;
 
-	trackCtrl.powerState = POWER_SRT;
-	for (i = 0; i < TRAIN_NUM; ++i)
-	{	
-		trackCtrl.trainCtrl[i].trainID = tempTrains[i][0];
-		trackCtrl.trainCtrl[i].trainNum = tempTrains[i][1];
-		trackCtrl.trainCtrl[i].curSpeed = 0;
+	if (parseTrackXML ("track.xml"))
+	{
+		app = gtk_application_new ("Train.Control", G_APPLICATION_FLAGS_NONE);
+		g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
+		status = g_application_run (G_APPLICATION (app), argc, argv);
+		g_object_unref (app);
 	}
-
-	app = gtk_application_new ("Train.Control", G_APPLICATION_FLAGS_NONE);
-	g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
-	status = g_application_run (G_APPLICATION (app), argc, argv);
-	g_object_unref (app);
-
 	return status;
 }
 

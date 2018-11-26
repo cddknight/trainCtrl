@@ -1,7 +1,8 @@
 <track>
-  <trains>
+  <trains count="3">
     <train num="47451" id="3" desc="Jinty"/>
     <train num="68035" id="4" desc="J94"/>
+    <train num="12345" id="5" desc="Testing"/>
   </trains>
   <cells rows="10" cols="12">
     <cellRow row="0">
