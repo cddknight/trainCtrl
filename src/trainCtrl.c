@@ -77,6 +77,16 @@ static void haltTrain (GtkWidget *widget, gpointer data)
 	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  C H E C K  P O W E R  O N                                                                                         *
+ *  =========================                                                                                         *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Check the state of the power and disable if it is off.
+ *  \result None.
+ */
 void checkPowerOn ()
 {
 	int i;
