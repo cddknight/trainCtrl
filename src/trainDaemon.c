@@ -31,9 +31,13 @@
 #include <fcntl.h>
 #include <sys/time.h>
 #include <sys/stat.h>
+#include <termios.h>
 #include "socketC.h"
 
 #define MAX_HANDLES		22
+#define SERIAL_HANDLE	0
+#define LISTEN_HANDLE	1
+#define FIRST_HANDLE	2
 
 char pidFileName[81]	=	"/var/run/trainDaemon.pid";
 char serialDevice[81]	=	"/dev/ttyACM0";
@@ -195,6 +199,29 @@ void daemonize(void)
 	inDaemonise = 1;
 }
 
+int SerialPortSetup (char *device)
+{
+	int portFD = -1;
+	struct termios options;
+
+	portFD = open (device, O_RDWR | O_NOCTTY | O_NDELAY);
+	if (portFD == -1)
+	{
+		putLogMessage (LOG_INFO, "Open serial port failed.");
+		return -1;
+	}
+	memset (&options, 0, sizeof (struct termios));
+	cfmakeraw (&options);
+	cfsetspeed(&options, B115200);
+	tcsetattr(portFD, TCSANOW, &options);
+	return portFD;
+}
+
+int SendSerial (char *buffer, int len)
+{
+	return write (handleInfo[SERIAL_HANDLE].handle, buffer, len);
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  M A I N                                                                                                           *
@@ -261,16 +288,27 @@ int main (int argc, char *argv[])
 	{
 		handleInfo[i].handle = -1;
 	}
-	handleInfo[0].handle = ServerSocketSetup (listenPort);
-	if (handleInfo[0].handle == -1)
+
+	handleInfo[SERIAL_HANDLE].handle = SerialPortSetup (serialDevice);
+	if (handleInfo[SERIAL_HANDLE].handle == -1)
 	{
-		putLogMessage (LOG_ERR, "Unable to listen as a server");
+		putLogMessage (LOG_ERR, "Unable to connect to serial port.");
 	}
 	else
 	{
-		putLogMessage (LOG_INFO, "Listening on port %d", listenPort);
+		putLogMessage (LOG_INFO, "Listening on serial: %s", serialDevice);
+	
+		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (listenPort);
+		if (handleInfo[LISTEN_HANDLE].handle == -1)
+		{
+			putLogMessage (LOG_ERR, "Unable to listen as a server");
+		}
+		else
+		{
+			putLogMessage (LOG_INFO, "Listening on port %d", listenPort);
+		}
 	}
-	while (handleInfo[0].handle != -1 && running)
+	while (handleInfo[LISTEN_HANDLE].handle != -1 && running)
 	{
 		int selRetn;
 		timeout.tv_sec = 10;
@@ -284,7 +322,6 @@ int main (int argc, char *argv[])
 				FD_SET (handleInfo[i].handle, &readfds);
 			}
 		}
-
 		selRetn = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
 		if (selRetn == -1)
 		{
@@ -293,12 +330,12 @@ int main (int argc, char *argv[])
 		}
 		if (selRetn > 0)
 		{
-			if (FD_ISSET(handleInfo[0].handle, &readfds))
+			if (FD_ISSET(handleInfo[LISTEN_HANDLE].handle, &readfds))
 			{
-				int newSocket = ServerSocketAccept (handleInfo[0].handle, inAddress);
+				int newSocket = ServerSocketAccept (handleInfo[LISTEN_HANDLE].handle, inAddress);
 				if (newSocket != -1)
 				{
-					for (i = 1; i < MAX_HANDLES; ++i)
+					for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
 					{
 						if (handleInfo[i].handle == -1)
 						{
@@ -314,22 +351,40 @@ int main (int argc, char *argv[])
 					}
 				}
 			}
-			for (i = 1; i < MAX_HANDLES; ++i)
+			if (FD_ISSET(handleInfo[SERIAL_HANDLE].handle, &readfds))
+			{
+				int readBytes;
+				char buffer[10241];
+				if ((readBytes = read (handleInfo[SERIAL_HANDLE].handle, buffer, 10240)) > 0)
+				{
+					buffer[readBytes] = 0;
+					putLogMessage (LOG_DEBUG, "Serial read %d bytes [%s]", readBytes, buffer);
+					for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
+					{
+						if (handleInfo[i].handle != -1)
+						{
+							SendSocket (handleInfo[i].handle, buffer, readBytes);
+						}
+					}
+				}
+			}
+			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
 			{
 				if (handleInfo[i].handle != -1)
 				{
 					if (FD_ISSET(handleInfo[i].handle, &readfds))
 					{
-						int read, j;
+						int readBytes;
 						char buffer[10241];
 
-						if ((read = RecvSocket (handleInfo[i].handle, buffer, 10240)) > 0)
+						if ((readBytes = RecvSocket (handleInfo[i].handle, buffer, 10240)) > 0)
 						{
-							putLogMessage (LOG_DEBUG, "Sending %d bytes %s(%d) -> Serial", read,
+							buffer[readBytes] = 0;
+							putLogMessage (LOG_DEBUG, "Sending %s bytes %s(%d) -> Serial", buffer,
 									handleInfo[i].localName, handleInfo[i].handle);
-/*							SendSerial (buffer, read);
-*/						}
-						else if (read == 0)
+							SendSerial (buffer, readBytes);
+						}
+						else if (readBytes == 0)
 						{
 							putLogMessage (LOG_INFO, "Socket %s(%d) closed", handleInfo[i].localName, handleInfo[i].handle);
 							CloseSocket (&handleInfo[i].handle);
