@@ -23,6 +23,8 @@
 #include <gtk/gtk.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <string.h>
+
 #include "trainCtrl.h"
 
 extern trackCtrlDef trackCtrl;

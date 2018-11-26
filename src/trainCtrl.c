@@ -21,6 +21,7 @@
  *  \brief Graphical DCC++ controller interface.
  */
 #include <gtk/gtk.h>
+
 #include "trainCtrl.h"
 
 #define POWER_SRT	-1
