@@ -222,6 +222,7 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
 {
 	char tempBuff[81];
 	trainCtrlDef *train = (trainCtrlDef *)data;
+	train -> reverse = train -> remoteReverse = (train -> reverse == 0 ? 1 : 0);
 	if (train -> curSpeed != 0)
 	{
 		sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, 0, train -> reverse);
@@ -231,7 +232,6 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
 			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
 		}
 	}
-	train -> reverse = train -> remoteReverse = (train -> reverse == 0 ? 1 : 0);
 	sprintf (tempBuff, "Set reverse: %s for train %d", (train -> reverse ? "On" : "Off"), train -> trainNum);
 	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
 }
