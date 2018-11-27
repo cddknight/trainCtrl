@@ -49,6 +49,9 @@ typedef struct _trainCtrl
 	int curSpeed;
 	int reverse;
 
+	int remoteCurSpeed;
+	int remoteReverse;
+
 	GtkWidget *buttonStop;
 	GtkWidget *buttonHalt;
 	GtkWidget *scaleSpeed;
@@ -65,6 +68,8 @@ typedef struct _trackCtrl
 	int serverPort;
 	char server[81];
 
+	int remotePowerState;
+
 	GtkWidget *windowCtrl;
 	GtkWidget *windowTrack;
 	GtkWidget *buttonPower;
@@ -76,8 +81,6 @@ typedef struct _trackCtrl
 }
 trackCtrlDef;
 
-void updateMoveTrain (int trainReg, int speed, int reverse);
-void updatePower (int power);
 int parseTrackXML (char *fileName);
 int startConnectThread ();
 int trainConnectSend (char *buffer, int len);

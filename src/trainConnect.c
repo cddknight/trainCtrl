@@ -80,11 +80,20 @@ void checkRecvBuffer (char *buffer, int len)
 	}
 	if (words[0][0] == 'p' && words[0][1] == 0)
 	{
-		updatePower (atoi(words[1]));
+		trackCtrl.remotePowerState = atoi(words[1]);
 	}
 	else if (words[0][0] == 'T' && words[0][1] == 0)
 	{
-		updateMoveTrain (atoi(words[1]), atoi(words[2]), atoi(words[3]));
+		int trainReg = atoi(words[1]), i;
+		
+		for (i = 0; i < trackCtrl.trainCount; ++i)
+		{
+			if (trackCtrl.trainCtrl[i].trainReg == trainReg)
+			{
+				trackCtrl.trainCtrl[i].remoteCurSpeed = atoi(words[2]);
+				trackCtrl.trainCtrl[i].remoteReverse = atoi(words[3]);
+			}
+		}
 	}
 }
 

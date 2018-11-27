@@ -27,7 +27,6 @@
 #include "socketC.h"
 
 trackCtrlDef trackCtrl;
-pthread_mutex_t accessMutex;
 static char *notConnected = "Train controller not connected";
 
 /**********************************************************************************************************************
@@ -51,7 +50,7 @@ static void stopTrain (GtkWidget *widget, gpointer data)
 		sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, -1, train -> reverse);
 		if (trainConnectSend (tempBuff, strlen (tempBuff)) > 0)
 		{
-			train -> curSpeed = 0;
+			train -> curSpeed = train -> remoteCurSpeed = 0;
 			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
 			sprintf (tempBuff, "Set speed: STOP for train %d", train -> trainNum);
 			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
@@ -84,7 +83,7 @@ static void haltTrain (GtkWidget *widget, gpointer data)
 		sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, 0, train -> reverse);
 		if (trainConnectSend (tempBuff, strlen (tempBuff)) > 0)
 		{
-			train -> curSpeed = 0;
+			train -> curSpeed = train -> remoteCurSpeed = 0;
 			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
 			sprintf (tempBuff, "Set speed: 0 for train %d", train -> trainNum);
 			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
@@ -145,7 +144,7 @@ static void trackPower (GtkWidget *widget, gpointer data)
 	newState = (trackCtrl.powerState == POWER_ON ? POWER_OFF : POWER_ON);
 	if (trainConnectSend (newState == POWER_ON ? "<1>" : "<0>", 3) == 3)
 	{
-		trackCtrl.powerState = newState;
+		trackCtrl.powerState = trackCtrl.remotePowerState = newState;
 
 		sprintf (tempBuff, "Power %s", trackCtrl.powerState == POWER_ON ? "OFF" : "ON");
 		gtk_button_set_label (GTK_BUTTON(trackCtrl.buttonPower), tempBuff);
@@ -153,7 +152,7 @@ static void trackPower (GtkWidget *widget, gpointer data)
 		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
 		for (i = 0; i < trackCtrl.trainCount; ++i)
 		{
-			trackCtrl.trainCtrl[i].curSpeed = 0;
+			trackCtrl.trainCtrl[i].curSpeed = trackCtrl.trainCtrl[i].remoteCurSpeed = 0;
 			gtk_range_set_value (GTK_RANGE (trackCtrl.trainCtrl[i].scaleSpeed), 0.0);
 		}
 		checkPowerOn ();
@@ -181,7 +180,6 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 	double value = 0.0;
 	trainCtrlDef *train = (trainCtrlDef *)data;
 
-	pthread_mutex_lock(&accessMutex);
 	value = gtk_range_get_value (GTK_RANGE (train -> scaleSpeed));
 	if (train -> curSpeed != (int)value)
 	{
@@ -191,7 +189,7 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 		sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, newValue, train -> reverse);
 		if (trainConnectSend (tempBuff, strlen (tempBuff)) > 0)
 		{
-			train -> curSpeed = newValue;
+			train -> curSpeed = train -> remoteCurSpeed = newValue;
 			sprintf (tempBuff, "Set speed: %d for train %d", newValue, train -> trainNum);
 			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
 		}
@@ -200,48 +198,6 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, notConnected);
 		}
 	}
-	pthread_mutex_unlock(&accessMutex);
-}
-
-void updateMoveTrain (int trainReg, int speed, int reverse)
-{
-	int i;
-
-	pthread_mutex_lock(&accessMutex);
-	for (i = 0; i < trackCtrl.trainCount; ++i)
-	{
-		if (trackCtrl.trainCtrl[i].trainReg == trainReg)
-		{
-			trainCtrlDef *train = &trackCtrl.trainCtrl[i];
-
-			if (train -> curSpeed != speed)
-			{
-				train -> curSpeed = speed;
-				gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), (double)speed);
-			}
-			if (train -> reverse != reverse)
-			{
-				train -> reverse = reverse;
-				gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), reverse);
-			}
-			break;
-		}
-	}
-	pthread_mutex_unlock(&accessMutex);
-}
-
-void updatePower (int power)
-{
-	pthread_mutex_lock(&accessMutex);
-	if (trackCtrl.powerState != power)
-	{
-		char tempBuff[81];
-		trackCtrl.powerState = power;
-		sprintf (tempBuff, "Power %s", trackCtrl.powerState == POWER_ON ? "OFF" : "ON");
-		gtk_button_set_label (GTK_BUTTON(trackCtrl.buttonPower), tempBuff);
-		checkPowerOn ();
-	}
-	pthread_mutex_unlock(&accessMutex);
 }
 
 /**********************************************************************************************************************
@@ -265,11 +221,11 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
 		sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, 0, train -> reverse);
 		if (trainConnectSend (tempBuff, strlen (tempBuff)) > 0)
 		{
-			train -> curSpeed = 0;
+			train -> curSpeed = train -> remoteCurSpeed = 0;
 			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
 		}
 	}
-	train -> reverse = (train -> reverse == 0 ? 1 : 0);
+	train -> reverse = train -> remoteReverse = (train -> reverse == 0 ? 1 : 0);
 	sprintf (tempBuff, "Set reverse: %s for train %d", (train -> reverse ? "On" : "Off"), train -> trainNum);
 	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
 }
@@ -493,6 +449,34 @@ static void activate (GtkApplication *app, gpointer user_data)
 	gtk_widget_show_all (trackCtrl.windowCtrl);
 }
 
+gboolean clockTickCallback (gpointer data)
+{
+	int i;
+
+	if (trackCtrl.powerState != trackCtrl.remotePowerState)
+	{
+		char tempBuff[81];
+		trackCtrl.powerState = trackCtrl.remotePowerState;
+		sprintf (tempBuff, "Power %s", trackCtrl.powerState == POWER_ON ? "OFF" : "ON");
+		gtk_button_set_label (GTK_BUTTON(trackCtrl.buttonPower), tempBuff);
+		checkPowerOn ();
+	}
+	for (i = 0; i < trackCtrl.trainCount; ++i)
+	{
+		trainCtrlDef *train = &trackCtrl.trainCtrl[i];
+		if (train -> curSpeed != train -> remoteCurSpeed)
+		{
+			train -> curSpeed = train -> remoteCurSpeed;
+			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), (double)train -> curSpeed);
+		}
+		if (train -> reverse != train -> remoteReverse)
+		{
+			train -> reverse = train -> remoteReverse;
+			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), train -> reverse);
+		}
+	}
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  M A I N                                                                                                           *
@@ -510,11 +494,11 @@ int main (int argc, char **argv)
 	int i, status = 1;
 	GtkApplication *app;
 
-	pthread_mutex_init (&accessMutex, NULL);
 	if (parseTrackXML ("track.xml"))
 	{
 		if (startConnectThread ())
 		{
+			g_timeout_add (100, clockTickCallback, NULL);
 			app = gtk_application_new ("Train.Control", G_APPLICATION_FLAGS_NONE);
 			g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
 			status = g_application_run (G_APPLICATION (app), argc, argv);
@@ -530,7 +514,6 @@ int main (int argc, char **argv)
 	{
 		fprintf (stderr, "Unable to read configuration.\n");
 	}
-	pthread_mutex_destroy (&accessMutex);
 	return status;
 }
 
