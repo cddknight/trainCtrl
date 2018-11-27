@@ -203,18 +203,29 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 	pthread_mutex_unlock(&accessMutex);
 }
 
-void updateMoveTrain (trainCtrlDef *train, int speed, int reverse)
+void updateMoveTrain (int trainReg, int speed, int reverse)
 {
+	int i;
+
 	pthread_mutex_lock(&accessMutex);
-	if (train -> curSpeed != speed)
+	for (i = 0; i < trackCtrl.trainCount; ++i)
 	{
-		train -> curSpeed = speed;
-		gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), (double)speed);
-	}
-	if (train -> reverse != reverse)
-	{
-		train -> reverse = reverse;
-		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), reverse);
+		if (trackCtrl.trainCtrl[i].trainReg == trainReg)
+		{
+			trainCtrlDef *train = &trackCtrl.trainCtrl[i];
+
+			if (train -> curSpeed != speed)
+			{
+				train -> curSpeed = speed;
+				gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), (double)speed);
+			}
+			if (train -> reverse != reverse)
+			{
+				train -> reverse = reverse;
+				gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), reverse);
+			}
+			break;
+		}
 	}
 	pthread_mutex_unlock(&accessMutex);
 }

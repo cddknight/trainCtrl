@@ -49,21 +49,22 @@ void checkRecvBuffer (char *buffer, int len)
 			if (type == 1)
 			{
 				++word;
-				type = j = 0;
+				j = 0;
 			}
 			words[word][j++] = buffer[i];
 			words[word][j] = 0;
+			type = 0;
 		}
 		else if (buffer[i] >= '0' && buffer[i] <= '9' && word >= 0)
 		{
 			if (type == 0)
 			{
 				++word;
-				type = 1;
 				j = 0;
 			}
 			words[word][j++] = buffer[i];
 			words[word][j] = 0;
+			type = 1;
 		}
 		else if (buffer[i] == '>' && word >= 0)
 		{
@@ -77,11 +78,14 @@ void checkRecvBuffer (char *buffer, int len)
 		}
 		++i;
 	}
-	for (i = 0; i < word; ++i)
+	if (words[0][0] == 'p' && words[0][1] == 0)
 	{
-		printf ("[%s]", words[i]);
+		updatePower (atoi(words[1]));
 	}
-	printf ("\n");
+	else if (words[0][0] == 'T' && words[0][1] == 0)
+	{
+		updateMoveTrain (atoi(words[1]), atoi(words[2]), atoi(words[3]));
+	}
 }
 
 /**********************************************************************************************************************

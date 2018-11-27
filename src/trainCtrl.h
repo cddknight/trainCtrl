@@ -76,7 +76,7 @@ typedef struct _trackCtrl
 }
 trackCtrlDef;
 
-void updateMoveTrain (trainCtrlDef *train, int speed, int reverse);
+void updateMoveTrain (int trainReg, int speed, int reverse);
 void updatePower (int power);
 int parseTrackXML (char *fileName);
 int startConnectThread ();
