@@ -268,6 +268,8 @@ void ReceiveSerial (char *buffer, int len)
 		outBuffer[outPosn++] = buffer[j];
 		if (buffer[j] == '>')
 		{
+			outBuffer[outPosn] = 0;
+			printf ("Net sending: [%s]\n", outBuffer);
 			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
 			{
 				if (handleInfo[i].handle != -1)
@@ -405,6 +407,7 @@ int main (int argc, char *argv[])
 						{
 							handleInfo[i].handle = newSocket;
 							strncpy (handleInfo[i].localName, inAddress, 40);
+							SendSerial ("<s>", 3);
 							break;
 						}
 					}
