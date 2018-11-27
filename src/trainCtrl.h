@@ -21,6 +21,10 @@
  *  \brief Header file for train control.
  */
 
+#define POWER_SRT	-1
+#define POWER_OFF	0
+#define POWER_ON	1
+
 typedef struct _trackCell
 {
 	unsigned short layout;
@@ -72,6 +76,8 @@ typedef struct _trackCtrl
 }
 trackCtrlDef;
 
+void updateMoveTrain (trainCtrlDef *train, int speed, int reverse);
+void updatePower (int power);
 int parseTrackXML (char *fileName);
 int startConnectThread ();
 int trainConnectSend (char *buffer, int len);

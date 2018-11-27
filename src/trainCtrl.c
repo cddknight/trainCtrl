@@ -26,11 +26,8 @@
 #include "trainCtrl.h"
 #include "socketC.h"
 
-#define POWER_SRT	-1
-#define POWER_OFF	0
-#define POWER_ON	1
-
 trackCtrlDef trackCtrl;
+pthread_mutex_t accessMutex;
 static char *notConnected = "Train controller not connected";
 
 /**********************************************************************************************************************
@@ -183,8 +180,9 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 {
 	double value = 0.0;
 	trainCtrlDef *train = (trainCtrlDef *)data;
-	value = gtk_range_get_value (GTK_RANGE (train -> scaleSpeed));
 
+	pthread_mutex_lock(&accessMutex);
+	value = gtk_range_get_value (GTK_RANGE (train -> scaleSpeed));
 	if (train -> curSpeed != (int)value)
 	{
 		char tempBuff[81];
@@ -202,6 +200,37 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, notConnected);
 		}
 	}
+	pthread_mutex_unlock(&accessMutex);
+}
+
+void updateMoveTrain (trainCtrlDef *train, int speed, int reverse)
+{
+	pthread_mutex_lock(&accessMutex);
+	if (train -> curSpeed != speed)
+	{
+		train -> curSpeed = speed;
+		gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), (double)speed);
+	}
+	if (train -> reverse != reverse)
+	{
+		train -> reverse = reverse;
+		gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), reverse);
+	}
+	pthread_mutex_unlock(&accessMutex);
+}
+
+void updatePower (int power)
+{
+	pthread_mutex_lock(&accessMutex);
+	if (trackCtrl.powerState != power)
+	{
+		char tempBuff[81];
+		trackCtrl.powerState = power;
+		sprintf (tempBuff, "Power %s", trackCtrl.powerState == POWER_ON ? "OFF" : "ON");
+		gtk_button_set_label (GTK_BUTTON(trackCtrl.buttonPower), tempBuff);
+		checkPowerOn ();
+	}
+	pthread_mutex_unlock(&accessMutex);
 }
 
 /**********************************************************************************************************************
@@ -470,6 +499,7 @@ int main (int argc, char **argv)
 	int i, status = 1;
 	GtkApplication *app;
 
+	pthread_mutex_init (&accessMutex, NULL);
 	if (parseTrackXML ("track.xml"))
 	{
 		if (startConnectThread ())
@@ -489,6 +519,7 @@ int main (int argc, char **argv)
 	{
 		fprintf (stderr, "Unable to read configuration.\n");
 	}
+	pthread_mutex_destroy (&accessMutex);
 	return status;
 }
 

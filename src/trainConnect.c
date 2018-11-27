@@ -32,6 +32,58 @@ extern trackCtrlDef trackCtrl;
 static pthread_t connectHandle;
 static int connectRunning = 0;
 
+
+void checkRecvBuffer (char *buffer, int len)
+{
+	char words[10][41];
+	int word = -1, i = 0, j = 0, type = -1;
+
+	while (i < len)
+	{
+		if (buffer[i] == '<' && word == -1)
+		{
+			word = 0;
+		}
+		else if (((buffer[i] >= 'a' && buffer[i] <= 'z') || (buffer[i] >= 'A' && buffer[i] <= 'Z')) && word >= 0)
+		{
+			if (type == 1)
+			{
+				++word;
+				type = j = 0;
+			}
+			words[word][j++] = buffer[i];
+			words[word][j] = 0;
+		}
+		else if (buffer[i] >= '0' && buffer[i] <= '9' && word >= 0)
+		{
+			if (type == 0)
+			{
+				++word;
+				type = 1;
+				j = 0;
+			}
+			words[word][j++] = buffer[i];
+			words[word][j] = 0;
+		}
+		else if (buffer[i] == '>' && word >= 0)
+		{
+			++word;
+			break;
+		}
+		else if (word >= 0)
+		{
+			++word;
+			j = 0;			
+		}
+		++i;
+	}
+	for (i = 0; i < word; ++i)
+	{
+		printf ("[%s]", words[i]);
+	}
+	printf ("\n");
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  T R A I N  C O N N E C T  T H R E A D                                                                             *
@@ -85,7 +137,7 @@ void *trainConnectThread (void *arg)
 					if ((readBytes = RecvSocket (trackCtrl.serverHandle, buffer, 10240)) > 0)
 					{
 						buffer[readBytes] = 0;
-						printf ("Socket rxed: %s\n", buffer);
+						checkRecvBuffer (buffer, readBytes);
 					}
 					else if (readBytes == 0)
 					{
