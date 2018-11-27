@@ -152,8 +152,14 @@ static void trackPower (GtkWidget *widget, gpointer data)
 		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
 		for (i = 0; i < trackCtrl.trainCount; ++i)
 		{
-			trackCtrl.trainCtrl[i].curSpeed = trackCtrl.trainCtrl[i].remoteCurSpeed = 0;
-			gtk_range_set_value (GTK_RANGE (trackCtrl.trainCtrl[i].scaleSpeed), 0.0);
+			trainCtrlDef *train = &trackCtrl.trainCtrl[i];
+			if (train -> curSpeed > 0 && trackCtrl.powerState == POWER_OFF)
+			{
+				trackCtrl.trainCtrl[i].curSpeed = trackCtrl.trainCtrl[i].remoteCurSpeed = 0;
+				gtk_range_set_value (GTK_RANGE (trackCtrl.trainCtrl[i].scaleSpeed), 0.0);
+				sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, 0, train -> reverse);
+				trainConnectSend (tempBuff, strlen (tempBuff));
+			}
 		}
 		checkPowerOn ();
 	}
