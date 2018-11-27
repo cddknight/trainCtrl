@@ -48,20 +48,21 @@ static int connectRunning = 0;
  */
 void checkRecvBuffer (char *buffer, int len)
 {
-	char words[10][41];
+	char words[41][41];
 	int word = -1, i = 0, j = 0, type = -1;
 
+	printf ("Rxed:[%s]\n", buffer);
 	while (i < len)
 	{
 		if (buffer[i] == '<' && word == -1)
 		{
-			word = 0;
+			words[word = 0][0] = 0;
 		}
 		else if (((buffer[i] >= 'a' && buffer[i] <= 'z') || (buffer[i] >= 'A' && buffer[i] <= 'Z')) && word >= 0)
 		{
 			if (type == 1)
 			{
-				++word;
+				words[++word][0] = 0;
 				j = 0;
 			}
 			words[word][j++] = buffer[i];
@@ -72,7 +73,7 @@ void checkRecvBuffer (char *buffer, int len)
 		{
 			if (type == 0)
 			{
-				++word;
+				words[++word][0] = 0;
 				j = 0;
 			}
 			words[word][j++] = buffer[i];
@@ -81,32 +82,47 @@ void checkRecvBuffer (char *buffer, int len)
 		}
 		else if (buffer[i] == '>' && word >= 0)
 		{
-			++word;
-			break;
+			int l;
+			if (j)
+			{
+				words[++word][0] = 0;
+			}
+/*------------------------------------------------------------------*/
+			for (l = 0; l < word; ++l)
+			{
+				printf ("[%s]", words[l]);
+			}
+			printf ("(%d)\n", word);
+/*------------------------------------------------------------------*/
+			if (words[0][0] == 'p' && words[0][1] == 0 && word == 2)
+			{
+				trackCtrl.remotePowerState = atoi(words[1]);
+			}
+			else if (words[0][0] == 'T' && words[0][1] == 0 && word == 4)
+			{
+				int trainReg = atoi(words[1]), t;
+		
+				for (t = 0; t < trackCtrl.trainCount; ++t)
+				{
+					if (trackCtrl.trainCtrl[t].trainReg == trainReg)
+					{
+						trackCtrl.trainCtrl[t].remoteCurSpeed = atoi(words[2]);
+						trackCtrl.trainCtrl[t].remoteReverse = atoi(words[3]);
+					}
+				}
+			}
+			type = -1;
+			word = -1;
+			j = 0; 
 		}
 		else if (word >= 0)
 		{
 			++word;
 			j = 0;			
 		}
+		if (word > 40) word = 40;
+		if (j > 40) j = 40;
 		++i;
-	}
-	if (words[0][0] == 'p' && words[0][1] == 0)
-	{
-		trackCtrl.remotePowerState = atoi(words[1]);
-	}
-	else if (words[0][0] == 'T' && words[0][1] == 0)
-	{
-		int trainReg = atoi(words[1]), i;
-		
-		for (i = 0; i < trackCtrl.trainCount; ++i)
-		{
-			if (trackCtrl.trainCtrl[i].trainReg == trainReg)
-			{
-				trackCtrl.trainCtrl[i].remoteCurSpeed = atoi(words[2]);
-				trackCtrl.trainCtrl[i].remoteReverse = atoi(words[3]);
-			}
-		}
 	}
 }
 
