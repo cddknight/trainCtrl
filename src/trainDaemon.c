@@ -199,6 +199,17 @@ void daemonize(void)
 	inDaemonise = 1;
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  S E R I A L  P O R T  S E T U P                                                                                   *
+ *  ===============================                                                                                   *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Open the serial port and set it to 115200 bps.
+ *  \param device Serial port to open.
+ *  \result Handle of the port.
+ */
 int SerialPortSetup (char *device)
 {
 	int portFD = -1;
@@ -217,9 +228,62 @@ int SerialPortSetup (char *device)
 	return portFD;
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  S E N D  S E R I A L                                                                                              *
+ *  ====================                                                                                              *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Send data to the serial port.
+ *  \param buffer Data to send.
+ *  \param len Size to send.
+ *  \result The number of bytes sent.
+ */
 int SendSerial (char *buffer, int len)
 {
 	return write (handleInfo[SERIAL_HANDLE].handle, buffer, len);
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  R E C E I V E  S E R I A L                                                                                        *
+ *  ==========================                                                                                        *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Keep buffering until we get a closing '>' and the send to all.
+ *  \param buffer Received buffer.
+ *  \param len Buffer length.
+ *  \result None.
+ */
+void ReceiveSerial (char *buffer, int len)
+{
+	static char outBuffer[10241];
+	static int outPosn = 0;
+	int i = 0, j = 0;
+
+	while (j < len)
+	{
+		outBuffer[outPosn++] = buffer[j];
+		if (buffer[j] == '>')
+		{
+			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
+			{
+				if (handleInfo[i].handle != -1)
+				{
+					SendSocket (handleInfo[i].handle, outBuffer, outPosn);
+				}
+			}
+			outPosn = 0;
+		}
+		if (outPosn >= 10240)
+		{
+			outPosn = 0;
+			break;
+		}
+		++j;
+	}
 }
 
 /**********************************************************************************************************************
@@ -359,13 +423,7 @@ int main (int argc, char *argv[])
 				{
 					buffer[readBytes] = 0;
 					putLogMessage (LOG_DEBUG, "Serial read %d bytes [%s]", readBytes, buffer);
-					for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
-					{
-						if (handleInfo[i].handle != -1)
-						{
-							SendSocket (handleInfo[i].handle, buffer, readBytes);
-						}
-					}
+					ReceiveSerial (buffer, readBytes);
 				}
 			}
 			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
