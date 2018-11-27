@@ -21,6 +21,7 @@
  *  \brief Thread to handle the connectio to the daemon.
  */
 #include <gtk/gtk.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
@@ -33,6 +34,18 @@ static pthread_t connectHandle;
 static int connectRunning = 0;
 
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  C H E C K  R E C V  B U F F E R                                                                                   *
+ *  ===============================                                                                                   *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Chech what we have received on the socket to see if we should update the display.
+ *  \param buffer Buffer that was received.
+ *  \param len Length of the buffer.
+ *  \result None.
+ */
 void checkRecvBuffer (char *buffer, int len)
 {
 	char words[10][41];
@@ -105,7 +118,7 @@ void checkRecvBuffer (char *buffer, int len)
  **********************************************************************************************************************/
 /**
  *  \brief Thread to handle the connection to the daemon.
- *  \param arg Not used..
+ *  \param arg Not used.
  *  \result None.
  */
 void *trainConnectThread (void *arg)
@@ -198,7 +211,7 @@ int trainConnectSend (char *buffer, int len)
  **********************************************************************************************************************/
 /**
  *  \brief Start the thread controlling the connection.
- *  \result 1 if thread started (may not be connected)..
+ *  \result 1 if thread started (may not be connected).
  */
 int startConnectThread()
 {

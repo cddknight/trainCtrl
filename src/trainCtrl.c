@@ -449,6 +449,17 @@ static void activate (GtkApplication *app, gpointer user_data)
 	gtk_widget_show_all (trackCtrl.windowCtrl);
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  C L O C K  T I C K  C A L L B A C K                                                                               *
+ *  ===================================                                                                               *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief To update the display there is a timer.
+ *  \param data Not used.
+ *  \result Always true so it is called again.
+ */
 gboolean clockTickCallback (gpointer data)
 {
 	int i;
@@ -475,6 +486,7 @@ gboolean clockTickCallback (gpointer data)
 			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), train -> reverse);
 		}
 	}
+	return TRUE;
 }
 
 /**********************************************************************************************************************
