@@ -129,7 +129,7 @@ void processCell (xmlNode *inNode, int rowNum)
 						if ((pointStr = xmlGetProp(curNode, (const xmlChar*)"point")) != NULL)
 						{
 							sscanf ((char *)pointStr, "%d", &point);
-							xmlFree(layoutStr);
+							xmlFree(pointStr);
 						}
 						trackCtrl.trackLayout -> trackCells[posn].layout = layout;
 						trackCtrl.trackLayout -> trackCells[posn].point = point;

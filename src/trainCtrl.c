@@ -215,8 +215,10 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
 gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
 	int i, j, rows, cols;
+	int xChange[8] = {	0,	20,	40,	20,	0,	0,	40,	40	};
+	int yChange[8] = {	20,	0,	20,	40,	40,	0,	0,	40	};
+
 	guint width, height;
-	GdkRGBA color;
 	GtkStyleContext *context;
 	GdkRGBA trackCol = { 0.5, 0.5, 0.5, 1.0 };
 	GdkRGBA bufferCol = { 0.5, 0.0, 0.0, 1.0 };
@@ -224,7 +226,6 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 
 	width = gtk_widget_get_allocated_width (widget);
 	height = gtk_widget_get_allocated_height (widget);
-
 	context = gtk_widget_get_style_context (widget);
 	gtk_render_background (context, cr, 0, 0, width, height);
 
@@ -235,63 +236,26 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	{
 		for (j = 0; j < cols; ++j)
 		{
-			int posn = (i * cols) + j, count = 0;
+			int posn = (i * cols) + j, count = 0, points = 0, loop;
 
-			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x01)
+			for (loop = 0; loop < 8; ++loop)
 			{
-				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
-				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
-				cairo_line_to (cr, (j * 40), (i * 40) + 20);
-				cairo_stroke (cr);
-			}
-			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x02)
-			{
-				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
-				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
-				cairo_line_to (cr, (j * 40) + 20, (i * 40));
-				cairo_stroke (cr);
-			}
-			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x04)
-			{ 
-				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
-				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
-				cairo_line_to (cr, (j * 40) + 40, (i * 40) + 20);
-				cairo_stroke (cr);
-			}
-			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x08)
-			{ 
-				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
-				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
-				cairo_line_to (cr, (j * 40) + 20, (i * 40) + 40);
-				cairo_stroke (cr);
-			}
-			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x10)
-			{ 
-				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
-				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
-				cairo_line_to (cr, (j * 40), (i * 40) + 40);
-				cairo_stroke (cr);
-			}
-			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x20)
-			{ 
-				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
-				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
-				cairo_line_to (cr, (j * 40), (i * 40));
-				cairo_stroke (cr);
-			}
-			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x40)
-			{ 
-				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
-				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
-				cairo_line_to (cr, (j * 40) + 40, (i * 40));
-				cairo_stroke (cr);
-			}
-			if (trackCtrl.trackLayout -> trackCells[posn].layout & 0x80)
-			{ 
-				gdk_cairo_set_source_rgba (cr, ++count > 2 ? &inactiveCol : &trackCol);
-				cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
-				cairo_line_to (cr, (j * 40) + 40, (i * 40) + 40);
-				cairo_stroke (cr);
+				if (trackCtrl.trackLayout -> trackCells[posn].layout & (1 << loop))
+				{
+					++count;
+					if (trackCtrl.trackLayout -> trackCells[posn].point & (1 << loop))
+					{
+						if (++points > 1)
+							gdk_cairo_set_source_rgba (cr, &inactiveCol);
+					}
+					else
+					{
+						gdk_cairo_set_source_rgba (cr, &trackCol);
+					}
+					cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
+					cairo_line_to (cr, (j * 40) + xChange[loop], (i * 40) + yChange[loop]);
+					cairo_stroke (cr);
+				}
 			}
 			if (count == 1)
 			{
@@ -304,7 +268,7 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 				cairo_arc (cr, (j * 40) + 20, (i * 40) + 20, 5, 0, 2 * G_PI);
 				cairo_stroke (cr);
 			}
-			if (count > 2)
+			if (points)
 			{
 				gdk_cairo_set_source_rgba (cr, &inactiveCol);
 				cairo_arc (cr, (j * 40) + 20, (i * 40) + 20, 5, 0, 2 * G_PI);
@@ -317,7 +281,6 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 			}
 		}
 	}
-
 	return FALSE;
 }
 
