@@ -297,7 +297,7 @@ int main (int argc, char *argv[])
 	else
 	{
 		putLogMessage (LOG_INFO, "Listening on serial: %s", serialDevice);
-	
+
 		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (listenPort);
 		if (handleInfo[LISTEN_HANDLE].handle == -1)
 		{

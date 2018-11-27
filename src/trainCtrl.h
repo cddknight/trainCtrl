@@ -44,7 +44,7 @@ typedef struct _trainCtrl
 	int trainNum;
 	int curSpeed;
 	int reverse;
-	
+
 	GtkWidget *buttonStop;
 	GtkWidget *buttonHalt;
 	GtkWidget *scaleSpeed;
@@ -73,4 +73,7 @@ typedef struct _trackCtrl
 trackCtrlDef;
 
 int parseTrackXML (char *fileName);
+int startConnectThread ();
+int trainConnectSend (char *buffer, int len);
+void stopConnectThread ();
 
