@@ -221,16 +221,22 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 static void reverseTrain (GtkWidget *widget, gpointer data)
 {
 	char tempBuff[81];
+	int newState;
 	trainCtrlDef *train = (trainCtrlDef *)data;
-	train -> reverse = train -> remoteReverse = (train -> reverse == 0 ? 1 : 0);
-	sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, 0, train -> reverse);
-	if (trainConnectSend (tempBuff, strlen (tempBuff)) > 0)
+
+	newState = (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (train -> checkDir)) == TRUE ? 1 : 0);
+	if (newState != train -> reverse)
 	{
-		train -> curSpeed = train -> remoteCurSpeed = 0;
-		gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
+		train -> reverse = train -> remoteReverse = newState;
+		sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, 0, train -> reverse);
+		if (trainConnectSend (tempBuff, strlen (tempBuff)) > 0)
+		{
+			train -> curSpeed = train -> remoteCurSpeed = 0;
+			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
+		}
+		sprintf (tempBuff, "Set reverse: %s for train %d", (train -> reverse ? "On" : "Off"), train -> trainNum);
+		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
 	}
-	sprintf (tempBuff, "Set reverse: %s for train %d", (train -> reverse ? "On" : "Off"), train -> trainNum);
-	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl.statusBar), 1, tempBuff);
 }
 
 /**********************************************************************************************************************
