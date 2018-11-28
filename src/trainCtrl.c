@@ -281,9 +281,10 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 
 	guint width, height;
 	GtkStyleContext *context;
-	GdkRGBA trackCol = { 0.5, 0.5, 0.5, 1.0 };
+	GdkRGBA trackCol = { 0.7, 0.7, 0.0, 1.0 };
+	GdkRGBA pointCol = { 0.0, 0.5, 0.0, 1.0 };
 	GdkRGBA bufferCol = { 0.5, 0.0, 0.0, 1.0 };
-	GdkRGBA inactiveCol = { 0.0, 0.0, 0.5, 1.0 };
+	GdkRGBA inactiveCol = { 0.3, 0.3, 0.3, 1.0 };
 
 	width = gtk_widget_get_allocated_width (widget);
 	height = gtk_widget_get_allocated_height (widget);
@@ -307,6 +308,7 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 					gdk_cairo_set_source_rgba (cr, &trackCol);
 					if (trackCtrl.trackLayout -> trackCells[posn].point & (1 << loop))
 					{
+						++points;
 						if (!(trackCtrl.trackLayout -> trackCells[posn].pointState & (1 << loop)))
 						{
 							gdk_cairo_set_source_rgba (cr, &inactiveCol);
@@ -320,23 +322,23 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 			if (count == 1)
 			{
 				gdk_cairo_set_source_rgba (cr, &bufferCol);
-				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 5, 0, 2 * G_PI);
+				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 4, 0, 2 * G_PI);
 				cairo_fill (cr);
 				cairo_stroke (cr);
 
 				gdk_cairo_set_source_rgba (cr, &trackCol);
-				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 5, 0, 2 * G_PI);
+				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 4, 0, 2 * G_PI);
 				cairo_stroke (cr);
 			}
 			if (points)
 			{
-				gdk_cairo_set_source_rgba (cr, &inactiveCol);
-				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 5, 0, 2 * G_PI);
+				gdk_cairo_set_source_rgba (cr, &pointCol);
+				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 4, 0, 2 * G_PI);
 				cairo_fill (cr);
 				cairo_stroke (cr);
 
 				gdk_cairo_set_source_rgba (cr, &trackCol);
-				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 5, 0, 2 * G_PI);
+				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 4, 0, 2 * G_PI);
 				cairo_stroke (cr);
 			}
 		}
@@ -344,6 +346,18 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	return FALSE;
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  W I N D O W  C L I C K  C A L L B A C K                                                                           *
+ *  =======================================                                                                           *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Called when the track window is clicked.
+ *  \param widget Not used.
+ *  \param event Where it was clicked.
+ *  \result TRUE if we used it.
+ */
 gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event)
 {
 	if (event->type == GDK_BUTTON_PRESS)
@@ -427,8 +441,8 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  P R E F E R E N C E S  C A L L B A C K                                                                            *
- *  ======================================                                                                            *
+ *  P R O G R A M  C A L L B A C K                                                                                    *
+ *  ==============================                                                                                    *
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
