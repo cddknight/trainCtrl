@@ -27,7 +27,25 @@
 #include "socketC.h"
 
 trackCtrlDef trackCtrl;
+
 static char *notConnected = "Train controller not connected";
+
+static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
+static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
+static void quitCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
+
+static GActionEntry app_entries[] =
+{
+	{ "preferences", preferencesCallback, NULL, NULL, NULL },
+	{ "about", aboutCallback, NULL, NULL, NULL },
+	{ "quit", quitCallback, NULL, NULL, NULL }
+};
+
+/*--------------------------------------------------------------------------------------------------------------------*
+ * If we cannot find a stock clock icon then use this built in one.                                                   *
+ *--------------------------------------------------------------------------------------------------------------------*/
+static GdkPixbuf *defaultIcon;
+#include "train.xpm"
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -373,6 +391,80 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  P R E F E R E N C E S  C A L L B A C K                                                                            *
+ *  ======================================                                                                            *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Called when preferences selected on the menu.
+ *  \param action Not used.
+ *  \param parameter Not used.
+ *  \param user_data Not used.
+ *  \result None.
+ */
+static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer user_data)
+{
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  A B O U T  C A L L B A C K                                                                                        *
+ *  ==========================                                                                                        *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Called when about selected on the menu.
+ *  \param action Not used.
+ *  \param parameter Not used.
+ *  \param user_data Not used.
+ *  \result None.
+ */
+static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer user_data)
+{
+	const gchar *authors[] =
+	{
+		"Chris Knight",
+		NULL
+	};
+
+	gtk_show_about_dialog (GTK_WINDOW (trackCtrl.windowCtrl),
+			"program-name", "Train Control",
+			"version", g_strdup_printf ("%s,\nRunning against GTK+ %d.%d.%d",
+			 "0.0",
+				 gtk_get_major_version (),
+				 gtk_get_minor_version (),
+				 gtk_get_micro_version ()),
+			"copyright", "(C) 2018 TheKnight",
+			"license-type", GTK_LICENSE_LGPL_2_1,
+			"website", "http://www.theknight.co.uk",
+			"comments", "Program to control trains with DCC++.",
+			"authors", authors,
+			"logo", defaultIcon,
+			"title", "About Train Control",
+			NULL);
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  Q U I T  C A L L B A C K                                                                                          *
+ *  ========================                                                                                          *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Called when quit selected on the menu.
+ *  \param action Not used.
+ *  \param parameter Not used.
+ *  \param data Not used.
+ *  \result None.
+ */
+void
+quitCallback (GSimpleAction *action, GVariant *parameter, gpointer data)
+{
+	g_application_quit (data);
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  A C T I V A T E                                                                                                   *
  *  ===============                                                                                                   *
  *                                                                                                                    *
@@ -387,8 +479,17 @@ static void activate (GtkApplication *app, gpointer user_data)
 {
 	int i;
 	char tempBuff[21];
+	GMenu *menu;
 	GtkWidget *grid;
 	GtkWidget *vbox, *hbox;
+
+	g_action_map_add_action_entries (G_ACTION_MAP (app), app_entries, G_N_ELEMENTS (app_entries), app);
+	menu = g_menu_new ();
+	g_menu_append (menu, "Preferences", "app.preferences");
+	g_menu_append (menu, "About", "app.about");
+	g_menu_append (menu, "Quit", "app.quit");
+	gtk_application_set_app_menu (GTK_APPLICATION (app), G_MENU_MODEL (menu));
+	g_object_unref (menu);
 
 	trackCtrl.windowCtrl = gtk_application_window_new (app);
 	gtk_window_set_title (GTK_WINDOW (trackCtrl.windowCtrl), "Train Control");
@@ -522,6 +623,10 @@ int main (int argc, char **argv)
 			g_timeout_add (100, clockTickCallback, NULL);
 			app = gtk_application_new ("Train.Control", G_APPLICATION_FLAGS_NONE);
 			g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
+
+			defaultIcon = gdk_pixbuf_new_from_xpm_data ((const char **) &train_xpm);
+			gtk_window_set_default_icon_name ("train_xpm");
+
 			status = g_application_run (G_APPLICATION (app), argc, argv);
 			g_object_unref (app);
 			stopConnectThread ();
