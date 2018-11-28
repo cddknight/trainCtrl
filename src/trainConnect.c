@@ -33,7 +33,6 @@ extern trackCtrlDef trackCtrl;
 static pthread_t connectHandle;
 static int connectRunning = 0;
 
-
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  C H E C K  R E C V  B U F F E R                                                                                   *
@@ -49,59 +48,60 @@ static int connectRunning = 0;
 void checkRecvBuffer (char *buffer, int len)
 {
 	char words[41][41];
-	int word = -1, i = 0, j = 0, type = -1;
+	int wordNum = -1, i = 0, j = 0, inType = 0;
 
+/*------------------------------------------------------------------*
 	printf ("Rxed:[%s]\n", buffer);
+ *------------------------------------------------------------------*/
 	while (i < len)
 	{
-		if (buffer[i] == '<' && word == -1)
+		if (buffer[i] == '<' && wordNum == -1)
 		{
-			words[word = 0][0] = 0;
+			words[wordNum = 0][0] = 0;
 		}
-		else if (((buffer[i] >= 'a' && buffer[i] <= 'z') || (buffer[i] >= 'A' && buffer[i] <= 'Z')) && word >= 0)
+		else if (wordNum >= 0 && ((buffer[i] >= 'a' && buffer[i] <= 'z') || (buffer[i] >= 'A' && buffer[i] <= 'Z')))
 		{
-			if (type == 1)
+			if (inType == 2)
 			{
-				words[++word][0] = 0;
+				words[++wordNum][0] = 0;
 				j = 0;
 			}
-			words[word][j++] = buffer[i];
-			words[word][j] = 0;
-			type = 0;
+			words[wordNum][j++] = buffer[i];
+			words[wordNum][j] = 0;
+			inType = 1;
 		}
-		else if (buffer[i] >= '0' && buffer[i] <= '9' && word >= 0)
+		else if (wordNum >= 0 && buffer[i] >= '0' && buffer[i] <= '9')
 		{
-			if (type == 0)
+			if (inType == 1)
 			{
-				words[++word][0] = 0;
+				words[++wordNum][0] = 0;
 				j = 0;
 			}
-			words[word][j++] = buffer[i];
-			words[word][j] = 0;
-			type = 1;
+			words[wordNum][j++] = buffer[i];
+			words[wordNum][j] = 0;
+			inType = 2;
 		}
-		else if (buffer[i] == '>' && word >= 0)
+		else if (wordNum >= 0 && buffer[i] == '>')
 		{
 			int l;
 			if (j)
 			{
-				words[++word][0] = 0;
+				words[++wordNum][0] = 0;
 			}
-/*------------------------------------------------------------------*/
-			for (l = 0; l < word; ++l)
+/*------------------------------------------------------------------*
+			for (l = 0; l < wordNum; ++l)
 			{
 				printf ("[%s]", words[l]);
 			}
-			printf ("(%d)\n", word);
-/*------------------------------------------------------------------*/
-			if (words[0][0] == 'p' && words[0][1] == 0 && word == 2)
+			printf ("(%d)\n", wordNum);
+ *------------------------------------------------------------------*/
+			if (words[0][0] == 'p' && words[0][1] == 0 && wordNum == 2)
 			{
 				trackCtrl.remotePowerState = atoi(words[1]);
 			}
-			else if (words[0][0] == 'T' && words[0][1] == 0 && word == 4)
+			else if (words[0][0] == 'T' && words[0][1] == 0 && wordNum == 4)
 			{
 				int trainReg = atoi(words[1]), t;
-		
 				for (t = 0; t < trackCtrl.trainCount; ++t)
 				{
 					if (trackCtrl.trainCtrl[t].trainReg == trainReg)
@@ -111,17 +111,24 @@ void checkRecvBuffer (char *buffer, int len)
 					}
 				}
 			}
-			type = -1;
-			word = -1;
-			j = 0; 
+			inType = 0;
+			wordNum = -1;
+			j = 0;
 		}
-		else if (word >= 0)
+		else if (wordNum >= 0 && buffer[i] == ' ')
 		{
-			++word;
-			j = 0;			
+			words[++wordNum][0] = 0;
+			j = 0;
 		}
-		if (word > 40) word = 40;
-		if (j > 40) j = 40;
+		if (wordNum > 40)
+		{
+			words[wordNum = 40][0] = 0;
+			j = 0;
+		}
+		if (j > 40)
+		{
+			j = 40;
+		}
 		++i;
 	}
 }
