@@ -26,17 +26,20 @@
 #include "trainCtrl.h"
 #include "socketC.h"
 
+#define CELL_SIZE	40
+#define CELL_HALF	20
+
 trackCtrlDef trackCtrl;
 
 static char *notConnected = "Train controller not connected";
 
-static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
+static void programCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 static void quitCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 
 static GActionEntry app_entries[] =
 {
-	{ "preferences", preferencesCallback, NULL, NULL, NULL },
+	{ "program", programCallback, NULL, NULL, NULL },
 	{ "about", aboutCallback, NULL, NULL, NULL },
 	{ "quit", quitCallback, NULL, NULL, NULL }
 };
@@ -273,8 +276,8 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
 gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
 	int i, j, rows, cols;
-	int xChange[8] = {	0,	20, 40, 20, 0,	0,	40, 40	};
-	int yChange[8] = {	20, 0,	20, 40, 40, 0,	0,	40	};
+	int xChange[8] = {	0,	CELL_HALF, CELL_SIZE, CELL_HALF, 0,	0,	CELL_SIZE, CELL_SIZE	};
+	int yChange[8] = {	CELL_HALF, 0,	CELL_HALF, CELL_SIZE, CELL_SIZE, 0,	0,	CELL_SIZE	};
 
 	guint width, height;
 	GtkStyleContext *context;
@@ -301,42 +304,67 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 				if (trackCtrl.trackLayout -> trackCells[posn].layout & (1 << loop))
 				{
 					++count;
+					gdk_cairo_set_source_rgba (cr, &trackCol);
 					if (trackCtrl.trackLayout -> trackCells[posn].point & (1 << loop))
 					{
-						if (++points > 1)
+						if (!(trackCtrl.trackLayout -> trackCells[posn].pointState & (1 << loop)))
+						{
 							gdk_cairo_set_source_rgba (cr, &inactiveCol);
+						}
 					}
-					else
-					{
-						gdk_cairo_set_source_rgba (cr, &trackCol);
-					}
-					cairo_move_to (cr, (j * 40) + 20, (i * 40) + 20);
-					cairo_line_to (cr, (j * 40) + xChange[loop], (i * 40) + yChange[loop]);
+					cairo_move_to (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF);
+					cairo_line_to (cr, (j * CELL_SIZE) + xChange[loop], (i * CELL_SIZE) + yChange[loop]);
 					cairo_stroke (cr);
 				}
 			}
 			if (count == 1)
 			{
 				gdk_cairo_set_source_rgba (cr, &bufferCol);
-				cairo_arc (cr, (j * 40) + 20, (i * 40) + 20, 5, 0, 2 * G_PI);
+				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 5, 0, 2 * G_PI);
 				cairo_fill (cr);
 				cairo_stroke (cr);
 
 				gdk_cairo_set_source_rgba (cr, &trackCol);
-				cairo_arc (cr, (j * 40) + 20, (i * 40) + 20, 5, 0, 2 * G_PI);
+				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 5, 0, 2 * G_PI);
 				cairo_stroke (cr);
 			}
 			if (points)
 			{
 				gdk_cairo_set_source_rgba (cr, &inactiveCol);
-				cairo_arc (cr, (j * 40) + 20, (i * 40) + 20, 5, 0, 2 * G_PI);
+				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 5, 0, 2 * G_PI);
 				cairo_fill (cr);
 				cairo_stroke (cr);
 
 				gdk_cairo_set_source_rgba (cr, &trackCol);
-				cairo_arc (cr, (j * 40) + 20, (i * 40) + 20, 5, 0, 2 * G_PI);
+				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 5, 0, 2 * G_PI);
 				cairo_stroke (cr);
 			}
+		}
+	}
+	return FALSE;
+}
+
+gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event)
+{
+	if (event->type == GDK_BUTTON_PRESS)
+	{
+		switch (event->button)
+		{
+		case GDK_BUTTON_PRIMARY:	/* left button */
+			{
+				int rows = trackCtrl.trackLayout -> trackRows;
+				int cols = trackCtrl.trackLayout -> trackCols;
+				int posn = (((int)event -> y / CELL_SIZE) * cols) + ((int)event -> x / CELL_SIZE);
+
+				if (trackCtrl.trackLayout -> trackCells[posn].point)
+				{
+					unsigned short newState = trackCtrl.trackLayout -> trackCells[posn].point;
+					newState &= ~(trackCtrl.trackLayout -> trackCells[posn].pointState);
+					trackCtrl.trackLayout -> trackCells[posn].pointState = newState;
+					gtk_widget_queue_draw (trackCtrl.drawingArea);
+				}
+			}
+			return TRUE;
 		}
 	}
 	return FALSE;
@@ -375,16 +403,24 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 {
 	if (trackCtrl.windowTrack == NULL)
 	{
+    	GtkWidget *eventBox;
+		int width = trackCtrl.trackLayout -> trackCols * CELL_SIZE;
+		int height = trackCtrl.trackLayout -> trackRows * CELL_SIZE;
+
 		trackCtrl.windowTrack = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title (GTK_WINDOW (trackCtrl.windowTrack), "Track Control");
-		gtk_window_set_default_size (GTK_WINDOW (trackCtrl.windowTrack), 480, 400);
+		gtk_window_set_default_size (GTK_WINDOW (trackCtrl.windowTrack), width, height);
 
 		trackCtrl.drawingArea = gtk_drawing_area_new ();
-		gtk_widget_set_size_request (trackCtrl.drawingArea, 480, 400);
+		gtk_widget_set_size_request (trackCtrl.drawingArea, width, height);
+	    eventBox = gtk_event_box_new ();
+	    gtk_container_add (GTK_CONTAINER (eventBox), trackCtrl.drawingArea);
+
 		g_signal_connect (G_OBJECT (trackCtrl.drawingArea), "draw", G_CALLBACK (draw_callback), NULL);
 		g_signal_connect (G_OBJECT (trackCtrl.windowTrack), "destroy", G_CALLBACK (closeTrack), NULL);
+		g_signal_connect (G_OBJECT (eventBox), "button_press_event", G_CALLBACK (windowClickCallback), NULL);
 
-		gtk_container_add (GTK_CONTAINER (trackCtrl.windowTrack), trackCtrl.drawingArea);
+		gtk_container_add (GTK_CONTAINER (trackCtrl.windowTrack), eventBox);
 		gtk_widget_show_all (trackCtrl.windowTrack);
 	}
 }
@@ -396,13 +432,13 @@ static void displayTrack (GtkWidget *widget, gpointer data)
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
- *  \brief Called when preferences selected on the menu.
+ *  \brief Called when program selected on the menu.
  *  \param action Not used.
  *  \param parameter Not used.
  *  \param user_data Not used.
  *  \result None.
  */
-static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer user_data)
+static void programCallback (GSimpleAction *action, GVariant *parameter, gpointer user_data)
 {
 }
 
@@ -485,7 +521,7 @@ static void activate (GtkApplication *app, gpointer user_data)
 
 	g_action_map_add_action_entries (G_ACTION_MAP (app), app_entries, G_N_ELEMENTS (app_entries), app);
 	menu = g_menu_new ();
-	g_menu_append (menu, "Preferences", "app.preferences");
+	g_menu_append (menu, "Program", "app.program");
 	g_menu_append (menu, "About", "app.about");
 	g_menu_append (menu, "Quit", "app.quit");
 	gtk_application_set_app_menu (GTK_APPLICATION (app), G_MENU_MODEL (menu));
@@ -493,6 +529,7 @@ static void activate (GtkApplication *app, gpointer user_data)
 
 	trackCtrl.windowCtrl = gtk_application_window_new (app);
 	gtk_window_set_title (GTK_WINDOW (trackCtrl.windowCtrl), "Train Control");
+	gtk_window_set_icon_name (GTK_WINDOW (trackCtrl.windowCtrl), "document-open");
 	gtk_window_set_default_size (GTK_WINDOW (trackCtrl.windowCtrl), 260, 400);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);

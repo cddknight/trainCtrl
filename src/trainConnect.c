@@ -115,7 +115,7 @@ void checkRecvBuffer (char *buffer, int len)
 			wordNum = -1;
 			j = 0;
 		}
-		else if (wordNum >= 0 && buffer[i] == ' ')
+		else if (wordNum >= 0 && (buffer[i] == ' ' || buffer[i] == '|'))
 		{
 			words[++wordNum][0] = 0;
 			j = 0;

@@ -29,7 +29,7 @@ typedef struct _trackCell
 {
 	unsigned short layout;
 	unsigned short point;
-	unsigned short state;
+	unsigned short pointState;
 }
 trackCellDef;
 
