@@ -275,24 +275,23 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
  */
 gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-	int i, j, rows, cols;
-	int xChange[8] = {	0,	CELL_HALF, CELL_SIZE, CELL_HALF, 0,	0,	CELL_SIZE, CELL_SIZE	};
-	int yChange[8] = {	CELL_HALF, 0,	CELL_HALF, CELL_SIZE, CELL_SIZE, 0,	0,	CELL_SIZE	};
+	static const GdkRGBA trackCol = { 0.7, 0.7, 0.0, 1.0 };
+	static const GdkRGBA pointCol = { 0.0, 0.0, 0.5, 1.0 };
+	static const GdkRGBA bufferCol = { 0.5, 0.0, 0.0, 1.0 };
+	static const GdkRGBA inactiveCol = { 0.2, 0.0, 0.0, 1.0 };
+	static const GdkRGBA circleCol = { 0.7, 0.7, 0.7, 1.0 };
 
-	guint width, height;
-	GtkStyleContext *context;
-	GdkRGBA trackCol = { 0.7, 0.7, 0.0, 1.0 };
-	GdkRGBA pointCol = { 0.0, 0.0, 0.5, 1.0 };
-	GdkRGBA bufferCol = { 0.5, 0.0, 0.0, 1.0 };
-	GdkRGBA inactiveCol = { 0.2, 0.0, 0.0, 1.0 };
+	static const int xChange[8] = {	0,	CELL_HALF, CELL_SIZE, CELL_HALF, 0,	0,	CELL_SIZE, CELL_SIZE	};
+	static const int yChange[8] = {	CELL_HALF, 0,	CELL_HALF, CELL_SIZE, CELL_SIZE, 0,	0,	CELL_SIZE	};
 
-	width = gtk_widget_get_allocated_width (widget);
-	height = gtk_widget_get_allocated_height (widget);
-	context = gtk_widget_get_style_context (widget);
+	int i, j;
+	int rows = trackCtrl.trackLayout -> trackRows;
+	int cols = trackCtrl.trackLayout -> trackCols;
+	guint width = gtk_widget_get_allocated_width (widget);
+	guint height = gtk_widget_get_allocated_height (widget);
+	GtkStyleContext *context = gtk_widget_get_style_context (widget);
+
 	gtk_render_background (context, cr, 0, 0, width, height);
-
-	rows = trackCtrl.trackLayout -> trackRows;
-	cols = trackCtrl.trackLayout -> trackCols;
 
 	for (i = 0; i < rows; ++i)
 	{
@@ -326,7 +325,7 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 				cairo_fill (cr);
 				cairo_stroke (cr);
 
-				gdk_cairo_set_source_rgba (cr, &trackCol);
+				gdk_cairo_set_source_rgba (cr, &circleCol);
 				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 4, 0, 2 * G_PI);
 				cairo_stroke (cr);
 			}
@@ -337,7 +336,7 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 				cairo_fill (cr);
 				cairo_stroke (cr);
 
-				gdk_cairo_set_source_rgba (cr, &trackCol);
+				gdk_cairo_set_source_rgba (cr, &circleCol);
 				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 4, 0, 2 * G_PI);
 				cairo_stroke (cr);
 			}
