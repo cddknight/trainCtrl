@@ -269,7 +269,6 @@ void ReceiveSerial (char *buffer, int len)
 		if (buffer[j] == '>')
 		{
 			outBuffer[outPosn] = 0;
-			printf ("Net sending: [%s]\n", outBuffer);
 			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
 			{
 				if (handleInfo[i].handle != -1)
@@ -303,9 +302,9 @@ void ReceiveSerial (char *buffer, int len)
 int main (int argc, char *argv[])
 {
 	fd_set readfds;
-	char inAddress[21] = "";
 	struct timeval timeout;
-	int i, c;
+	char inAddress[21] = "";
+	int i, c, connectedCount = 0;
 
 	while ((c = getopt(argc, argv, "s:l:dLID")) != -1)
 	{
@@ -408,6 +407,7 @@ int main (int argc, char *argv[])
 							handleInfo[i].handle = newSocket;
 							strncpy (handleInfo[i].localName, inAddress, 40);
 							SendSerial ("<s>", 3);
+							++connectedCount;
 							break;
 						}
 					}
@@ -449,6 +449,10 @@ int main (int argc, char *argv[])
 						{
 							putLogMessage (LOG_INFO, "Socket %s(%d) closed", handleInfo[i].localName, handleInfo[i].handle);
 							CloseSocket (&handleInfo[i].handle);
+							if (--connectedCount == 0)
+							{
+								SendSerial ("<0>", 3);
+							}
 						}
 					}
 				}
