@@ -282,9 +282,9 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	guint width, height;
 	GtkStyleContext *context;
 	GdkRGBA trackCol = { 0.7, 0.7, 0.0, 1.0 };
-	GdkRGBA pointCol = { 0.0, 0.5, 0.0, 1.0 };
+	GdkRGBA pointCol = { 0.0, 0.0, 0.5, 1.0 };
 	GdkRGBA bufferCol = { 0.5, 0.0, 0.0, 1.0 };
-	GdkRGBA inactiveCol = { 0.3, 0.3, 0.3, 1.0 };
+	GdkRGBA inactiveCol = { 0.2, 0.0, 0.0, 1.0 };
 
 	width = gtk_widget_get_allocated_width (widget);
 	height = gtk_widget_get_allocated_height (widget);
