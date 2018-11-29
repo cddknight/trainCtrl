@@ -485,10 +485,10 @@ static void programTrain (GtkWidget *widget, gpointer data)
 	static char *hintLables[] =
 	{
 		"Hints:",
-		"* If address is 0 then use programming track.",
-		"* Reads only work on the programming track.",
-		"* If bit number > 0 then set bit value.",
-		"* If bit number is 0 then set byte value.",
+		"* If address is zero then use programming track.",
+		"* Reads only work with train on the programming track.",
+		"* If bit number is greater than zero then set bit value.",
+		"* If the bit number is zero then set the byte value.",
 		NULL
 	};
 	static double maxValues[] = { 10294.0, 1025.0, 256.0, 9.0, 2.0 };
