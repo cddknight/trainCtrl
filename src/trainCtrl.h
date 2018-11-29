@@ -67,6 +67,7 @@ typedef struct _trackCtrl
 	int serverHandle;
 	int serverPort;
 	char server[81];
+	char remoteProgMsg[81];
 
 	int remotePowerState;
 
@@ -76,6 +77,7 @@ typedef struct _trackCtrl
 	GtkWidget *buttonPower;
 	GtkWidget *buttonTrack;
 	GtkWidget *buttonProgram;
+	GtkWidget *labelProgram;
 	GtkWidget *drawingArea;
 	GtkWidget *statusBar;
 	trainCtrlDef *trainCtrl;

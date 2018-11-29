@@ -111,6 +111,10 @@ void checkRecvBuffer (char *buffer, int len)
 					}
 				}
 			}
+			else if (words[0][0] == 'r' && words[0][1] == 0 && wordNum == 4)
+			{
+				sprintf (trackCtrl.remoteProgMsg, "Read back value: %s", words[3]);
+			}
 			inType = 0;
 			wordNum = -1;
 			j = 0;

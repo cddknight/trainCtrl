@@ -436,51 +436,211 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 	}
 }
 
+static int programYesNo (char *question)
+{
+	int retn = 0;
+	GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW (trackCtrl.dialogProgram),
+			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+			GTK_MESSAGE_WARNING, GTK_BUTTONS_OK_CANCEL,
+			question);
+
+	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
+	{
+		retn = 1;
+	}
+	gtk_widget_destroy (dialog);
+	return retn;
+}
+
 static void programTrain (GtkWidget *widget, gpointer data)
 {
-	static char *lables[4] = { "Train ID ", "CV Number ", "Byte Value ", "Bit Value " };
-	static int entrySizes[4] = { 5, 4, 3, 1 };
+	static char *lables[] = 
+	{ 
+		"Train ID", "CV Number", "Byte Value", "Bit number", "Bit Value", "Read value", 
+		"Last reply:", "Nothing received"
+	};
+	static int entrySizes[] = { 5, 4, 3, 1, 1 };
 
 	int reRun, i;
 	GtkWidget *contentArea;
-	GtkWidget *entry[4];
-	GtkWidget *label;
-	GtkWidget *grid;
-	GtkWidget *vbox;
+	GtkWidget *entry[5], *checkButton;
+	GtkWidget *label, *grid, *vbox;
 
 	if (trackCtrl.dialogProgram == NULL)
 	{
 		trackCtrl.dialogProgram = gtk_dialog_new_with_buttons ("Program Train", 
 				GTK_WINDOW (trackCtrl.windowCtrl),
 				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-				"Close", GTK_RESPONSE_CLOSE, NULL);
+				"Apply", GTK_RESPONSE_APPLY, 
+				"Close", GTK_RESPONSE_CLOSE, 
+				NULL);
 
 		contentArea = gtk_dialog_get_content_area (GTK_DIALOG (trackCtrl.dialogProgram));
 
-		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 3);
+		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
+		gtk_widget_set_valign (vbox, GTK_ALIGN_FILL);
 		gtk_box_pack_start (GTK_BOX (contentArea), vbox, TRUE, TRUE, 0);
 
+		label = gtk_label_new ("* If no 'Train ID' then use programming track.");
+		gtk_widget_set_halign (label, GTK_ALIGN_START);
+		gtk_widget_set_valign (label, GTK_ALIGN_START);
+		gtk_box_pack_start (GTK_BOX(vbox), label, FALSE, FALSE, 3);
+
+		label = gtk_label_new ("* Reads only work on the programming track.");
+		gtk_widget_set_halign (label, GTK_ALIGN_START);
+		gtk_widget_set_valign (label, GTK_ALIGN_START);
+		gtk_box_pack_start (GTK_BOX(vbox), label, FALSE, FALSE, 3);
+
+		label = gtk_label_new ("* Specify either a byte or bit value.");
+		gtk_widget_set_halign (label, GTK_ALIGN_START);
+		gtk_widget_set_valign (label, GTK_ALIGN_START);
+		gtk_box_pack_start (GTK_BOX(vbox), label, FALSE, FALSE, 3);
+
+		gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
+	
 		grid = gtk_grid_new();
 		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
-		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 0);
+		gtk_widget_set_valign (grid, GTK_ALIGN_FILL);
+		gtk_grid_set_row_spacing (GTK_GRID (grid), 3);
+		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
+		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 3);
 
-		for (i = 0; i < 4; ++i)
+		for (i = 0; i < 5; ++i)
 		{
 			label = gtk_label_new (lables[i]);
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
 			gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
 
 			entry[i] = gtk_entry_new ();
+			gtk_entry_set_input_purpose (GTK_ENTRY (entry[i]), GTK_INPUT_PURPOSE_NUMBER);
 			gtk_entry_set_max_width_chars (GTK_ENTRY (entry[i]), entrySizes[i]);
 			gtk_widget_set_halign (entry[i], GTK_ALIGN_FILL);
 			gtk_grid_attach (GTK_GRID(grid), entry[i], 1, i, 1, 1);
 		}
+		checkButton = gtk_check_button_new_with_label (lables[i]);
+		gtk_widget_set_halign (checkButton, GTK_ALIGN_START);
+		gtk_grid_attach (GTK_GRID(grid), checkButton, 1, i, 1, 1);
 
+		label = gtk_label_new (lables[++i]);
+		gtk_widget_set_halign (label, GTK_ALIGN_END);
+		gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
+
+		trackCtrl.labelProgram = gtk_label_new (lables[++i]);
+		gtk_widget_set_halign (trackCtrl.labelProgram, GTK_ALIGN_START);
+		gtk_grid_attach (GTK_GRID(grid), trackCtrl.labelProgram, 1, i - 1, 1, 1);
+		
 		gtk_widget_show_all (trackCtrl.dialogProgram);
-		gtk_dialog_run (GTK_DIALOG (trackCtrl.dialogProgram));
+		while (gtk_dialog_run (GTK_DIALOG (trackCtrl.dialogProgram)) == GTK_RESPONSE_APPLY)
+		{
+			int values[5], allOK = 0;
+			char sendBuffer[41], msgBuffer[161];
+			const char *curText[5];
+			gboolean checkRead = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkButton));
+
+			sendBuffer[0] = 0;
+			for (i = 0; i < 5; ++i)
+			{
+				curText[i] = gtk_entry_get_text (GTK_ENTRY (entry[i]));
+				values[i] = atoi (curText[i]);
+			}
+			/* Programming track, no train ID */
+			if (values[0] == 0)
+			{
+				if (values[1] > 0 && values[1] < 1025)
+				{
+					if (checkRead == TRUE)
+					{
+						/* Read CV number */
+						sprintf (msgBuffer, "Read CV number %d on the programming track?", values[1]);
+						if (programYesNo (msgBuffer))
+						{
+							sprintf (sendBuffer, "<R %d 5 6>", values[1]);
+						}
+						allOK = 1;
+					}
+					else if (values[3])
+					{
+						if (values[3] > 0 && values[3] <= 8 && (values[4] == 0 || values[4] == 1))
+						{
+							/* Write bit value */
+							sprintf (sendBuffer, "Write to CV number %d, bit %d, value %d on the programming track?", 
+									values[1], values[3], values[4]);
+							if (programYesNo (sendBuffer))
+							{
+								sprintf (sendBuffer, "<b %d %d %d 3 4>", values[1], values[3] - 1, values[4]);
+							}
+							allOK = 1;
+						}
+					}
+					else
+					{
+						/* Write byte value */
+						if (values[2] >= 0 && values[2] <= 255)
+						{
+							/* Write CV byte */
+							sprintf (sendBuffer, "Write to CV number %d, value %d on the programming track?", 
+									values[1], values[2]);
+							if (programYesNo (sendBuffer))
+							{
+								sprintf (sendBuffer, "<W %d %d 1 2>", values[1], values[2]);
+							}
+						}
+					}
+				}
+			}
+			else if (values[1] > 0 && values[1] < 1025)
+			{
+				if (values[3])
+				{
+					if (values[3] > 0 && values[3] <= 8 && (values[4] == 0 || values[4] == 1))
+					{
+						/* Write bit value */
+						sprintf (sendBuffer, "Write to train ID %d, CV number %d, bit %d, value %d on the main track?", 
+								values[0], values[1], values[3], values[4]);
+						if (programYesNo (sendBuffer))
+						{
+							sprintf (sendBuffer, "<b %d %d %d %d>", values[0], values[1], values[3] - 1, values[4]);
+						}
+						allOK = 1;
+					}
+				}
+				else
+				{
+					/* Write byte value */
+					if (values[2] >= 0 && values[2] <= 255)
+					{
+						/* Write CV byte */
+						sprintf (sendBuffer, "Write to train ID %d, CV number %d, value %d on the main track?", 
+								values[0], values[1], values[2]);
+						if (programYesNo (sendBuffer))
+						{
+							sprintf (sendBuffer, "<w %d %d %d>", values[0], values[1], values[2]);
+						}
+						allOK = 1;
+					}
+				}
+			}
+			if (allOK == 0)
+			{
+				gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Incorrect input");
+			}
+			else if (sendBuffer[0] != 0)
+			{
+				if (trainConnectSend (sendBuffer, strlen (sendBuffer)) > 0)
+				{
+					gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Command sent");
+				}
+				else
+				{
+					gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Sending failed");
+				}
+				sendBuffer[0] = 0;
+			}
+		}
 		gtk_widget_destroy (trackCtrl.dialogProgram);
 		trackCtrl.dialogProgram = NULL;
+		trackCtrl.labelProgram = NULL;
 	}
 }
 
@@ -677,6 +837,14 @@ gboolean clockTickCallback (gpointer data)
 		{
 			train -> reverse = train -> remoteReverse;
 			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), train -> reverse);
+		}
+		if (trackCtrl.remoteProgMsg[0] != 0)
+		{
+			if (trackCtrl.labelProgram != NULL)
+			{
+				gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), trackCtrl.remoteProgMsg);
+				trackCtrl.remoteProgMsg[0] = 0;
+			}
 		}
 	}
 	return TRUE;
