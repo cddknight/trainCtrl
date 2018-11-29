@@ -477,14 +477,23 @@ static int programYesNo (char *question)
  */
 static void programTrain (GtkWidget *widget, gpointer data)
 {
-	static char *lables[] =
+	static char *controlLables[] =
 	{
-		"Train ID", "CV Number", "Byte Value", "Bit number", "Bit Value", "Read value",
+		"DCC Address", "CV Number", "Byte Value", "Bit number", "Bit Value", "Read value",
 		"Last reply:", "Nothing received"
+	};
+	static char *hintLables[] =
+	{
+		"Hints:",
+		"* If address is 0 then use programming track.",
+		"* Reads only work on the programming track.",
+		"* If bit number > 0 then set bit value.",
+		"* If bit number is 0 then set byte value.",
+		NULL
 	};
 	static double maxValues[] = { 10294.0, 1025.0, 256.0, 9.0, 2.0 };
 
-	int reRun, i;
+	int reRun, i = 0;
 	GtkWidget *contentArea;
 	GtkWidget *spinner[5];
 	GtkAdjustment *adjust[5];
@@ -506,22 +515,16 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		gtk_widget_set_valign (vbox, GTK_ALIGN_FILL);
 		gtk_box_pack_start (GTK_BOX (contentArea), vbox, TRUE, TRUE, 0);
 
-		label = gtk_label_new ("* If no 'Train ID' then use programming track.");
-		gtk_widget_set_halign (label, GTK_ALIGN_START);
-		gtk_widget_set_valign (label, GTK_ALIGN_START);
-		gtk_box_pack_start (GTK_BOX(vbox), label, FALSE, FALSE, 3);
+		while (hintLables[i] != NULL)
+		{
+			label = gtk_label_new (hintLables[i]);
+			gtk_widget_set_halign (label, GTK_ALIGN_START);
+			gtk_widget_set_valign (label, GTK_ALIGN_START);
+			gtk_box_pack_start (GTK_BOX(vbox), label, FALSE, FALSE, 3);
+			++i;
+		}
 
-		label = gtk_label_new ("* Reads only work on the programming track.");
-		gtk_widget_set_halign (label, GTK_ALIGN_START);
-		gtk_widget_set_valign (label, GTK_ALIGN_START);
-		gtk_box_pack_start (GTK_BOX(vbox), label, FALSE, FALSE, 3);
-
-		label = gtk_label_new ("* Specify either a byte or bit value.");
-		gtk_widget_set_halign (label, GTK_ALIGN_START);
-		gtk_widget_set_valign (label, GTK_ALIGN_START);
-		gtk_box_pack_start (GTK_BOX(vbox), label, FALSE, FALSE, 3);
-
-		gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
+		gtk_box_pack_start (GTK_BOX(vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 3);
 
 		grid = gtk_grid_new();
 		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
@@ -532,7 +535,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 		for (i = 0; i < 5; ++i)
 		{
-			label = gtk_label_new (lables[i]);
+			label = gtk_label_new (controlLables[i]);
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
 			gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
 
@@ -542,15 +545,15 @@ static void programTrain (GtkWidget *widget, gpointer data)
 			gtk_grid_attach (GTK_GRID(grid), spinner[i], 1, i, 1, 1);
 		}
 
-		checkButton = gtk_check_button_new_with_label (lables[i]);
+		checkButton = gtk_check_button_new_with_label (controlLables[i]);
 		gtk_widget_set_halign (checkButton, GTK_ALIGN_START);
 		gtk_grid_attach (GTK_GRID(grid), checkButton, 1, i, 1, 1);
 
-		label = gtk_label_new (lables[++i]);
+		label = gtk_label_new (controlLables[++i]);
 		gtk_widget_set_halign (label, GTK_ALIGN_END);
 		gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
 
-		trackCtrl.labelProgram = gtk_label_new (lables[++i]);
+		trackCtrl.labelProgram = gtk_label_new (controlLables[++i]);
 		gtk_widget_set_halign (trackCtrl.labelProgram, GTK_ALIGN_START);
 		gtk_grid_attach (GTK_GRID(grid), trackCtrl.labelProgram, 1, i - 1, 1, 1);
 
@@ -569,28 +572,29 @@ static void programTrain (GtkWidget *widget, gpointer data)
 			/* Programming track, no train ID */
 			if (values[0] == 0)
 			{
+				/* Programming track, need a CV# */
 				if (values[1] > 0 && values[1] < 1025)
 				{
 					if (checkRead == TRUE)
 					{
 						/* Read CV number */
-						sprintf (msgBuffer, "Read CV %d on the programming track?", values[1]);
+						sprintf (msgBuffer, "Read CV#%d on the programming track?", values[1]);
 						if (programYesNo (msgBuffer))
 						{
-							sprintf (sendBuffer, "<R %d 5 6>", values[1]);
+							sprintf (sendBuffer, "<R %d 1 1>", values[1]);
 						}
 						allOK = 1;
 					}
 					else if (values[3])
 					{
-						if (values[3] > 0 && values[3] <= 8 && (values[4] == 0 || values[4] == 1))
+						if (values[3] <= 8 && (values[4] == 0 || values[4] == 1))
 						{
 							/* Write bit value */
-							sprintf (sendBuffer, "Write to CV %d, bit %d, value %d on the programming track?",
+							sprintf (sendBuffer, "Write to CV#%d, bit %d, value %d on the programming track?",
 									values[1], values[3], values[4]);
 							if (programYesNo (sendBuffer))
 							{
-								sprintf (sendBuffer, "<b %d %d %d 3 4>", values[1], values[3] - 1, values[4]);
+								sprintf (sendBuffer, "<b %d %d %d 1 2>", values[1], values[3] - 1, values[4]);
 							}
 							allOK = 1;
 						}
@@ -601,25 +605,26 @@ static void programTrain (GtkWidget *widget, gpointer data)
 						if (values[2] >= 0 && values[2] <= 255)
 						{
 							/* Write CV byte */
-							sprintf (sendBuffer, "Write to CV %d, value %d on the programming track?",
+							sprintf (sendBuffer, "Write to CV#%d, value %d on the programming track?",
 									values[1], values[2]);
 							if (programYesNo (sendBuffer))
 							{
-								sprintf (sendBuffer, "<W %d %d 1 2>", values[1], values[2]);
+								sprintf (sendBuffer, "<W %d %d 1 3>", values[1], values[2]);
 							}
 							allOK = 1;
 						}
 					}
 				}
 			}
+			/* Main track, need a CV# */
 			else if (values[1] > 0 && values[1] < 1025)
 			{
 				if (values[3])
 				{
-					if (values[3] > 0 && values[3] <= 8 && (values[4] == 0 || values[4] == 1))
+					if (values[3] <= 8 && (values[4] == 0 || values[4] == 1))
 					{
 						/* Write bit value */
-						sprintf (sendBuffer, "Write to train ID %d, CV number %d, bit %d, value %d on the main track?",
+						sprintf (sendBuffer, "Write to address %d, CV#%d, bit %d, value %d on the main track?",
 								values[0], values[1], values[3], values[4]);
 						if (programYesNo (sendBuffer))
 						{
@@ -634,7 +639,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 					if (values[2] >= 0 && values[2] <= 255)
 					{
 						/* Write CV byte */
-						sprintf (sendBuffer, "Write to train ID %d, CV number %d, value %d on the main track?",
+						sprintf (sendBuffer, "Write to address %d, CV number %d, value %d on the main track?",
 								values[0], values[1], values[2]);
 						if (programYesNo (sendBuffer))
 						{
@@ -646,7 +651,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 			}
 			if (allOK == 0)
 			{
-				gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Incorrect input");
+				gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Incorrect input, read notes.");
 			}
 			else if (sendBuffer[0] != 0)
 			{
