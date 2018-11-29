@@ -279,8 +279,8 @@ gboolean draw_callback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	static const GdkRGBA inactiveCol = { 0.2, 0.0, 0.0, 1.0 };
 	static const GdkRGBA circleCol = { 0.7, 0.7, 0.7, 1.0 };
 
-	static const int xChange[8] = {	0,	CELL_HALF, CELL_SIZE, CELL_HALF, 0,	0,	CELL_SIZE, CELL_SIZE	};
-	static const int yChange[8] = {	CELL_HALF, 0,	CELL_HALF, CELL_SIZE, CELL_SIZE, 0,	0,	CELL_SIZE	};
+	static const int xChange[8] = { 0,	CELL_HALF, CELL_SIZE, CELL_HALF, 0, 0,	CELL_SIZE, CELL_SIZE	};
+	static const int yChange[8] = { CELL_HALF, 0,	CELL_HALF, CELL_SIZE, CELL_SIZE, 0, 0,	CELL_SIZE	};
 
 	int i, j;
 	int rows = trackCtrl.trackLayout -> trackRows;
@@ -414,7 +414,7 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 {
 	if (trackCtrl.windowTrack == NULL)
 	{
-    	GtkWidget *eventBox;
+		GtkWidget *eventBox;
 		int width = trackCtrl.trackLayout -> trackCols * CELL_SIZE;
 		int height = trackCtrl.trackLayout -> trackRows * CELL_SIZE;
 
@@ -424,8 +424,8 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 
 		trackCtrl.drawingArea = gtk_drawing_area_new ();
 		gtk_widget_set_size_request (trackCtrl.drawingArea, width, height);
-	    eventBox = gtk_event_box_new ();
-	    gtk_container_add (GTK_CONTAINER (eventBox), trackCtrl.drawingArea);
+		eventBox = gtk_event_box_new ();
+		gtk_container_add (GTK_CONTAINER (eventBox), trackCtrl.drawingArea);
 
 		g_signal_connect (G_OBJECT (trackCtrl.drawingArea), "draw", G_CALLBACK (draw_callback), NULL);
 		g_signal_connect (G_OBJECT (trackCtrl.windowTrack), "destroy", G_CALLBACK (closeTrack), NULL);
@@ -436,6 +436,17 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P R O G R A M  Y E S  N O                                                                                         *
+ *  =========================                                                                                         *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Dialog to warn user before sending a programming command.
+ *  \param question Question to ask them.
+ *  \result 1 and the command can go ahead.
+ */
 static int programYesNo (char *question)
 {
 	int retn = 0;
@@ -452,27 +463,40 @@ static int programYesNo (char *question)
 	return retn;
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P R O G R A M  T R A I N                                                                                          *
+ *  ========================                                                                                          *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief A dialog that allow simple programming commands.
+ *  \param widget Button that called it.
+ *  \param data Not used.
+ *  \result None.
+ */
 static void programTrain (GtkWidget *widget, gpointer data)
 {
-	static char *lables[] = 
-	{ 
-		"Train ID", "CV Number", "Byte Value", "Bit number", "Bit Value", "Read value", 
+	static char *lables[] =
+	{
+		"Train ID", "CV Number", "Byte Value", "Bit number", "Bit Value", "Read value",
 		"Last reply:", "Nothing received"
 	};
-	static int entrySizes[] = { 5, 4, 3, 1, 1 };
+	static double maxValues[] = { 10294.0, 1025.0, 256.0, 9.0, 2.0 };
 
 	int reRun, i;
 	GtkWidget *contentArea;
-	GtkWidget *entry[5], *checkButton;
-	GtkWidget *label, *grid, *vbox;
+	GtkWidget *spinner[5];
+	GtkAdjustment *adjust[5];
+	GtkWidget *label, *grid, *vbox, *checkButton;
 
 	if (trackCtrl.dialogProgram == NULL)
 	{
-		trackCtrl.dialogProgram = gtk_dialog_new_with_buttons ("Program Train", 
+		trackCtrl.dialogProgram = gtk_dialog_new_with_buttons ("Program Train",
 				GTK_WINDOW (trackCtrl.windowCtrl),
 				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-				"Apply", GTK_RESPONSE_APPLY, 
-				"Close", GTK_RESPONSE_CLOSE, 
+				"Apply", GTK_RESPONSE_APPLY,
+				"Close", GTK_RESPONSE_CLOSE,
 				NULL);
 
 		contentArea = gtk_dialog_get_content_area (GTK_DIALOG (trackCtrl.dialogProgram));
@@ -498,7 +522,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		gtk_box_pack_start (GTK_BOX(vbox), label, FALSE, FALSE, 3);
 
 		gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
-	
+
 		grid = gtk_grid_new();
 		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
 		gtk_widget_set_valign (grid, GTK_ALIGN_FILL);
@@ -512,12 +536,12 @@ static void programTrain (GtkWidget *widget, gpointer data)
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
 			gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
 
-			entry[i] = gtk_entry_new ();
-			gtk_entry_set_input_purpose (GTK_ENTRY (entry[i]), GTK_INPUT_PURPOSE_NUMBER);
-			gtk_entry_set_max_width_chars (GTK_ENTRY (entry[i]), entrySizes[i]);
-			gtk_widget_set_halign (entry[i], GTK_ALIGN_FILL);
-			gtk_grid_attach (GTK_GRID(grid), entry[i], 1, i, 1, 1);
+			adjust[i] = gtk_adjustment_new (0.0, 0.0, maxValues[i], 1.0, 1.0, 1.0);
+			spinner[i] = gtk_spin_button_new (adjust[i], 10, 0);
+			gtk_widget_set_halign (GTK_WIDGET (spinner[i]), GTK_ALIGN_FILL);
+			gtk_grid_attach (GTK_GRID(grid), spinner[i], 1, i, 1, 1);
 		}
+
 		checkButton = gtk_check_button_new_with_label (lables[i]);
 		gtk_widget_set_halign (checkButton, GTK_ALIGN_START);
 		gtk_grid_attach (GTK_GRID(grid), checkButton, 1, i, 1, 1);
@@ -529,20 +553,18 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		trackCtrl.labelProgram = gtk_label_new (lables[++i]);
 		gtk_widget_set_halign (trackCtrl.labelProgram, GTK_ALIGN_START);
 		gtk_grid_attach (GTK_GRID(grid), trackCtrl.labelProgram, 1, i - 1, 1, 1);
-		
+
 		gtk_widget_show_all (trackCtrl.dialogProgram);
 		while (gtk_dialog_run (GTK_DIALOG (trackCtrl.dialogProgram)) == GTK_RESPONSE_APPLY)
 		{
 			int values[5], allOK = 0;
 			char sendBuffer[41], msgBuffer[161];
-			const char *curText[5];
 			gboolean checkRead = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkButton));
 
 			sendBuffer[0] = 0;
 			for (i = 0; i < 5; ++i)
 			{
-				curText[i] = gtk_entry_get_text (GTK_ENTRY (entry[i]));
-				values[i] = atoi (curText[i]);
+				values[i] = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(spinner[i]));
 			}
 			/* Programming track, no train ID */
 			if (values[0] == 0)
@@ -552,7 +574,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 					if (checkRead == TRUE)
 					{
 						/* Read CV number */
-						sprintf (msgBuffer, "Read CV number %d on the programming track?", values[1]);
+						sprintf (msgBuffer, "Read CV %d on the programming track?", values[1]);
 						if (programYesNo (msgBuffer))
 						{
 							sprintf (sendBuffer, "<R %d 5 6>", values[1]);
@@ -564,7 +586,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 						if (values[3] > 0 && values[3] <= 8 && (values[4] == 0 || values[4] == 1))
 						{
 							/* Write bit value */
-							sprintf (sendBuffer, "Write to CV number %d, bit %d, value %d on the programming track?", 
+							sprintf (sendBuffer, "Write to CV %d, bit %d, value %d on the programming track?",
 									values[1], values[3], values[4]);
 							if (programYesNo (sendBuffer))
 							{
@@ -579,12 +601,13 @@ static void programTrain (GtkWidget *widget, gpointer data)
 						if (values[2] >= 0 && values[2] <= 255)
 						{
 							/* Write CV byte */
-							sprintf (sendBuffer, "Write to CV number %d, value %d on the programming track?", 
+							sprintf (sendBuffer, "Write to CV %d, value %d on the programming track?",
 									values[1], values[2]);
 							if (programYesNo (sendBuffer))
 							{
 								sprintf (sendBuffer, "<W %d %d 1 2>", values[1], values[2]);
 							}
+							allOK = 1;
 						}
 					}
 				}
@@ -596,7 +619,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 					if (values[3] > 0 && values[3] <= 8 && (values[4] == 0 || values[4] == 1))
 					{
 						/* Write bit value */
-						sprintf (sendBuffer, "Write to train ID %d, CV number %d, bit %d, value %d on the main track?", 
+						sprintf (sendBuffer, "Write to train ID %d, CV number %d, bit %d, value %d on the main track?",
 								values[0], values[1], values[3], values[4]);
 						if (programYesNo (sendBuffer))
 						{
@@ -611,7 +634,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 					if (values[2] >= 0 && values[2] <= 255)
 					{
 						/* Write CV byte */
-						sprintf (sendBuffer, "Write to train ID %d, CV number %d, value %d on the main track?", 
+						sprintf (sendBuffer, "Write to train ID %d, CV number %d, value %d on the main track?",
 								values[0], values[1], values[2]);
 						if (programYesNo (sendBuffer))
 						{
