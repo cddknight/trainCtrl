@@ -485,7 +485,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 	static char *hintLables[] =
 	{
 		"Hints:",
-		"* If address is zero then use programming track.",
+		"* If DCC address is zero then use programming track.",
 		"* Reads only work with train on the programming track.",
 		"* If bit number is greater than zero then set bit value.",
 		"* If the bit number is zero then set the byte value.",
