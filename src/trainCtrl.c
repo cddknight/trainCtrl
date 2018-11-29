@@ -33,13 +33,11 @@ trackCtrlDef trackCtrl;
 
 static char *notConnected = "Train controller not connected";
 
-static void programCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 static void quitCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 
 static GActionEntry app_entries[] =
 {
-	{ "program", programCallback, NULL, NULL, NULL },
 	{ "about", aboutCallback, NULL, NULL, NULL },
 	{ "quit", quitCallback, NULL, NULL, NULL }
 };
@@ -438,21 +436,52 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 	}
 }
 
-/**********************************************************************************************************************
- *                                                                                                                    *
- *  P R O G R A M  C A L L B A C K                                                                                    *
- *  ==============================                                                                                    *
- *                                                                                                                    *
- **********************************************************************************************************************/
-/**
- *  \brief Called when program selected on the menu.
- *  \param action Not used.
- *  \param parameter Not used.
- *  \param user_data Not used.
- *  \result None.
- */
-static void programCallback (GSimpleAction *action, GVariant *parameter, gpointer user_data)
+static void programTrain (GtkWidget *widget, gpointer data)
 {
+	static char *lables[4] = { "Train ID ", "CV Number ", "Byte Value ", "Bit Value " };
+	static int entrySizes[4] = { 5, 4, 3, 1 };
+
+	int reRun, i;
+	GtkWidget *contentArea;
+	GtkWidget *entry[4];
+	GtkWidget *label;
+	GtkWidget *grid;
+	GtkWidget *vbox;
+
+	if (trackCtrl.dialogProgram == NULL)
+	{
+		trackCtrl.dialogProgram = gtk_dialog_new_with_buttons ("Program Train", 
+				GTK_WINDOW (trackCtrl.windowCtrl),
+				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+				"Close", GTK_RESPONSE_CLOSE, NULL);
+
+		contentArea = gtk_dialog_get_content_area (GTK_DIALOG (trackCtrl.dialogProgram));
+
+		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 3);
+		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
+		gtk_box_pack_start (GTK_BOX (contentArea), vbox, TRUE, TRUE, 0);
+
+		grid = gtk_grid_new();
+		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
+		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 0);
+
+		for (i = 0; i < 4; ++i)
+		{
+			label = gtk_label_new (lables[i]);
+			gtk_widget_set_halign (label, GTK_ALIGN_END);
+			gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
+
+			entry[i] = gtk_entry_new ();
+			gtk_entry_set_max_width_chars (GTK_ENTRY (entry[i]), entrySizes[i]);
+			gtk_widget_set_halign (entry[i], GTK_ALIGN_FILL);
+			gtk_grid_attach (GTK_GRID(grid), entry[i], 1, i, 1, 1);
+		}
+
+		gtk_widget_show_all (trackCtrl.dialogProgram);
+		gtk_dialog_run (GTK_DIALOG (trackCtrl.dialogProgram));
+		gtk_widget_destroy (trackCtrl.dialogProgram);
+		trackCtrl.dialogProgram = NULL;
+	}
 }
 
 /**********************************************************************************************************************
@@ -534,7 +563,6 @@ static void activate (GtkApplication *app, gpointer user_data)
 
 	g_action_map_add_action_entries (G_ACTION_MAP (app), app_entries, G_N_ELEMENTS (app_entries), app);
 	menu = g_menu_new ();
-	g_menu_append (menu, "Program", "app.program");
 	g_menu_append (menu, "About", "app.about");
 	g_menu_append (menu, "Quit", "app.quit");
 	gtk_application_set_app_menu (GTK_APPLICATION (app), G_MENU_MODEL (menu));
@@ -543,7 +571,7 @@ static void activate (GtkApplication *app, gpointer user_data)
 	trackCtrl.windowCtrl = gtk_application_window_new (app);
 	gtk_window_set_title (GTK_WINDOW (trackCtrl.windowCtrl), "Train Control");
 	gtk_window_set_icon_name (GTK_WINDOW (trackCtrl.windowCtrl), "document-open");
-	gtk_window_set_default_size (GTK_WINDOW (trackCtrl.windowCtrl), 260, 400);
+	gtk_window_set_default_size (GTK_WINDOW (trackCtrl.windowCtrl), 300, 400);
 
 	vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
 	gtk_container_add (GTK_CONTAINER (trackCtrl.windowCtrl), vbox);
@@ -561,6 +589,11 @@ static void activate (GtkApplication *app, gpointer user_data)
 	g_signal_connect (trackCtrl.buttonTrack, "clicked", G_CALLBACK (displayTrack), &trackCtrl);
 	gtk_widget_set_halign (trackCtrl.buttonTrack, GTK_ALIGN_CENTER);
 	gtk_container_add (GTK_CONTAINER (hbox), trackCtrl.buttonTrack);
+
+	trackCtrl.buttonProgram = gtk_button_new_with_label ("Program");
+	g_signal_connect (trackCtrl.buttonProgram, "clicked", G_CALLBACK (programTrain), &trackCtrl);
+	gtk_widget_set_halign (trackCtrl.buttonProgram, GTK_ALIGN_CENTER);
+	gtk_container_add (GTK_CONTAINER (hbox), trackCtrl.buttonProgram);
 
 	gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 

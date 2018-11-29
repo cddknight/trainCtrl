@@ -72,10 +72,12 @@ typedef struct _trackCtrl
 
 	GtkWidget *windowCtrl;
 	GtkWidget *windowTrack;
+	GtkWidget *dialogProgram;
 	GtkWidget *buttonPower;
 	GtkWidget *buttonTrack;
-	GtkWidget *statusBar;
+	GtkWidget *buttonProgram;
 	GtkWidget *drawingArea;
+	GtkWidget *statusBar;
 	trainCtrlDef *trainCtrl;
 	trackLayoutDef *trackLayout;
 }
