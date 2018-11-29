@@ -61,7 +61,7 @@ void checkRecvBuffer (char *buffer, int len)
 		}
 		else if (wordNum >= 0 && ((buffer[i] >= 'a' && buffer[i] <= 'z') || (buffer[i] >= 'A' && buffer[i] <= 'Z')))
 		{
-			if (inType == 2)
+			if (inType == 2 && j > 0)
 			{
 				words[++wordNum][0] = 0;
 				j = 0;
@@ -70,9 +70,9 @@ void checkRecvBuffer (char *buffer, int len)
 			words[wordNum][j] = 0;
 			inType = 1;
 		}
-		else if (wordNum >= 0 && buffer[i] >= '0' && buffer[i] <= '9')
+		else if (wordNum >= 0 && ((buffer[i] >= '0' && buffer[i] <= '9') || buffer[i] == '-' || buffer[i] == '.'))
 		{
-			if (inType == 1)
+			if (inType == 1 && j > 0)
 			{
 				words[++wordNum][0] = 0;
 				j = 0;
@@ -111,15 +111,15 @@ void checkRecvBuffer (char *buffer, int len)
 					}
 				}
 			}
-			else if (words[0][0] == 'r' && words[0][1] == 0 && wordNum == 4)
+			else if (words[0][0] == 'r' && words[0][1] == 0 && wordNum == 5)
 			{
-				sprintf (trackCtrl.remoteProgMsg, "Read back value: %s", words[3]);
+				sprintf (trackCtrl.remoteProgMsg, "Read CV %s value: %s", words[3], words[4]);
 			}
 			inType = 0;
 			wordNum = -1;
 			j = 0;
 		}
-		else if (wordNum >= 0 && (buffer[i] == ' ' || buffer[i] == '|'))
+		else if (wordNum >= 0 && j > 0 && (buffer[i] == ' ' || buffer[i] == '|'))
 		{
 			words[++wordNum][0] = 0;
 			j = 0;
