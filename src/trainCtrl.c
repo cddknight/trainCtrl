@@ -490,6 +490,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		"* If the bit number is zero then set the byte value.",
 		NULL
 	};
+	static char daemonError[] = { "Not connected to the daemon" };
 	static double maxValues[] = { 10294.0, 1025.0, 256.0, 9.0, 2.0 };
 
 	int i = 0;
@@ -498,6 +499,16 @@ static void programTrain (GtkWidget *widget, gpointer data)
 	GtkAdjustment *adjust[5];
 	GtkWidget *label, *grid, *vbox, *checkButton;
 
+	if (trackCtrl.serverHandle == -1)
+	{
+		GtkWidget *errDialog = gtk_message_dialog_new (GTK_WINDOW (trackCtrl.windowCtrl),
+				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+				"%s", daemonError);
+		gtk_dialog_run (GTK_DIALOG (errDialog));
+		gtk_widget_destroy (errDialog);
+		return;
+	}
 	if (trackCtrl.dialogProgram == NULL)
 	{
 		trackCtrl.dialogProgram = gtk_dialog_new_with_buttons ("Program Train",
@@ -580,7 +591,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 						sprintf (msgBuffer, "Read CV#%d on the programming track?", values[1]);
 						if (programYesNo (msgBuffer))
 						{
-							sprintf (sendBuffer, "<R %d 1 1>", values[1]);
+							sprintf (sendBuffer, "<R %d %d 1>", values[1], trackCtrl.serverSession);
 						}
 						allOK = 1;
 					}
@@ -593,7 +604,8 @@ static void programTrain (GtkWidget *widget, gpointer data)
 									values[1], values[3], values[4]);
 							if (programYesNo (msgBuffer))
 							{
-								sprintf (sendBuffer, "<b %d %d %d 1 2>", values[1], values[3] - 1, values[4]);
+								sprintf (sendBuffer, "<b %d %d %d %d 2>", values[1], values[3] - 1, values[4], 
+										trackCtrl.serverSession);
 							}
 							allOK = 1;
 						}
@@ -608,7 +620,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 									values[1], values[2]);
 							if (programYesNo (msgBuffer))
 							{
-								sprintf (sendBuffer, "<W %d %d 1 3>", values[1], values[2]);
+								sprintf (sendBuffer, "<W %d %d %d 3>", values[1], values[2], trackCtrl.serverSession);
 							}
 							allOK = 1;
 						}
@@ -660,7 +672,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 				}
 				else
 				{
-					gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Not connected to the daemon");
+					gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), daemonError);
 				}
 				sendBuffer[0] = 0;
 			}

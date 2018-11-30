@@ -123,6 +123,10 @@ void checkRecvBuffer (char *buffer, int len)
 				snprintf (trackCtrl.remoteProgMsg, 110, "Read CV#%s value: %s [%s]", 
 							words[3], words[4], binary);
 			}
+			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 2)
+			{
+				trackCtrl.serverSession = atoi (words[1]);
+			}
 			inType = 0;
 			wordNum = -1;
 			j = 0;

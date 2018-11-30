@@ -407,8 +407,11 @@ int main (int argc, char *argv[])
 					{
 						if (handleInfo[i].handle == -1)
 						{
+							char outBuffer[41];
 							handleInfo[i].handle = newSocket;
 							strncpy (handleInfo[i].localName, inAddress, 40);
+							sprintf (outBuffer, "<V %d>", handleInfo[i].handle);
+							SendSocket (handleInfo[i].handle, outBuffer, strlen (outBuffer));
 							SendSerial ("<s>", 3);
 							++connectedCount;
 							break;

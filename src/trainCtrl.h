@@ -65,6 +65,7 @@ typedef struct _trackCtrl
 	int powerState;
 	int trainCount;
 	int serverHandle;
+	int serverSession;
 	int serverPort;
 	char server[81];
 	char remoteProgMsg[111];
