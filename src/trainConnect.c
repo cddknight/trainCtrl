@@ -112,16 +112,19 @@ void checkRecvBuffer (char *buffer, int len)
 			}
 			else if (words[0][0] == 'r' && words[0][1] == 0 && wordNum == 5)
 			{
-				char binary[9];
-				int val = atoi (words[4]), mask = 0x80, i;
-				for (i = 0; i < 8; ++i)
+				if (atoi (words[1]) == trackCtrl.serverSession)
 				{
-					binary[i] = (val & mask ? '1' : '0');
-					mask >>= 1;
+					char binary[9];
+					int val = atoi (words[4]), mask = 0x80, i;
+					for (i = 0; i < 8; ++i)
+					{
+						binary[i] = (val & mask ? '1' : '0');
+						mask >>= 1;
+					}
+					binary[i] = 0;
+					snprintf (trackCtrl.remoteProgMsg, 110, "Read CV#%s value: %s [%s]", 
+								words[3], words[4], binary);
 				}
-				binary[i] = 0;
-				snprintf (trackCtrl.remoteProgMsg, 110, "Read CV#%s value: %s [%s]", 
-							words[3], words[4], binary);
 			}
 			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 2)
 			{
