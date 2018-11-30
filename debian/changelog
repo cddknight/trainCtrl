@@ -1,0 +1,7 @@
+trainctrl (1.0.0-1) stable; urgency=low
+
+  * First build of a true .deb file.
+  
+  - Bug fixing.
+
+ -- Chris Knight (Developer) <chris@theknight.co.uk>  Fri, 30 Nov 2018 14:30:00 +0000

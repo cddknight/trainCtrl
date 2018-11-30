@@ -27,10 +27,9 @@ LIBDIR=${libexecdir}
 AC_SUBST([REVISION])
 AC_SUBST([LIBDIR])
 
-AC_CONFIG_FILES([Makefile])
-#AC_CONFIG_FILES([Makefile trainCtrl.spec])
-#AC_CONFIG_FILES([buildrpm.sh],[chmod +x buildrpm.sh])
-#AC_CONFIG_FILES([builddeb.sh],[chmod +x builddeb.sh])
-#AC_CONFIG_FILES([debian/control debian/changelog])
+AC_CONFIG_FILES([Makefile trainCtrl.spec])
+AC_CONFIG_FILES([buildrpm.sh],[chmod +x buildrpm.sh])
+AC_CONFIG_FILES([builddeb.sh],[chmod +x builddeb.sh])
+AC_CONFIG_FILES([debian/control debian/changelog])
 AC_OUTPUT
 

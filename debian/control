@@ -1,0 +1,12 @@
+Source: trainctrl
+Section: x11
+Priority: standard
+Maintainer: Chris Knight (Developer) <chris@theknight.co.uk>
+Build-Depends: debhelper, pkg-config, libgtk-3-dev, libssl-dev
+Standards-Version: 1.0.0
+
+Package: trainctrl
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Control DCC trains and layout.
+

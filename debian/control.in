@@ -1,0 +1,12 @@
+Source: @PACKAGE@
+Section: x11
+Priority: standard
+Maintainer: Chris Knight (Developer) <chris@theknight.co.uk>
+Build-Depends: debhelper, pkg-config, libgtk-3-dev, libssl-dev
+Standards-Version: @VERSION@
+
+Package: @PACKAGE@
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: Control DCC trains and layout.
+

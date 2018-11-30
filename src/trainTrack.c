@@ -171,7 +171,7 @@ void processCells (xmlNode *inNode, int rows, int cols)
 	{
 		return;
 	}
-	memset (trackCtrl.trackLayout, 0, sizeof (trackCtrl.trackLayout));
+	memset (trackCtrl.trackLayout, 0, sizeof (trackLayoutDef));
 	trackCtrl.trackLayout -> trackRows = rows;
 	trackCtrl.trackLayout -> trackCols = cols;
 
@@ -230,7 +230,7 @@ void parseTree(xmlNode *inNode, int level)
 				xmlChar *serverStr, *portStr;
 				if ((serverStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
 				{
-					strncpy (trackCtrl.server, serverStr, 80);
+					strncpy (trackCtrl.server, (char *)serverStr, 80);
 					xmlFree (serverStr);
 					if ((portStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)
 					{

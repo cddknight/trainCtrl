@@ -67,7 +67,7 @@ typedef struct _trackCtrl
 	int serverHandle;
 	int serverPort;
 	char server[81];
-	char remoteProgMsg[81];
+	char remoteProgMsg[111];
 
 	int remotePowerState;
 

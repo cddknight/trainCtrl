@@ -101,7 +101,7 @@ void putLogMessage (int priority, const char *fmt, ...)
 		va_start (arg_ptr, fmt);
 		vsnprintf (tempBuffer, (8 * 1024), fmt, arg_ptr);
 		va_end (arg_ptr);
-		if (doSysLog) syslog (priority, tempBuffer);
+		if (doSysLog) syslog (priority, "%s", tempBuffer);
 		if (doConLog) printf ("%s\n", tempBuffer);
 	}
 }
@@ -167,8 +167,8 @@ void daemonize(void)
 
 	/* handle standard I/O */
 	i = open("/dev/null",O_RDWR);
-	dup(i);
-	dup(i);
+	if (dup(i) == -1) exit (1);
+	if (dup(i) == -1) exit (1);
 
 	/* set newly created file permissions */
 	umask(027);
@@ -187,8 +187,11 @@ void daemonize(void)
 
 	/* first instance continues */
 	sprintf(str, "%d\n", getpid());
-	write(lfp, str, strlen(str));	/* record pid to lockfile */
-
+	if (write(lfp, str, strlen(str)) != strlen(str))	/* record pid to lockfile */
+	{
+		putLogMessage (LOG_ERR, "Cannot write to PID file");
+		exit(0); /* can not lock */
+	}
 	signal(SIGCHLD, SIG_IGN);		/* ignore child */
 	signal(SIGTSTP, SIG_IGN);		/* ignore tty signals */
 	signal(SIGTTOU, SIG_IGN);

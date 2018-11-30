@@ -1,0 +1,37 @@
+#!/bin/bash
+
+DISTRO=$(grep -E -o '(Debian|Ubuntu)' /etc/issue)
+if [ "$DISTRO" != "" ]
+then
+	echo "Use dpkg-buildpackage to build on Debian and Ubuntu"
+	exit 1
+fi
+
+if [ -d $HOME/gitroot/rpmbuild ]
+then
+    DIR=$HOME/gitroot/rpmbuild
+elif [ -d $HOME/trunk/source/rpmbuild ]
+then
+    DIR=$HOME/trunk/source/rpmbuild
+elif [ -d $HOME/source/rpmbuild ]
+then
+    DIR=$HOME/source/rpmbuild
+else
+    DIR=$(find $HOME -name rpmbuild 2> /dev/null)
+fi
+
+if [ ! -e $HOME/.rpmmacros ]
+then
+    echo "%_topdir $DIR" > $HOME/.rpmmacros
+    echo "%dist .unknown" >> $HOME/.rpmmacros
+fi
+
+rm -f @PACKAGE@-@VERSION@.tar.bz2
+make dist-bzip2
+
+cp @PACKAGE_NAME@.spec $DIR/SPECS/
+cp @PACKAGE@-@VERSION@.tar.bz2 $DIR/SOURCES/
+
+cd $DIR/SPECS
+rpmbuild -ba --sign -v @PACKAGE_NAME@.spec
+

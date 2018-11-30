@@ -83,7 +83,6 @@ void checkRecvBuffer (char *buffer, int len)
 		}
 		else if (wordNum >= 0 && buffer[i] == '>')
 		{
-			int l;
 			if (j)
 			{
 				words[++wordNum][0] = 0;
@@ -121,7 +120,7 @@ void checkRecvBuffer (char *buffer, int len)
 					mask >>= 1;
 				}
 				binary[i] = 0;
-				sprintf (trackCtrl.remoteProgMsg, "Read CV#%s value: %s [%s]", 
+				snprintf (trackCtrl.remoteProgMsg, 110, "Read CV#%s value: %s [%s]", 
 							words[3], words[4], binary);
 			}
 			inType = 0;

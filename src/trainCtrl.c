@@ -363,7 +363,6 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event)
 		{
 		case GDK_BUTTON_PRIMARY:	/* left button */
 			{
-				int rows = trackCtrl.trackLayout -> trackRows;
 				int cols = trackCtrl.trackLayout -> trackCols;
 				int posn = (((int)event -> y / CELL_SIZE) * cols) + ((int)event -> x / CELL_SIZE);
 
@@ -453,7 +452,7 @@ static int programYesNo (char *question)
 	GtkWidget *dialog = gtk_message_dialog_new (GTK_WINDOW (trackCtrl.dialogProgram),
 			GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 			GTK_MESSAGE_WARNING, GTK_BUTTONS_OK_CANCEL,
-			question);
+			"%s", question);
 
 	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
 	{
@@ -493,7 +492,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 	};
 	static double maxValues[] = { 10294.0, 1025.0, 256.0, 9.0, 2.0 };
 
-	int reRun, i = 0;
+	int i = 0;
 	GtkWidget *contentArea;
 	GtkWidget *spinner[5];
 	GtkAdjustment *adjust[5];
@@ -590,9 +589,9 @@ static void programTrain (GtkWidget *widget, gpointer data)
 						if (values[3] <= 8 && (values[4] == 0 || values[4] == 1))
 						{
 							/* Write bit value */
-							sprintf (sendBuffer, "Write to CV#%d, bit %d, value %d on the programming track?",
+							sprintf (msgBuffer, "Write to CV#%d, bit %d, value %d on the programming track?",
 									values[1], values[3], values[4]);
-							if (programYesNo (sendBuffer))
+							if (programYesNo (msgBuffer))
 							{
 								sprintf (sendBuffer, "<b %d %d %d 1 2>", values[1], values[3] - 1, values[4]);
 							}
@@ -605,9 +604,9 @@ static void programTrain (GtkWidget *widget, gpointer data)
 						if (values[2] >= 0 && values[2] <= 255)
 						{
 							/* Write CV byte */
-							sprintf (sendBuffer, "Write to CV#%d, value %d on the programming track?",
+							sprintf (msgBuffer, "Write to CV#%d, value %d on the programming track?",
 									values[1], values[2]);
-							if (programYesNo (sendBuffer))
+							if (programYesNo (msgBuffer))
 							{
 								sprintf (sendBuffer, "<W %d %d 1 3>", values[1], values[2]);
 							}
@@ -624,9 +623,9 @@ static void programTrain (GtkWidget *widget, gpointer data)
 					if (values[3] <= 8 && (values[4] == 0 || values[4] == 1))
 					{
 						/* Write bit value */
-						sprintf (sendBuffer, "Write to address %d, CV#%d, bit %d, value %d on the main track?",
+						sprintf (msgBuffer, "Write to address %d, CV#%d, bit %d, value %d on the main track?",
 								values[0], values[1], values[3], values[4]);
-						if (programYesNo (sendBuffer))
+						if (programYesNo (msgBuffer))
 						{
 							sprintf (sendBuffer, "<b %d %d %d %d>", values[0], values[1], values[3] - 1, values[4]);
 						}
@@ -639,9 +638,9 @@ static void programTrain (GtkWidget *widget, gpointer data)
 					if (values[2] >= 0 && values[2] <= 255)
 					{
 						/* Write CV byte */
-						sprintf (sendBuffer, "Write to address %d, CV number %d, value %d on the main track?",
+						sprintf (msgBuffer, "Write to address %d, CV number %d, value %d on the main track?",
 								values[0], values[1], values[2]);
-						if (programYesNo (sendBuffer))
+						if (programYesNo (msgBuffer))
 						{
 							sprintf (sendBuffer, "<w %d %d %d>", values[0], values[1], values[2]);
 						}
@@ -892,7 +891,7 @@ gboolean clockTickCallback (gpointer data)
  */
 int main (int argc, char **argv)
 {
-	int i, status = 1;
+	int status = 1;
 	GtkApplication *app;
 
 	if (parseTrackXML ("track.xml"))
