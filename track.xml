@@ -4,62 +4,64 @@
     <train num="68035" id="300" desc="J94"/>
     <train num="12345" id="5" desc="Testing"/>
   </trains>
-  <cells rows="11" cols="12">
+  <cells rows="11" cols="14">
     <cellRow row="0">
-      <cell col="0" layout="4"/>
-      <cell col="1" layout="5"/>
-      <cell col="2" layout="133" point="132"/>
+      <cell col="2" layout="4"/>
       <cell col="3" layout="5"/>
-      <cell col="4" layout="5"/>
+      <cell col="4" layout="133" point="132"/>
       <cell col="5" layout="5"/>
       <cell col="6" layout="5"/>
-      <cell col="7" layout="21" point="17"/>
+      <cell col="7" layout="5"/>
       <cell col="8" layout="5"/>
-      <cell col="9" layout="129"/>
+      <cell col="9" layout="5"/>
+      <cell col="10" layout="21" point="17"/>
+      <cell col="11" layout="129"/>
     </cellRow>
     <cellRow row="1">
-      <cell col="0" layout="4"/>
-      <cell col="1" layout="5"/>
-      <cell col="2" layout="133" point="132"/>
-      <cell col="3" layout="37" point="33"/>
-      <cell col="4" layout="5"/>
-      <cell col="5" layout="5"/>
-      <cell col="6" layout="69" point="68"/>
-      <cell col="7" layout="21" point="17"/>
-      <cell col="8" layout="5"/>
-      <cell col="9" layout="129"/>
-      <cell col="10" layout="160"/>
+      <cell col="2" layout="4"/>
+      <cell col="3" layout="5"/>
+      <cell col="4" layout="133" point="132"/>
+      <cell col="5" layout="37" point="33"/>
+      <cell col="6" layout="5"/>
+      <cell col="7" layout="5"/>
+      <cell col="8" layout="21" point="17"/>
+      <cell col="9" layout="69" point="68"/>
+      <cell col="10" layout="5"/>
+      <cell col="11" layout="129"/>
+      <cell col="12" layout="160"/>
     </cellRow>
     <cellRow row="2">
-      <cell col="0" layout="4"/>
-      <cell col="1" layout="5"/>
-      <cell col="2" layout="5"/>
-      <cell col="3" layout="37" point="33"/>
+      <cell col="2" layout="4"/>
+      <cell col="3" layout="5"/>
       <cell col="4" layout="5"/>
-      <cell col="5" layout="5"/>
-      <cell col="6" layout="65"/>
-      <cell col="10" layout="40"/>
-      <cell col="11" layout="40"/>
+      <cell col="5" layout="37" point="33"/>
+      <cell col="6" layout="5"/>
+      <cell col="7" layout="69" point="68"/>
+      <cell col="8" layout="5"/>
+      <cell col="9" layout="5"/>
+      <cell col="10" layout="1"/>
+      <cell col="12" layout="40"/>
+      <cell col="13" layout="40"/>
     </cellRow>
     <cellRow row="3">
-      <cell col="10" layout="138"  point="136"/>
-      <cell col="11" layout="10"/>
+      <cell col="12" layout="138"  point="136"/>
+      <cell col="13" layout="10"/>
     </cellRow>
     <cellRow row="4">
-      <cell col="10" layout="10"/>
-      <cell col="11" layout="42" point="34"/>
+      <cell col="12" layout="10"/>
+      <cell col="13" layout="42" point="34"/>
     </cellRow>
     <cellRow row="5">
-      <cell col="10" layout="10"/>
-      <cell col="11" layout="26" point="24"/>
+      <cell col="12" layout="10"/>
+      <cell col="13" layout="10"/>
     </cellRow>
     <cellRow row="6">
-      <cell col="10" layout="74" point="66"/>
-      <cell col="11" layout="10"/>
+      <cell col="12" layout="10"/>
+      <cell col="13" layout="26" point="24"/>
     </cellRow>
     <cellRow row="7">
-      <cell col="10" layout="138" point="136"/>
-      <cell col="11" layout="10"/>
+      <cell col="12" layout="74" point="66"/>
+      <cell col="13" layout="10"/>
     </cellRow>
     <cellRow row="8">
       <cell col="0" layout="4"/>
@@ -69,8 +71,8 @@
       <cell col="4" layout="133" point="132"/>
       <cell col="5" layout="5"/>
       <cell col="6" layout="1"/>
-      <cell col="10" layout="26" point="24"/>
-      <cell col="11" layout="42" point="34"/>
+      <cell col="12" layout="26" point="24"/>
+      <cell col="13" layout="10"/>
     </cellRow>
     <cellRow row="9">
       <cell col="0" layout="4"/>
@@ -79,9 +81,9 @@
       <cell col="3" layout="5"/>
       <cell col="4" layout="5"/>
       <cell col="5" layout="161" point="33"/>
-      <cell col="9" layout="80"/>
-      <cell col="10" layout="10"/>
-      <cell col="11" layout="10"/>
+      <cell col="11" layout="80"/>
+      <cell col="12" layout="10"/>
+      <cell col="13" layout="10"/>
     </cellRow>
     <cellRow row="10">
       <cell col="0" layout="4"/>
@@ -92,9 +94,11 @@
       <cell col="5" layout="5"/>
       <cell col="6" layout="37" point="33"/>
       <cell col="7" layout="5"/>
-      <cell col="8" layout="65"/>
-      <cell col="10" layout="2"/>
-      <cell col="11" layout="2"/>
+      <cell col="8" layout="5"/>
+      <cell col="9" layout="5"/>
+      <cell col="10" layout="65"/>
+      <cell col="12" layout="2"/>
+      <cell col="13" layout="2"/>
     </cellRow>
   </cells>
 </track> 

@@ -479,15 +479,15 @@ static void programTrain (GtkWidget *widget, gpointer data)
 {
 	static char *controlLables[] =
 	{
-		"DCC Address", "CV Number", "Byte Value", "Bit number", "Bit Value", "Read value",
-		"Last reply:", "Nothing received"
+		"DCC Address", "CV Number", "Byte Value (0 - 255)", "Bit number (1 - 8)", "Bit Value (0 - 1)", 
+		"Read current value", "Last reply:", "-"
 	};
 	static char *hintLables[] =
 	{
 		"Hints:",
 		"* If DCC address is zero then use programming track.",
 		"* Reads only work with train on the programming track.",
-		"* If bit number is greater than zero then set bit value.",
+		"* If bit number in the range 1 to 8 then set bit value.",
 		"* If the bit number is zero then set the byte value.",
 		NULL
 	};
@@ -651,17 +651,17 @@ static void programTrain (GtkWidget *widget, gpointer data)
 			}
 			if (allOK == 0)
 			{
-				gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Incorrect input, read notes.");
+				gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Incorrect inputs, read notes.");
 			}
 			else if (sendBuffer[0] != 0)
 			{
 				if (trainConnectSend (sendBuffer, strlen (sendBuffer)) > 0)
 				{
-					gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Command sent");
+					gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Command sent to daemon");
 				}
 				else
 				{
-					gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Sending failed");
+					gtk_label_set_label (GTK_LABEL (trackCtrl.labelProgram), "Not connected to the daemon");
 				}
 				sendBuffer[0] = 0;
 			}
