@@ -27,8 +27,6 @@
 
 #include "trainCtrl.h"
 
-extern trackCtrlDef trackCtrl;
-
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  P R O C E S S  T R A I N S                                                                                        *
@@ -41,17 +39,17 @@ extern trackCtrlDef trackCtrl;
  *  \param count Process each of the train lines.
  *  \result None.
  */
-void processTrains (xmlNode *inNode, int count)
+void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 {
 	int loop = 0;
 	xmlChar *numStr, *idStr, *descStr;
 	xmlNode *curNode = NULL;
 
-	if ((trackCtrl.trainCtrl = (trainCtrlDef *)malloc (count * sizeof (trainCtrlDef))) == NULL)
+	if ((trackCtrl -> trainCtrl = (trainCtrlDef *)malloc (count * sizeof (trainCtrlDef))) == NULL)
 	{
 		return;
 	}
-	memset (trackCtrl.trainCtrl, 0, count * sizeof (trainCtrlDef));
+	memset (trackCtrl -> trainCtrl, 0, count * sizeof (trainCtrlDef));
 
 	for (curNode = inNode; curNode && loop < count; curNode = curNode->next)
 	{
@@ -72,9 +70,9 @@ void processTrains (xmlNode *inNode, int count)
 
 							if (num != -1 && id != -1)
 							{
-								trackCtrl.trainCtrl[loop].trainReg = loop + 1;
-								trackCtrl.trainCtrl[loop].trainID = id;
-								trackCtrl.trainCtrl[loop].trainNum = num;
+								trackCtrl -> trainCtrl[loop].trainReg = loop + 1;
+								trackCtrl -> trainCtrl[loop].trainID = id;
+								trackCtrl -> trainCtrl[loop].trainNum = num;
 								++loop;
 							}
 							xmlFree(descStr);
@@ -86,7 +84,7 @@ void processTrains (xmlNode *inNode, int count)
 			}
 		}
 	}
-	trackCtrl.trainCount = loop;
+	trackCtrl -> trainCount = loop;
 }
 
 /**********************************************************************************************************************
@@ -101,10 +99,10 @@ void processTrains (xmlNode *inNode, int count)
  *  \param rowNum Number of the current row.
  *  \result None.
  */
-void processCell (xmlNode *inNode, int rowNum)
+void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 {
 	xmlNode *curNode = NULL;
-	xmlChar *colStr, *layoutStr, *pointStr;
+	xmlChar *colStr, *layoutStr, *pointStr, *linkStr;
 
 	for (curNode = inNode; curNode; curNode = curNode->next)
 	{
@@ -114,12 +112,12 @@ void processCell (xmlNode *inNode, int rowNum)
 			{
 				if ((colStr = xmlGetProp(curNode, (const xmlChar*)"col")) != NULL)
 				{
-					int colNum = -1, layout = 0, point = 0, posn, i;
+					int colNum = -1, layout = 0, point = 0, link = 0, posn, i;
 					sscanf ((char *)colStr, "%d", &colNum);
 
 					if (colNum > -1)
 					{
-						posn = (rowNum * trackCtrl.trackLayout -> trackCols) + colNum;
+						posn = (rowNum * trackCtrl -> trackLayout -> trackCols) + colNum;
 
 						if ((layoutStr = xmlGetProp(curNode, (const xmlChar*)"layout")) != NULL)
 						{
@@ -131,13 +129,19 @@ void processCell (xmlNode *inNode, int rowNum)
 							sscanf ((char *)pointStr, "%d", &point);
 							xmlFree(pointStr);
 						}
-						trackCtrl.trackLayout -> trackCells[posn].layout = layout;
-						trackCtrl.trackLayout -> trackCells[posn].point = point;
+						if ((linkStr = xmlGetProp(curNode, (const xmlChar*)"link")) != NULL)
+						{
+							sscanf ((char *)linkStr, "%d", &link);
+							xmlFree(linkStr);
+						}
+						trackCtrl -> trackLayout -> trackCells[posn].layout = layout;
+						trackCtrl -> trackLayout -> trackCells[posn].point = point;
+						trackCtrl -> trackLayout -> trackCells[posn].link = link;
 						for (i = 0; i < 8 && point; ++i)
 						{
 							if (point & (1 << i))
 							{
-								trackCtrl.trackLayout -> trackCells[posn].pointState = (1 << i);
+								trackCtrl -> trackLayout -> trackCells[posn].pointState = (1 << i);
 								break;
 							}
 						}
@@ -162,26 +166,26 @@ void processCell (xmlNode *inNode, int rowNum)
  *  \param cols In node to process.
  *  \result None.
  */
-void processCells (xmlNode *inNode, int rows, int cols)
+void processCells (trackCtrlDef *trackCtrl, xmlNode *inNode, int rows, int cols)
 {
 	xmlChar *rowStr;
 	xmlNode *curNode = NULL;
 
-	if ((trackCtrl.trackLayout = (trackLayoutDef *)malloc (sizeof (trackLayoutDef))) == NULL)
+	if ((trackCtrl -> trackLayout = (trackLayoutDef *)malloc (sizeof (trackLayoutDef))) == NULL)
 	{
 		return;
 	}
-	memset (trackCtrl.trackLayout, 0, sizeof (trackLayoutDef));
-	trackCtrl.trackLayout -> trackRows = rows;
-	trackCtrl.trackLayout -> trackCols = cols;
+	memset (trackCtrl -> trackLayout, 0, sizeof (trackLayoutDef));
+	trackCtrl -> trackLayout -> trackRows = rows;
+	trackCtrl -> trackLayout -> trackCols = cols;
 
-	if ((trackCtrl.trackLayout -> trackCells = (trackCellDef *)malloc (rows * cols * sizeof (trackCellDef))) == NULL)
+	if ((trackCtrl -> trackLayout -> trackCells = (trackCellDef *)malloc (rows * cols * sizeof (trackCellDef))) == NULL)
 	{
-		free (trackCtrl.trackLayout);
-		trackCtrl.trackLayout = NULL;
+		free (trackCtrl -> trackLayout);
+		trackCtrl -> trackLayout = NULL;
 		return;
 	}
-	memset (trackCtrl.trackLayout -> trackCells, 0, rows * cols * sizeof (trackCellDef));
+	memset (trackCtrl -> trackLayout -> trackCells, 0, rows * cols * sizeof (trackCellDef));
 
 	for (curNode = inNode; curNode; curNode = curNode->next)
 	{
@@ -197,7 +201,7 @@ void processCells (xmlNode *inNode, int rows, int cols)
 
 					if (rowNum > -1)
 					{
-						processCell (curNode -> children, rowNum);
+						processCell (trackCtrl, curNode -> children, rowNum);
 					}
 				}
 			}
@@ -217,7 +221,7 @@ void processCells (xmlNode *inNode, int rows, int cols)
  *  \param level Have we already seen the start of the pcm section.
  *  \result None.
  */
-void parseTree(xmlNode *inNode, int level)
+void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 {
 	xmlNode *curNode = NULL;
 
@@ -230,15 +234,15 @@ void parseTree(xmlNode *inNode, int level)
 				xmlChar *serverStr, *portStr;
 				if ((serverStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
 				{
-					strncpy (trackCtrl.server, (char *)serverStr, 80);
+					strncpy (trackCtrl -> server, (char *)serverStr, 80);
 					xmlFree (serverStr);
 					if ((portStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)
 					{
-						sscanf ((char *)portStr, "%d", &trackCtrl.serverPort);
+						sscanf ((char *)portStr, "%d", &trackCtrl -> serverPort);
 						xmlFree (portStr);
 					}
 				}
-				parseTree (curNode -> children, 1);
+				parseTree (trackCtrl, curNode -> children, 1);
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "trains") == 0)
 			{
@@ -250,7 +254,7 @@ void parseTree(xmlNode *inNode, int level)
 					xmlFree(countStr);
 					if (count > 0)
 					{
-						processTrains (curNode -> children, count);
+						processTrains (trackCtrl, curNode -> children, count);
 					}
 				}
 			}
@@ -268,7 +272,7 @@ void parseTree(xmlNode *inNode, int level)
 
 						if (rows > 0 && cols > 0)
 						{
-							processCells (curNode -> children, rows, cols);
+							processCells (trackCtrl, curNode -> children, rows, cols);
 						}
 					}
 					xmlFree(rowsStr);
@@ -289,13 +293,13 @@ void parseTree(xmlNode *inNode, int level)
  *  \param fileName File name to read in.
  *  \result 1 if config read OK, 0 on error.
  */
-int parseTrackXML (char *fileName)
+int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName)
 {
 	int retn = 0;
 	xmlDoc *doc = NULL;
 	xmlNode *rootElement = NULL;
 
-	trackCtrl.trainCount = 0;
+	trackCtrl -> trainCount = 0;
 
 	if ((doc = xmlParseFile (fileName)) == NULL)
 	{
@@ -305,9 +309,9 @@ int parseTrackXML (char *fileName)
 	{
 		if ((rootElement = xmlDocGetRootElement(doc)) != NULL)
 		{
-			parseTree (rootElement, 0);
+			parseTree (trackCtrl, rootElement, 0);
 		}
-		if (trackCtrl.trackLayout != NULL && trackCtrl.trainCtrl != NULL)
+		if (trackCtrl -> trackLayout != NULL && trackCtrl -> trainCtrl != NULL)
 		{
 			retn = 1;
 		}

@@ -28,8 +28,6 @@
 #include "trainCtrl.h"
 #include "socketC.h"
 
-extern trackCtrlDef trackCtrl;
-
 static pthread_t connectHandle;
 static int connectRunning = 0;
 
@@ -45,7 +43,7 @@ static int connectRunning = 0;
  *  \param len Length of the buffer.
  *  \result None.
  */
-void checkRecvBuffer (char *buffer, int len)
+void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 {
 	char words[41][41];
 	int wordNum = -1, i = 0, j = 0, inType = 0;
@@ -96,23 +94,23 @@ void checkRecvBuffer (char *buffer, int len)
  *------------------------------------------------------------------*/
 			if (words[0][0] == 'p' && words[0][1] == 0 && wordNum == 2)
 			{
-				trackCtrl.remotePowerState = atoi(words[1]);
+				trackCtrl -> remotePowerState = atoi(words[1]);
 			}
 			else if (words[0][0] == 'T' && words[0][1] == 0 && wordNum == 4)
 			{
 				int trainReg = atoi(words[1]), t;
-				for (t = 0; t < trackCtrl.trainCount; ++t)
+				for (t = 0; t < trackCtrl -> trainCount; ++t)
 				{
-					if (trackCtrl.trainCtrl[t].trainReg == trainReg)
+					if (trackCtrl -> trainCtrl[t].trainReg == trainReg)
 					{
-						trackCtrl.trainCtrl[t].remoteCurSpeed = atoi(words[2]);
-						trackCtrl.trainCtrl[t].remoteReverse = atoi(words[3]);
+						trackCtrl -> trainCtrl[t].remoteCurSpeed = atoi(words[2]);
+						trackCtrl -> trainCtrl[t].remoteReverse = atoi(words[3]);
 					}
 				}
 			}
 			else if (words[0][0] == 'r' && words[0][1] == 0 && wordNum == 5)
 			{
-				if (atoi (words[1]) == trackCtrl.serverSession)
+				if (atoi (words[1]) == trackCtrl -> serverSession)
 				{
 					char binary[9];
 					int val = atoi (words[4]), mask = 0x80, i;
@@ -122,13 +120,13 @@ void checkRecvBuffer (char *buffer, int len)
 						mask >>= 1;
 					}
 					binary[i] = 0;
-					snprintf (trackCtrl.remoteProgMsg, 110, "Read CV#%s value: %s [%s]", 
+					snprintf (trackCtrl -> remoteProgMsg, 110, "Read CV#%s value: %s [%s]", 
 								words[3], words[4], binary);
 				}
 			}
 			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 2)
 			{
-				trackCtrl.serverSession = atoi (words[1]);
+				trackCtrl -> serverSession = atoi (words[1]);
 			}
 			inType = 0;
 			wordNum = -1;
@@ -168,16 +166,17 @@ void *trainConnectThread (void *arg)
 	int selRetn;
 	fd_set readfds;
 	struct timeval timeout;
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)arg;
 
 	connectRunning = 1;
-	trackCtrl.serverHandle = -1;
+	trackCtrl -> serverHandle = -1;
 
 	while (connectRunning)
 	{
-		if (trackCtrl.serverHandle == -1)
+		if (trackCtrl -> serverHandle == -1)
 		{
-			trackCtrl.serverHandle = ConnectClientSocket (trackCtrl.server, trackCtrl.serverPort);
-			if (trackCtrl.serverHandle == -1)
+			trackCtrl -> serverHandle = ConnectClientSocket (trackCtrl -> server, trackCtrl -> serverPort);
+			if (trackCtrl -> serverHandle == -1)
 			{
 				sleep (5);
 			}
@@ -188,36 +187,36 @@ void *trainConnectThread (void *arg)
 			timeout.tv_usec = 100000;
 
 			FD_ZERO(&readfds);
-			FD_SET (trackCtrl.serverHandle, &readfds);
+			FD_SET (trackCtrl -> serverHandle, &readfds);
 
 			selRetn = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
 			if (selRetn == -1)
 			{
-				CloseSocket (&trackCtrl.serverHandle);
+				CloseSocket (&trackCtrl -> serverHandle);
 			}
 			if (selRetn > 0)
 			{
-				if (FD_ISSET(trackCtrl.serverHandle, &readfds))
+				if (FD_ISSET(trackCtrl -> serverHandle, &readfds))
 				{
 					int readBytes;
 					char buffer[10241];
 
-					if ((readBytes = RecvSocket (trackCtrl.serverHandle, buffer, 10240)) > 0)
+					if ((readBytes = RecvSocket (trackCtrl -> serverHandle, buffer, 10240)) > 0)
 					{
 						buffer[readBytes] = 0;
-						checkRecvBuffer (buffer, readBytes);
+						checkRecvBuffer (trackCtrl, buffer, readBytes);
 					}
 					else if (readBytes == 0)
 					{
-						CloseSocket (&trackCtrl.serverHandle);
+						CloseSocket (&trackCtrl -> serverHandle);
 					}
 				}
 			}
 		}
 	}
-	if (trackCtrl.serverHandle != -1)
+	if (trackCtrl -> serverHandle != -1)
 	{
-		CloseSocket (&trackCtrl.serverHandle);
+		CloseSocket (&trackCtrl -> serverHandle);
 	}
 	return NULL;
 }
@@ -234,13 +233,13 @@ void *trainConnectThread (void *arg)
  *  \param len Size of the message.
  *  \result Number of bytes sent.
  */
-int trainConnectSend (char *buffer, int len)
+int trainConnectSend (trackCtrlDef *trackCtrl, char *buffer, int len)
 {
 	int retn = -1;
 
-	if (trackCtrl.serverHandle != -1)
+	if (trackCtrl -> serverHandle != -1)
 	{
-		retn = SendSocket (trackCtrl.serverHandle, buffer, len);
+		retn = SendSocket (trackCtrl -> serverHandle, buffer, len);
 	}
 	return retn;
 }
@@ -255,9 +254,9 @@ int trainConnectSend (char *buffer, int len)
  *  \brief Start the thread controlling the connection.
  *  \result 1 if thread started (may not be connected).
  */
-int startConnectThread()
+int startConnectThread(trackCtrlDef *trackCtrl)
 {
-	int retn = pthread_create (&connectHandle, NULL, trainConnectThread, NULL);
+	int retn = pthread_create (&connectHandle, NULL, trainConnectThread, trackCtrl);
 	return (retn == 0 ? 1 : 0);
 }
 
@@ -271,7 +270,7 @@ int startConnectThread()
  *  \brief Stop and wait for the thread.
  *  \result None.
  */
-void stopConnectThread()
+void stopConnectThread(trackCtrlDef *trackCtrl)
 {
 	connectRunning = 0;
 	pthread_join (connectHandle, NULL);

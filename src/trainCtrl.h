@@ -29,6 +29,7 @@ typedef struct _trackCell
 {
 	unsigned short layout;
 	unsigned short point;
+	unsigned short link;
 	unsigned short pointState;
 }
 trackCellDef;
@@ -86,8 +87,8 @@ typedef struct _trackCtrl
 }
 trackCtrlDef;
 
-int parseTrackXML (char *fileName);
-int startConnectThread ();
-int trainConnectSend (char *buffer, int len);
-void stopConnectThread ();
+int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName);
+int startConnectThread (trackCtrlDef *trackCtrl);
+int trainConnectSend (trackCtrlDef *trackCtrl, char *buffer, int len);
+void stopConnectThread (trackCtrlDef *trackCtrl);
 
