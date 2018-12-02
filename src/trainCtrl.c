@@ -124,6 +124,7 @@ static void haltTrain (GtkWidget *widget, gpointer data)
  **********************************************************************************************************************/
 /**
  *  \brief Check the state of the power and disable if it is off.
+ *  \param trackCtrl Which is the active track.
  *  \result None.
  */
 void checkPowerOn (trackCtrlDef *trackCtrl)
@@ -154,6 +155,7 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 /**
  *  \brief Turn on/off track power.
  *  \param widget Which button was pressed.
+ *  \param pspec Not used.
  *  \param data Which track to power.
  *  \result None.
  */
@@ -268,8 +270,8 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  D R A W _ C A L L B A C K                                                                                         *
- *  =========================                                                                                         *
+ *  D R A W  C A L L B A C K                                                                                          *
+ *  ========================                                                                                          *
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
@@ -363,6 +365,7 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
  *  \brief Called when the track window is clicked.
  *  \param widget Not used.
  *  \param event Where it was clicked.
+ *  \param data Which is the active track.
  *  \result TRUE if we used it.
  */
 gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpointer data)
@@ -389,7 +392,7 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 					if (trackCtrl -> trackLayout -> trackCells[posn].link)
 					{
 						int i;
-						for (i == 0; i < 8; ++i)
+						for (i = 0; i < 8; ++i)
 						{
 							if (trackCtrl -> trackLayout -> trackCells[posn].link & (1 << i))
 							{
@@ -477,6 +480,7 @@ static void displayTrack (GtkWidget *widget, gpointer data)
  **********************************************************************************************************************/
 /**
  *  \brief Dialog to warn user before sending a programming command.
+ *  \param trackCtrl Which is the active track.
  *  \param question Question to ask them.
  *  \result 1 and the command can go ahead.
  */
@@ -766,6 +770,24 @@ gboolean clockTickCallback (gpointer data)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  W I N D O W  D E S T R O Y                                                                                        *
+ *  ==========================                                                                                        *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Close the window.
+ *  \param window Closing window.
+ *  \param userData Which is the active track.
+ *  \result none.
+ */
+static void windowDestroy (GtkWidget *window, gpointer userData)
+{
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)userData;	
+	stopConnectThread (trackCtrl);
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  A C T I V A T E                                                                                                   *
  *  ===============                                                                                                   *
  *                                                                                                                    *
@@ -773,7 +795,7 @@ gboolean clockTickCallback (gpointer data)
 /**
  *  \brief Activate a new control window.
  *  \param app Application making the request.
- *  \param user_data Which track to control.
+ *  \param userData Not used.
  *  \result None.
  */
 static void activate (GtkApplication *app, gpointer userData)
@@ -783,7 +805,8 @@ static void activate (GtkApplication *app, gpointer userData)
 	GtkWidget *grid, *label;
 	GtkWidget *vbox, *hbox;
 	GMenu *menu;
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)userData;	
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)malloc (sizeof (trackCtrlDef));
+	memset (trackCtrl, 0, sizeof (trackCtrlDef));
 
 	g_action_map_add_action_entries (G_ACTION_MAP (app), app_entries, G_N_ELEMENTS (app_entries), app);
 	menu = g_menu_new ();
@@ -797,9 +820,10 @@ static void activate (GtkApplication *app, gpointer userData)
 		if (startConnectThread (trackCtrl))
 		{
 			trackCtrl -> windowCtrl = gtk_application_window_new (app);
+			g_signal_connect (trackCtrl -> windowCtrl, "destroy", G_CALLBACK (windowDestroy), trackCtrl);
 			gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowCtrl), "Train Control");
 			gtk_window_set_icon_name (GTK_WINDOW (trackCtrl -> windowCtrl), "preferences-desktop");
-			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), 300, 400);
+			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), 300, 500);
 
 			vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
 			gtk_container_add (GTK_CONTAINER (trackCtrl -> windowCtrl), vbox);
@@ -892,10 +916,20 @@ static void activate (GtkApplication *app, gpointer userData)
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  S H U T D O W N                                                                                                   *
+ *  ===============                                                                                                   *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Shut down the whole application.
+ *  \param app Not used.
+ *  \param userData Not Used.
+ *  \result None.
+ */
 static void shutdown (GtkApplication *app, gpointer userData)
 {
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)userData;	
-	stopConnectThread (trackCtrl);
 }
 
 /**********************************************************************************************************************
@@ -908,7 +942,7 @@ static void shutdown (GtkApplication *app, gpointer userData)
  *  \brief Called when about selected on the menu.
  *  \param action Not used.
  *  \param parameter Not used.
- *  \param user_data Not used.
+ *  \param userData Not used.
  *  \result None.
  */
 static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer userData)
@@ -972,12 +1006,9 @@ int main (int argc, char **argv)
 	int status = 1;
 	GtkApplication *app;
 
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)malloc (sizeof (trackCtrlDef));
-	memset (trackCtrl, 0, sizeof (trackCtrlDef));
-
 	app = gtk_application_new ("Train.Control", G_APPLICATION_FLAGS_NONE);
-	g_signal_connect (app, "activate", G_CALLBACK (activate), trackCtrl);
-	g_signal_connect (app, "shutdown", G_CALLBACK (shutdown), trackCtrl);
+	g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
+	g_signal_connect (app, "shutdown", G_CALLBACK (shutdown), NULL);
 
 	defaultIcon = gdk_pixbuf_new_from_xpm_data ((const char **) &train_xpm);
 	gtk_window_set_default_icon_name ("train_xpm");

@@ -39,6 +39,7 @@ static int connectRunning = 0;
  **********************************************************************************************************************/
 /**
  *  \brief Chech what we have received on the socket to see if we should update the display.
+ *  \param trackCtrl Which is the active track.
  *  \param buffer Buffer that was received.
  *  \param len Length of the buffer.
  *  \result None.
@@ -229,6 +230,7 @@ void *trainConnectThread (void *arg)
  **********************************************************************************************************************/
 /**
  *  \brief Send a message to the daemon.
+ *  \param trackCtrl Which is the active track.
  *  \param buffer Message to send.
  *  \param len Size of the message.
  *  \result Number of bytes sent.
@@ -252,6 +254,7 @@ int trainConnectSend (trackCtrlDef *trackCtrl, char *buffer, int len)
  **********************************************************************************************************************/
 /**
  *  \brief Start the thread controlling the connection.
+ *  \param trackCtrl Which is the active track.
  *  \result 1 if thread started (may not be connected).
  */
 int startConnectThread(trackCtrlDef *trackCtrl)
@@ -268,6 +271,7 @@ int startConnectThread(trackCtrlDef *trackCtrl)
  **********************************************************************************************************************/
 /**
  *  \brief Stop and wait for the thread.
+ *  \param trackCtrl Which is the active track.
  *  \result None.
  */
 void stopConnectThread(trackCtrlDef *trackCtrl)

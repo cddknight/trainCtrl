@@ -35,6 +35,7 @@
  **********************************************************************************************************************/
 /**
  *  \brief Process the network configuration section.
+ *  \param trackCtrl Which is the active track.
  *  \param inNode Pointer to the network section.
  *  \param count Process each of the train lines.
  *  \result None.
@@ -95,6 +96,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
  **********************************************************************************************************************/
 /**
  *  \brief Process each of the cell lines .
+ *  \param trackCtrl Which is the active track.
  *  \param inNode In node to process.
  *  \param rowNum Number of the current row.
  *  \result None.
@@ -161,6 +163,7 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
  **********************************************************************************************************************/
 /**
  *  \brief Process the overload table section.
+ *  \param trackCtrl Which is the active track.
  *  \param inNode Pointer to the overload table section.
  *  \param rows Process each of the cells lines (made up of cells) .
  *  \param cols In node to process.
@@ -217,6 +220,7 @@ void processCells (trackCtrlDef *trackCtrl, xmlNode *inNode, int rows, int cols)
  **********************************************************************************************************************/
 /**
  *  \brief Parse the pcm.
+ *  \param trackCtrl Which is the active track.
  *  \param inNode Pointer to the root section.
  *  \param level Have we already seen the start of the pcm section.
  *  \result None.
@@ -290,6 +294,7 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
  **********************************************************************************************************************/
 /**
  *  \brief Read in and process the configuration file.
+ *  \param trackCtrl Which is the active track.
  *  \param fileName File name to read in.
  *  \result 1 if config read OK, 0 on error.
  */
