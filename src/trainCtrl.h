@@ -38,6 +38,7 @@ typedef struct _trackLayout
 {
 	unsigned int trackRows;
 	unsigned int trackCols;
+	unsigned int trackSize;
 	trackCellDef *trackCells;
 }
 trackLayoutDef;

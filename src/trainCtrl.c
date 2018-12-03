@@ -26,9 +26,6 @@
 #include "trainCtrl.h"
 #include "socketC.h"
 
-#define CELL_SIZE	40
-#define CELL_HALF	20
-
 static char *notConnected = "Train controller not connected";
 
 static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
@@ -291,15 +288,23 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	static const GdkRGBA inactiveCol = { 0.2, 0.0, 0.0, 1.0 };
 	static const GdkRGBA circleCol = { 0.7, 0.7, 0.7, 1.0 };
 
-	static const int xChange[8] = { 0,	CELL_HALF, CELL_SIZE, CELL_HALF, 0, 0,	CELL_SIZE, CELL_SIZE	};
-	static const int yChange[8] = { CELL_HALF, 0,	CELL_HALF, CELL_SIZE, CELL_SIZE, 0, 0,	CELL_SIZE	};
+	static const int xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
+	static const int yChange[8] = { 1, 0, 1, 2, 2, 0, 0, 2 };
 
-	int i, j;
+	int i, j, xChangeMod[8], yChangeMod[8];
 	int rows = trackCtrl -> trackLayout -> trackRows;
 	int cols = trackCtrl -> trackLayout -> trackCols;
+	int cellSize = trackCtrl -> trackLayout -> trackSize;
+	int cellHalf = cellSize >> 1;
 	guint width = gtk_widget_get_allocated_width (widget);
 	guint height = gtk_widget_get_allocated_height (widget);
 	GtkStyleContext *context = gtk_widget_get_style_context (widget);
+
+	for (i = 0; i < 8; ++i)
+	{
+		xChangeMod[i] = cellHalf * xChange[i];
+		yChangeMod[i] = cellHalf * yChange[i];
+	}
 
 	gtk_render_background (context, cr, 0, 0, width, height);
 
@@ -323,31 +328,31 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 							gdk_cairo_set_source_rgba (cr, &inactiveCol);
 						}
 					}
-					cairo_move_to (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF);
-					cairo_line_to (cr, (j * CELL_SIZE) + xChange[loop], (i * CELL_SIZE) + yChange[loop]);
+					cairo_move_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
+					cairo_line_to (cr, (j * cellSize) + xChangeMod[loop], (i * cellSize) + yChangeMod[loop]);
 					cairo_stroke (cr);
 				}
 			}
 			if (count == 1)
 			{
 				gdk_cairo_set_source_rgba (cr, &bufferCol);
-				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 4, 0, 2 * G_PI);
+				cairo_arc (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf, 4, 0, 2 * G_PI);
 				cairo_fill (cr);
 				cairo_stroke (cr);
 
 				gdk_cairo_set_source_rgba (cr, &circleCol);
-				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 4, 0, 2 * G_PI);
+				cairo_arc (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf, 4, 0, 2 * G_PI);
 				cairo_stroke (cr);
 			}
 			if (points)
 			{
 				gdk_cairo_set_source_rgba (cr, &pointCol);
-				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 4, 0, 2 * G_PI);
+				cairo_arc (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf, 4, 0, 2 * G_PI);
 				cairo_fill (cr);
 				cairo_stroke (cr);
 
 				gdk_cairo_set_source_rgba (cr, &circleCol);
-				cairo_arc (cr, (j * CELL_SIZE) + CELL_HALF, (i * CELL_SIZE) + CELL_HALF, 4, 0, 2 * G_PI);
+				cairo_arc (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf, 4, 0, 2 * G_PI);
 				cairo_stroke (cr);
 			}
 		}
@@ -382,7 +387,8 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 			{
 				int rows = trackCtrl -> trackLayout -> trackRows;
 				int cols = trackCtrl -> trackLayout -> trackCols;
-				int posn = (((int)event -> y / CELL_SIZE) * cols) + ((int)event -> x / CELL_SIZE);
+				int cellSize = trackCtrl -> trackLayout -> trackSize;
+				int posn = (((int)event -> y / cellSize) * cols) + ((int)event -> x / cellSize);
 
 				if (trackCtrl -> trackLayout -> trackCells[posn].point)
 				{
@@ -451,8 +457,9 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 	if (trackCtrl -> windowTrack == NULL)
 	{
 		GtkWidget *eventBox;
-		int width = trackCtrl -> trackLayout -> trackCols * CELL_SIZE;
-		int height = trackCtrl -> trackLayout -> trackRows * CELL_SIZE;
+		int cellSize = trackCtrl -> trackLayout -> trackSize;
+		int width = trackCtrl -> trackLayout -> trackCols * cellSize;
+		int height = trackCtrl -> trackLayout -> trackRows * cellSize;
 
 		trackCtrl -> windowTrack = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowTrack), "Track Control");

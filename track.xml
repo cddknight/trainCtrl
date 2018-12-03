@@ -4,7 +4,7 @@
     <train num="68035" id="300" desc="J94"/>
     <train num="12345" id="5" desc="Testing"/>
   </trains>
-  <cells rows="13" cols="16">
+  <cells rows="13" cols="16" size="30">
     <cellRow row="0">
       <cell col="2" layout="4"/>
       <cell col="3" layout="5"/>

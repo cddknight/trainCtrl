@@ -169,7 +169,7 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
  *  \param cols In node to process.
  *  \result None.
  */
-void processCells (trackCtrlDef *trackCtrl, xmlNode *inNode, int rows, int cols)
+void processCells (trackCtrlDef *trackCtrl, xmlNode *inNode, int rows, int cols, int size)
 {
 	xmlChar *rowStr;
 	xmlNode *curNode = NULL;
@@ -181,6 +181,7 @@ void processCells (trackCtrlDef *trackCtrl, xmlNode *inNode, int rows, int cols)
 	memset (trackCtrl -> trackLayout, 0, sizeof (trackLayoutDef));
 	trackCtrl -> trackLayout -> trackRows = rows;
 	trackCtrl -> trackLayout -> trackCols = cols;
+	trackCtrl -> trackLayout -> trackSize = size;
 
 	if ((trackCtrl -> trackLayout -> trackCells = (trackCellDef *)malloc (rows * cols * sizeof (trackCellDef))) == NULL)
 	{
@@ -264,19 +265,24 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "cells") == 0)
 			{
-				int rows = -1, cols = -1;
-				xmlChar *rowsStr, *colsStr;
+				int rows = -1, cols = -1, size = 40;
+				xmlChar *rowsStr, *colsStr, *sizeStr;
 				if ((rowsStr = xmlGetProp(curNode, (const xmlChar*)"rows")) != NULL)
 				{
 					if ((colsStr = xmlGetProp(curNode, (const xmlChar*)"cols")) != NULL)
 					{
+						if ((sizeStr = xmlGetProp(curNode, (const xmlChar*)"size")) != NULL)
+						{
+							sscanf ((char *)sizeStr, "%d", &size);
+							xmlFree(sizeStr);
+						}
 						sscanf ((char *)rowsStr, "%d", &rows);
 						sscanf ((char *)colsStr, "%d", &cols);
 						xmlFree(colsStr);
 
 						if (rows > 0 && cols > 0)
 						{
-							processCells (trackCtrl, curNode -> children, rows, cols);
+							processCells (trackCtrl, curNode -> children, rows, cols, size);
 						}
 					}
 					xmlFree(rowsStr);
