@@ -180,7 +180,6 @@ static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
 					trackCtrl -> trainCtrl[i].curSpeed = trackCtrl -> trainCtrl[i].remoteCurSpeed = 0;
 					gtk_range_set_value (GTK_RANGE (trackCtrl -> trainCtrl[i].scaleSpeed), 0.0);
 					sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, 0, train -> reverse);
-					trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff));
 				}
 			}
 		}
@@ -188,6 +187,10 @@ static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
 	}
 	else
 	{
+		if (newState == POWER_ON)
+		{
+			gtk_switch_set_active (GTK_SWITCH(trackCtrl -> buttonPower), FALSE);
+		}
 		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
 	}
 	return TRUE;
@@ -286,7 +289,7 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	static const GdkRGBA trackCol = { 0.7, 0.7, 0.0, 1.0 };
 	static const GdkRGBA pointCol = { 0.0, 0.0, 0.5, 1.0 };
 	static const GdkRGBA bufferCol = { 0.5, 0.0, 0.0, 1.0 };
-	static const GdkRGBA inactiveCol = { 0.4, 0.0, 0.0, 1.0 };
+	static const GdkRGBA inactiveCol = { 0.5, 0.0, 0.0, 1.0 };
 	static const GdkRGBA circleCol = { 0.7, 0.7, 0.7, 1.0 };
 
 	static const int xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
