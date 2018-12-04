@@ -293,11 +293,10 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	static const GdkRGBA trackCol = { 0.6, 0.6, 0.6, 1.0 };
 	static const GdkRGBA pointCol = { 0.0, 0.0, 0.6, 1.0 };
 	static const GdkRGBA bufferCol = { 0.6, 0.0, 0.0, 1.0 };
-	static const GdkRGBA inactiveCol = { 0.4, 0.0, 0.0, 1.0 };
+	static const GdkRGBA inactiveCol = { 0.6, 0.0, 0.0, 1.0 };
 	static const GdkRGBA circleCol = { 0.8, 0.8, 0.8, 1.0 };
 	static const double xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
 	static const double yChange[8] = { 1, 0, 1, 2, 2, 0, 0, 2 };
-	static const double dashedLine[] = { 2.0, 1.0 };
 
 	int i, j, xChangeMod[8], yChangeMod[8];
 	int rows = trackCtrl -> trackLayout -> trackRows;
@@ -314,7 +313,7 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 		xChangeMod[i] = xChange[i] * cellHalf;
 		yChangeMod[i] = yChange[i] * cellHalf;
 		lineWidths[i][0] = (double)cellSize / (i < 4 ? 5 : 4.75);
-		lineWidths[i][1] = (double)cellSize / (i < 4 ? 7 : 6.65);
+		lineWidths[i][1] = (double)cellSize / (i < 4 ? 8 : 7.60);
 	}
 
 	gtk_render_background (context, cr, 0, 0, width, height);
@@ -323,7 +322,6 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	{
 		for (j = 0; j < cols; ++j)
 		{
-			cairo_t *crSave = cr;
 			int lineType, xPos[3], yPos[3], posType[3], posMask = 0;
 			int posn = (i * cols) + j, count = 0, points = 0, loop;
 
@@ -373,26 +371,24 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 			{
 				for (lineType = 0; lineType < 2; ++lineType)
 				{
-					cairo_save (crSave);
+					cairo_save (cr);
+					cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
 					gdk_cairo_set_source_rgba (cr, lineType == 0 ? &inactiveCol : &blackCol);
 					cairo_set_line_width (cr, lineType == 0 ? lineWidths[posType[2]][0] : lineWidths[posType[2]][1]);
 					cairo_move_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
 					cairo_line_to (cr, xPos[2], yPos[2]);
 					cairo_stroke (cr);
-					cairo_restore (crSave);
+					cairo_restore (cr);
 				}
 			}
 			if (posMask & 1)
 			{
 				for (lineType = 0; lineType < 2; ++lineType)
 				{
-					cairo_save (crSave);
+					cairo_save (cr);
+					cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
 					gdk_cairo_set_source_rgba (cr, lineType == 0 ? &trackCol : &blackCol);
 					cairo_set_line_width (cr, lineType == 0 ? lineWidths[posType[0]][0] : lineWidths[posType[0]][1]);
-					if (lineType == 1)
-					{
-						cairo_set_dash(cr, &dashedLine[0], 2, 0);
-					}
 					cairo_move_to (cr, xPos[0], yPos[0]);
 					cairo_line_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
 					if (posMask & 2)
@@ -400,7 +396,7 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 						cairo_line_to (cr, xPos[1], yPos[1]);
 					}					
 					cairo_stroke (cr);
-					cairo_restore (crSave);
+					cairo_restore (cr);
 				}
 			}
 			if (count == 1)
