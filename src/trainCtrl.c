@@ -282,10 +282,11 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;	
 
+	static const GdkRGBA blackCol = { 0.0, 0.0, 0.0, 1.0 };
 	static const GdkRGBA trackCol = { 0.7, 0.7, 0.0, 1.0 };
 	static const GdkRGBA pointCol = { 0.0, 0.0, 0.5, 1.0 };
 	static const GdkRGBA bufferCol = { 0.5, 0.0, 0.0, 1.0 };
-	static const GdkRGBA inactiveCol = { 0.2, 0.0, 0.0, 1.0 };
+	static const GdkRGBA inactiveCol = { 0.4, 0.0, 0.0, 1.0 };
 	static const GdkRGBA circleCol = { 0.7, 0.7, 0.7, 1.0 };
 
 	static const int xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
@@ -318,6 +319,7 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 			{
 				if (trackCtrl -> trackLayout -> trackCells[posn].layout & (1 << loop))
 				{
+					int lineType;
 					++count;
 					gdk_cairo_set_source_rgba (cr, &trackCol);
 					if (trackCtrl -> trackLayout -> trackCells[posn].point & (1 << loop))
@@ -328,9 +330,17 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 							gdk_cairo_set_source_rgba (cr, &inactiveCol);
 						}
 					}
-					cairo_move_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
-					cairo_line_to (cr, (j * cellSize) + xChangeMod[loop], (i * cellSize) + yChangeMod[loop]);
-					cairo_stroke (cr);
+					for (lineType = 0; lineType < 2; ++lineType)
+					{
+						cairo_set_line_width (cr, lineType == 0 ? 4.0 : 2.5);
+						if (lineType == 1)
+						{
+							gdk_cairo_set_source_rgba (cr, &blackCol);
+						}
+						cairo_move_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
+						cairo_line_to (cr, (j * cellSize) + xChangeMod[loop], (i * cellSize) + yChangeMod[loop]);
+						cairo_stroke (cr);
+					}
 				}
 			}
 			if (count == 1)
