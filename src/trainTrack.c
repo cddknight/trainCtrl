@@ -167,6 +167,7 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
  *  \param inNode Pointer to the overload table section.
  *  \param rows Process each of the cells lines (made up of cells) .
  *  \param cols In node to process.
+ *  \param size The size of a cell.
  *  \result None.
  */
 void processCells (trackCtrlDef *trackCtrl, xmlNode *inNode, int rows, int cols, int size)

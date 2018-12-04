@@ -4,7 +4,7 @@
     <train num="68035" id="300" desc="J94"/>
     <train num="12345" id="5" desc="Testing"/>
   </trains>
-  <cells rows="13" cols="16" size="30">
+  <cells rows="13" cols="16" size="40">
     <cellRow row="0">
       <cell col="2" layout="4"/>
       <cell col="3" layout="5"/>
@@ -93,7 +93,7 @@
       <cell col="2" layout="21" point="17" link="16"/>
       <cell col="3" layout="5"/>
       <cell col="4" layout="5"/>
-      <cell col="5" layout="37" point="33" link="32"/>
+      <cell col="5" layout="37" point="33"/>
       <cell col="6" layout="133" point="132" link="128"/>
       <cell col="7" layout="5"/>
       <cell col="8" layout="5"/>
@@ -112,7 +112,7 @@
       <cell col="4" layout="5"/>
       <cell col="5" layout="5"/>
       <cell col="6" layout="5"/>
-      <cell col="7" layout="37" point="33"/>
+      <cell col="7" layout="37" point="33" link="32"/>
       <cell col="8" layout="69" point="68" link="64"/>
       <cell col="9" layout="5"/>
       <cell col="10" layout="5"/>

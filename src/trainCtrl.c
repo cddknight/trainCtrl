@@ -27,6 +27,14 @@
 #include "socketC.h"
 
 static char *notConnected = "Train controller not connected";
+static const GdkRGBA blackCol = { 0.0, 0.0, 0.0, 1.0 };
+static const GdkRGBA trackCol = { 0.6, 0.6, 0.6, 1.0 };
+static const GdkRGBA pointCol = { 0.0, 0.0, 0.6, 1.0 };
+static const GdkRGBA bufferCol = { 0.6, 0.0, 0.0, 1.0 };
+static const GdkRGBA inactiveCol = { 0.6, 0.0, 0.0, 1.0 };
+static const GdkRGBA circleCol = { 0.8, 0.8, 0.8, 1.0 };
+static const double xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
+static const double yChange[8] = { 1, 0, 1, 2, 2, 0, 0, 2 };
 
 static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 static void quitCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
@@ -57,7 +65,7 @@ static GdkPixbuf *defaultIcon;
  */
 static void stopTrain (GtkWidget *widget, gpointer data)
 {
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;	
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
 
 	if (train -> curSpeed != 0)
@@ -92,7 +100,7 @@ static void stopTrain (GtkWidget *widget, gpointer data)
  */
 static void haltTrain (GtkWidget *widget, gpointer data)
 {
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;	
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
 
 	if (train -> curSpeed != 0)
@@ -164,7 +172,7 @@ static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
 {
 	int i, newState;
 	char tempBuff[81];
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;	
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
 	newState = (trackCtrl -> powerState == POWER_ON ? POWER_OFF : POWER_ON);
 	if (trainConnectSend (trackCtrl, newState == POWER_ON ? "<1>" : "<0>", 3) == 3)
@@ -215,7 +223,7 @@ static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
 static void moveTrain (GtkWidget *widget, gpointer data)
 {
 	double value = 0.0;
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;	
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
 
 	value = gtk_range_get_value (GTK_RANGE (train -> scaleSpeed));
@@ -254,7 +262,7 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
 {
 	char tempBuff[81];
 	int newState;
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;	
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
 
 	newState = (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (train -> checkDir)) == TRUE ? 1 : 0);
@@ -287,16 +295,7 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
  */
 gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;	
-
-	static const GdkRGBA blackCol = { 0.0, 0.0, 0.0, 1.0 };
-	static const GdkRGBA trackCol = { 0.6, 0.6, 0.6, 1.0 };
-	static const GdkRGBA pointCol = { 0.0, 0.0, 0.6, 1.0 };
-	static const GdkRGBA bufferCol = { 0.6, 0.0, 0.0, 1.0 };
-	static const GdkRGBA inactiveCol = { 0.6, 0.0, 0.0, 1.0 };
-	static const GdkRGBA circleCol = { 0.8, 0.8, 0.8, 1.0 };
-	static const double xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
-	static const double yChange[8] = { 1, 0, 1, 2, 2, 0, 0, 2 };
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
 	int i, j, xChangeMod[8], yChangeMod[8];
 	int rows = trackCtrl -> trackLayout -> trackRows;
@@ -364,7 +363,7 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 							posType[1] = loop;
 							posMask |= 2;
 						}
-					}					
+					}
 				}
 			}
 			if (posMask & 4)
@@ -394,7 +393,7 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 					if (posMask & 2)
 					{
 						cairo_line_to (cr, xPos[1], yPos[1]);
-					}					
+					}
 					cairo_stroke (cr);
 					cairo_restore (cr);
 				}
@@ -442,8 +441,8 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
-	static int linkRow[] = {	0,	-1,	0,	1,	1,	-1,	-1,	1	};	
-	static int linkCol[] = {	-1,	0,	1,	0,	-1,	-1,	1,	1	};
+	static int linkRow[] = {	0,	-1, 0,	1,	1,	-1, -1, 1	};
+	static int linkCol[] = {	-1, 0,	1,	0,	-1, -1, 1,	1	};
 
 	if (event->type == GDK_BUTTON_PRESS)
 	{
@@ -469,7 +468,7 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 							if (trackCtrl -> trackLayout -> trackCells[posn].link & (1 << i))
 							{
 								int newPosn = posn + (cols * linkRow[i]) + linkCol[i];
- 								if (newPosn >= 0 && newPosn < (rows * cols))
+								if (newPosn >= 0 && newPosn < (rows * cols))
 								{
 									unsigned short newState = trackCtrl -> trackLayout -> trackCells[newPosn].point;
 									newState &= ~(trackCtrl -> trackLayout -> trackCells[newPosn].pointState);
@@ -501,7 +500,7 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
  */
 static void closeTrack (GtkWidget *widget, gpointer data)
 {
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;	
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 	trackCtrl -> windowTrack = NULL;
 }
 
@@ -519,7 +518,7 @@ static void closeTrack (GtkWidget *widget, gpointer data)
  */
 static void displayTrack (GtkWidget *widget, gpointer data)
 {
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;	
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 	if (trackCtrl -> windowTrack == NULL)
 	{
 		GtkWidget *eventBox;
@@ -587,11 +586,11 @@ static int programYesNo (trackCtrlDef *trackCtrl, char *question)
  */
 static void programTrain (GtkWidget *widget, gpointer data)
 {
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;	
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
 	static char *controlLables[] =
 	{
-		"DCC Address", "CV Number", "Byte Value (0 - 255)", "Bit number (1 - 8)", "Bit Value (0 - 1)", 
+		"DCC Address", "CV Number", "Byte Value (0 - 255)", "Bit number (1 - 8)", "Bit Value (0 - 1)",
 		"Read current value", "Last reply:", "-"
 	};
 	static char *hintLables[] =
@@ -717,7 +716,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 									values[1], values[3], values[4]);
 							if (programYesNo (trackCtrl, msgBuffer))
 							{
-								sprintf (sendBuffer, "<b %d %d %d %d 2>", values[1], values[3] - 1, values[4], 
+								sprintf (sendBuffer, "<b %d %d %d %d 2>", values[1], values[3] - 1, values[4],
 										trackCtrl -> serverSession);
 							}
 							allOK = 1;
@@ -810,7 +809,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 gboolean clockTickCallback (gpointer data)
 {
 	int i;
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;	
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
 	if (trackCtrl -> powerState != trackCtrl -> remotePowerState)
 	{
@@ -855,7 +854,7 @@ gboolean clockTickCallback (gpointer data)
  */
 static void windowDestroy (GtkWidget *window, gpointer userData)
 {
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)userData;	
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)userData;
 	stopConnectThread (trackCtrl);
 }
 

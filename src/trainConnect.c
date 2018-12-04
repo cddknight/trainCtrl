@@ -121,7 +121,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 						mask >>= 1;
 					}
 					binary[i] = 0;
-					snprintf (trackCtrl -> remoteProgMsg, 110, "Read CV#%s value: %s [%s]", 
+					snprintf (trackCtrl -> remoteProgMsg, 110, "Read CV#%s value: %s [%s]",
 								words[3], words[4], binary);
 				}
 			}
