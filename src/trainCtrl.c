@@ -141,6 +141,10 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 		if (trackCtrl -> trainCtrl[i].buttonStop != NULL)
 			gtk_widget_set_sensitive (trackCtrl -> trainCtrl[i].buttonStop, state);
 	}
+	if (trackCtrl -> buttonProgram != NULL)
+	{
+		gtk_widget_set_sensitive (trackCtrl -> buttonProgram, state);
+	}
 }
 
 /**********************************************************************************************************************
