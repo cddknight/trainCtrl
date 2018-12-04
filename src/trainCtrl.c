@@ -29,9 +29,11 @@
 static char *notConnected = "Train controller not connected";
 static const GdkRGBA blackCol = { 0.0, 0.0, 0.0, 1.0 };
 static const GdkRGBA trackCol = { 0.6, 0.6, 0.6, 1.0 };
+static const GdkRGBA trFillCol = { 0.0, 0.4, 0.0, 1.0 };
 static const GdkRGBA pointCol = { 0.0, 0.0, 0.6, 1.0 };
 static const GdkRGBA bufferCol = { 0.6, 0.0, 0.0, 1.0 };
-static const GdkRGBA inactiveCol = { 0.6, 0.0, 0.0, 1.0 };
+static const GdkRGBA inactCol = { 0.8, 0.0, 0.0, 1.0 };
+static const GdkRGBA iaFillCol = { 0.4, 0.0, 0.0, 1.0 };
 static const GdkRGBA circleCol = { 0.8, 0.8, 0.8, 1.0 };
 static const double xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
 static const double yChange[8] = { 1, 0, 1, 2, 2, 0, 0, 2 };
@@ -372,7 +374,7 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 				{
 					cairo_save (cr);
 					cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
-					gdk_cairo_set_source_rgba (cr, lineType == 0 ? &inactiveCol : &blackCol);
+					gdk_cairo_set_source_rgba (cr, lineType == 0 ? &inactCol : &iaFillCol);
 					cairo_set_line_width (cr, lineType == 0 ? lineWidths[posType[2]][0] : lineWidths[posType[2]][1]);
 					cairo_move_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
 					cairo_line_to (cr, xPos[2], yPos[2]);
@@ -386,7 +388,7 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 				{
 					cairo_save (cr);
 					cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
-					gdk_cairo_set_source_rgba (cr, lineType == 0 ? &trackCol : &blackCol);
+					gdk_cairo_set_source_rgba (cr, lineType == 0 ? &trackCol : &trFillCol);
 					cairo_set_line_width (cr, lineType == 0 ? lineWidths[posType[0]][0] : lineWidths[posType[0]][1]);
 					cairo_move_to (cr, xPos[0], yPos[0]);
 					cairo_line_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
@@ -460,6 +462,8 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 					unsigned short newState = trackCtrl -> trackLayout -> trackCells[posn].point;
 					newState &= ~(trackCtrl -> trackLayout -> trackCells[posn].pointState);
 					trackCtrl -> trackLayout -> trackCells[posn].pointState = newState;
+
+					/* This point is linked so change the other point */
 					if (trackCtrl -> trackLayout -> trackCells[posn].link)
 					{
 						int i;
@@ -470,9 +474,23 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 								int newPosn = posn + (cols * linkRow[i]) + linkCol[i];
 								if (newPosn >= 0 && newPosn < (rows * cols))
 								{
-									unsigned short newState = trackCtrl -> trackLayout -> trackCells[newPosn].point;
-									newState &= ~(trackCtrl -> trackLayout -> trackCells[newPosn].pointState);
-									trackCtrl -> trackLayout -> trackCells[newPosn].pointState = newState;
+									/* The new point should have a link, we hope to us */
+									if (trackCtrl -> trackLayout -> trackCells[newPosn].link)
+									{
+										if (trackCtrl -> trackLayout -> trackCells[posn].link == newState)
+										{
+											/* We are setting to the link, so set other point to the link */
+											trackCtrl -> trackLayout -> trackCells[newPosn].pointState = 
+													trackCtrl -> trackLayout -> trackCells[newPosn].link;
+										}
+										else
+										{
+											/* We are breaking the link, so set other point away from link */
+											trackCtrl -> trackLayout -> trackCells[newPosn].pointState = 
+													trackCtrl -> trackLayout -> trackCells[newPosn].point & 
+													~trackCtrl -> trackLayout -> trackCells[newPosn].link;
+										}
+									}
 								}
 							}
 						}

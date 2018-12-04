@@ -104,7 +104,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 {
 	xmlNode *curNode = NULL;
-	xmlChar *colStr, *layoutStr, *pointStr, *linkStr;
+	xmlChar *colStr, *layoutStr, *pointStr, *linkStr, *pointStateStr;
 
 	for (curNode = inNode; curNode; curNode = curNode->next)
 	{
@@ -114,7 +114,7 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 			{
 				if ((colStr = xmlGetProp(curNode, (const xmlChar*)"col")) != NULL)
 				{
-					int colNum = -1, layout = 0, point = 0, link = 0, posn, i;
+					int colNum = -1, layout = 0, point = 0, link = 0, pointState = 0, posn, i;
 					sscanf ((char *)colStr, "%d", &colNum);
 
 					if (colNum > -1)
@@ -136,10 +136,16 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 							sscanf ((char *)linkStr, "%d", &link);
 							xmlFree(linkStr);
 						}
+						if ((pointStateStr = xmlGetProp(curNode, (const xmlChar*)"state")) != NULL)
+						{
+							sscanf ((char *)pointStateStr, "%d", &pointState);
+							xmlFree(pointStateStr);
+						}
 						trackCtrl -> trackLayout -> trackCells[posn].layout = layout;
 						trackCtrl -> trackLayout -> trackCells[posn].point = point;
 						trackCtrl -> trackLayout -> trackCells[posn].link = link;
-						for (i = 0; i < 8 && point; ++i)
+						trackCtrl -> trackLayout -> trackCells[posn].pointState = pointState;
+						for (i = 0; i < 8 && point && pointState == 0; ++i)
 						{
 							if (point & (1 << i))
 							{
