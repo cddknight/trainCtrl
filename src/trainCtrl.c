@@ -493,14 +493,14 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 										if (trackCtrl -> trackLayout -> trackCells[posn].link == newState)
 										{
 											/* We are setting to the link, so set other point to the link */
-											trackCtrl -> trackLayout -> trackCells[newPosn].pointState = 
+											trackCtrl -> trackLayout -> trackCells[newPosn].pointState =
 													trackCtrl -> trackLayout -> trackCells[newPosn].link;
 										}
 										else
 										{
 											/* We are breaking the link, so set other point away from link */
-											trackCtrl -> trackLayout -> trackCells[newPosn].pointState = 
-													trackCtrl -> trackLayout -> trackCells[newPosn].point & 
+											trackCtrl -> trackLayout -> trackCells[newPosn].pointState =
+													trackCtrl -> trackLayout -> trackCells[newPosn].point &
 													~trackCtrl -> trackLayout -> trackCells[newPosn].link;
 										}
 									}
@@ -1037,6 +1037,20 @@ static void activate (GtkApplication *app, gpointer userData)
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  O P E N  F I L E S                                                                                                *
+ *  ==================                                                                                                *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Called if the command line has a file on it.
+ *  \param application Current application.
+ *  \param files Files to be read.
+ *  \param n_files Number of files.
+ *  \param hint Not used.
+ *  \result None.
+ */
 void openFiles (GtkApplication *application, GFile **files, gint n_files, const gchar *hint)
 {
 	gchar *uri = g_file_get_uri (files[0]);
@@ -1138,7 +1152,7 @@ int main (int argc, char **argv)
 	g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
 	g_signal_connect (app, "open", G_CALLBACK (openFiles), NULL);
 	g_signal_connect (app, "shutdown", G_CALLBACK (shutdown), NULL);
-	
+
 	defaultIcon = gdk_pixbuf_new_from_xpm_data ((const char **) &train_xpm);
 	gtk_window_set_default_icon_name ("train_xpm");
 
