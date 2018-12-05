@@ -27,7 +27,6 @@
 #include "socketC.h"
 
 static char *notConnected = "Train controller not connected";
-static const GdkRGBA blackCol = { 0.0, 0.0, 0.0, 1.0 };
 static const GdkRGBA trackCol = { 0.6, 0.6, 0.6, 1.0 };
 static const GdkRGBA trFillCol = { 0.0, 0.4, 0.0, 1.0 };
 static const GdkRGBA pointCol = { 0.0, 0.0, 0.6, 1.0 };
@@ -299,22 +298,22 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
+	double lineWidths[2];
 	int i, j, xChangeMod[8], yChangeMod[8];
 	int rows = trackCtrl -> trackLayout -> trackRows;
 	int cols = trackCtrl -> trackLayout -> trackCols;
 	int cellSize = trackCtrl -> trackLayout -> trackSize;
 	int cellHalf = cellSize >> 1;
-	double lineWidths[8][2];
 	guint width = gtk_widget_get_allocated_width (widget);
 	guint height = gtk_widget_get_allocated_height (widget);
 	GtkStyleContext *context = gtk_widget_get_style_context (widget);
 
+	lineWidths[0] = (double)cellSize / 4;
+	lineWidths[1] = (double)cellSize / 8;
 	for (i = 0; i < 8; ++i)
 	{
 		xChangeMod[i] = xChange[i] * cellHalf;
 		yChangeMod[i] = yChange[i] * cellHalf;
-		lineWidths[i][0] = (double)cellSize / (i < 4 ? 5 : 4.75);
-		lineWidths[i][1] = (double)cellSize / (i < 4 ? 8 : 7.60);
 	}
 
 	gtk_render_background (context, cr, 0, 0, width, height);
@@ -323,7 +322,7 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	{
 		for (j = 0; j < cols; ++j)
 		{
-			int lineType, xPos[3], yPos[3], posType[3], posMask = 0;
+			int lineType, xPos[3]={0,0,0}, yPos[3]={0,0,0}, posMask = 0;
 			int posn = (i * cols) + j, count = 0, points = 0, loop;
 
 			for (loop = 0; loop < 8; ++loop)
@@ -338,14 +337,12 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 						{
 							xPos[2] = (j * cellSize) + xChangeMod[loop];
 							yPos[2] = (i * cellSize) + yChangeMod[loop];
-							posType[2] = loop;
 							posMask |= 4;
 						}
 						else
 						{
 							xPos[1] = (j * cellSize) + xChangeMod[loop];
 							yPos[1] = (i * cellSize) + yChangeMod[loop];
-							posType[1] = loop;
 							posMask |= 2;
 						}
 					}
@@ -355,14 +352,12 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 						{
 							xPos[0] = (j * cellSize) + xChangeMod[loop];
 							yPos[0] = (i * cellSize) + yChangeMod[loop];
-							posType[0] = loop;
 							posMask |= 1;
 						}
 						else
 						{
 							xPos[1] = (j * cellSize) + xChangeMod[loop];
 							yPos[1] = (i * cellSize) + yChangeMod[loop];
-							posType[1] = loop;
 							posMask |= 2;
 						}
 					}
@@ -374,8 +369,8 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 				{
 					cairo_save (cr);
 					cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
-					gdk_cairo_set_source_rgba (cr, lineType == 0 ? &inactCol : &iaFillCol);
-					cairo_set_line_width (cr, lineType == 0 ? lineWidths[posType[2]][0] : lineWidths[posType[2]][1]);
+					gdk_cairo_set_source_rgba (cr, lineType ? &iaFillCol : &inactCol);
+					cairo_set_line_width (cr, lineType ? lineWidths[1] : lineWidths[0]);
 					cairo_move_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
 					cairo_line_to (cr, xPos[2], yPos[2]);
 					cairo_stroke (cr);
@@ -388,8 +383,8 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 				{
 					cairo_save (cr);
 					cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
-					gdk_cairo_set_source_rgba (cr, lineType == 0 ? &trackCol : &trFillCol);
-					cairo_set_line_width (cr, lineType == 0 ? lineWidths[posType[0]][0] : lineWidths[posType[0]][1]);
+					gdk_cairo_set_source_rgba (cr, lineType ? &trFillCol : &trackCol);
+					cairo_set_line_width (cr, lineType ? lineWidths[1] : lineWidths[0]);
 					cairo_move_to (cr, xPos[0], yPos[0]);
 					cairo_line_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
 					if (posMask & 2)
