@@ -935,7 +935,8 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_widget_set_halign (hbox, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (vbox), hbox);
 
-			trackCtrl -> labelPower = gtk_label_new ("Power [0%]");
+			trackCtrl -> labelPower = gtk_label_new ("Power");
+			trackCtrl -> showCurrent = -1;
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> labelPower);
 			trackCtrl -> buttonPower = gtk_switch_new();
 			gtk_switch_set_active (GTK_SWITCH (trackCtrl -> buttonPower), FALSE);

@@ -90,10 +90,12 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 			}
 			printf ("(%d)\n", wordNum);
  *------------------------------------------------------------------*/
+			/* Track power status */
 			if (words[0][0] == 'p' && words[0][1] == 0 && wordNum == 2)
 			{
 				trackCtrl -> remotePowerState = atoi(words[1]);
 			}
+			/* Throttle status */
 			else if (words[0][0] == 'T' && words[0][1] == 0 && wordNum == 4)
 			{
 				int trainReg = atoi(words[1]), t;
@@ -106,6 +108,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 					}
 				}
 			}
+			/* Read CV value */
 			else if (words[0][0] == 'r' && words[0][1] == 0 && wordNum == 5)
 			{
 				if (atoi (words[1]) == trackCtrl -> serverSession)
@@ -122,6 +125,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 								words[3], words[4], binary);
 				}
 			}
+			/* Current monitor */
 			else if (words[0][0] == 'a' && words[0][1] == 0 && wordNum == 2)
 			{
 				trackCtrl -> rxedCurrent = atoi (words[1]);
