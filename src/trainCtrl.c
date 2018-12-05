@@ -27,6 +27,7 @@
 #include "socketC.h"
 
 static char *notConnected = "Train controller not connected";
+static const GdkRGBA blackCol = { 0.1, 0.1, 0.1, 1.0 };
 static const GdkRGBA trackCol = { 0.6, 0.6, 0.6, 1.0 };
 static const GdkRGBA trFillCol = { 0.0, 0.4, 0.0, 1.0 };
 static const GdkRGBA pointCol = { 0.0, 0.0, 0.6, 1.0 };
@@ -316,7 +317,24 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 		yChangeMod[i] = yChange[i] * cellHalf;
 	}
 
+	cairo_save (cr);
 	gtk_render_background (context, cr, 0, 0, width, height);
+	gdk_cairo_set_source_rgba (cr, &blackCol);
+	cairo_set_line_width (cr, 1.0);
+
+	for (i = 1; i < rows; ++i)
+	{
+		cairo_move_to (cr, 0, i * cellSize);
+		cairo_line_to (cr, cols * cellSize, i * cellSize);
+	}
+	cairo_stroke (cr);
+	for (j = 1; j < cols; ++j)
+	{
+		cairo_move_to (cr, j * cellSize, 0);
+		cairo_line_to (cr, j * cellSize, rows * cellSize);
+	}
+	cairo_stroke (cr);
+	cairo_restore (cr);
 
 	for (i = 0; i < rows; ++i)
 	{
