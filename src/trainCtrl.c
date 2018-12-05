@@ -849,6 +849,16 @@ gboolean clockTickCallback (gpointer data)
 				trackCtrl -> remoteProgMsg[0] = 0;
 			}
 		}
+		if (trackCtrl -> rxedCurrent != trackCtrl -> showCurrent)
+		{
+			if (trackCtrl -> labelPower != NULL)
+			{
+				char tempBuff[81];
+				sprintf (tempBuff, "Power [%d%%]", (trackCtrl -> rxedCurrent * 100) / 1024);
+				gtk_label_set_label (GTK_LABEL (trackCtrl -> labelPower), tempBuff);
+				trackCtrl -> showCurrent = trackCtrl -> rxedCurrent;
+			}
+		}
 	}
 	return TRUE;
 }
@@ -885,7 +895,7 @@ static void windowDestroy (GtkWidget *window, gpointer userData)
  */
 static void activate (GtkApplication *app, gpointer userData)
 {
-	int i;
+	int i, parseRetn = 0;
 	char tempBuff[21];
 	GtkWidget *grid, *label;
 	GtkWidget *vbox, *hbox;
@@ -900,7 +910,15 @@ static void activate (GtkApplication *app, gpointer userData)
 	gtk_application_set_app_menu (GTK_APPLICATION (app), G_MENU_MODEL (menu));
 	g_object_unref (menu);
 
-	if (parseTrackXML (trackCtrl, "track.xml"))
+	if (userData != NULL)
+	{
+		parseRetn = parseTrackXML (trackCtrl, (char *)userData);
+	}
+	else
+	{
+		parseRetn = parseTrackXML (trackCtrl, "track.xml");
+	}
+	if (parseRetn)
 	{
 		if (startConnectThread (trackCtrl))
 		{
@@ -917,8 +935,8 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_widget_set_halign (hbox, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (vbox), hbox);
 
-			label = gtk_label_new ("Power");
-			gtk_container_add (GTK_CONTAINER (hbox), label);
+			trackCtrl -> labelPower = gtk_label_new ("Power [0%]");
+			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> labelPower);
 			trackCtrl -> buttonPower = gtk_switch_new();
 			gtk_switch_set_active (GTK_SWITCH (trackCtrl -> buttonPower), FALSE);
 			g_signal_connect (trackCtrl -> buttonPower, "notify::active", G_CALLBACK (trackPower), trackCtrl);
@@ -999,6 +1017,13 @@ static void activate (GtkApplication *app, gpointer userData)
 	{
 		fprintf (stderr, "Unable to read configuration.\n");
 	}
+}
+
+void openFiles (GtkApplication *application, GFile **files, gint n_files, const gchar *hint)
+{
+	gchar *uri = g_file_get_uri (files[0]);
+	activate (application, uri);
+	g_free (uri);
 }
 
 /**********************************************************************************************************************
@@ -1091,10 +1116,11 @@ int main (int argc, char **argv)
 	int status = 1;
 	GtkApplication *app;
 
-	app = gtk_application_new ("Train.Control", G_APPLICATION_FLAGS_NONE);
+	app = gtk_application_new ("Train.Control", G_APPLICATION_HANDLES_OPEN); // G_APPLICATION_FLAGS_NONE);
 	g_signal_connect (app, "activate", G_CALLBACK (activate), NULL);
+	g_signal_connect (app, "open", G_CALLBACK (openFiles), NULL);
 	g_signal_connect (app, "shutdown", G_CALLBACK (shutdown), NULL);
-
+	
 	defaultIcon = gdk_pixbuf_new_from_xpm_data ((const char **) &train_xpm);
 	gtk_window_set_default_icon_name ("train_xpm");
 

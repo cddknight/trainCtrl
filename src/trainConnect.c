@@ -28,9 +28,6 @@
 #include "trainCtrl.h"
 #include "socketC.h"
 
-static pthread_t connectHandle;
-static int connectRunning = 0;
-
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  C H E C K  R E C V  B U F F E R                                                                                   *
@@ -125,6 +122,10 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 								words[3], words[4], binary);
 				}
 			}
+			else if (words[0][0] == 'a' && words[0][1] == 0 && wordNum == 2)
+			{
+				trackCtrl -> rxedCurrent = atoi (words[1]);
+			}
 			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 2)
 			{
 				trackCtrl -> serverSession = atoi (words[1]);
@@ -166,13 +167,14 @@ void *trainConnectThread (void *arg)
 {
 	int selRetn;
 	fd_set readfds;
+	time_t curRead = 0;
 	struct timeval timeout;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)arg;
 
-	connectRunning = 1;
+	trackCtrl -> connectRunning = 1;
 	trackCtrl -> serverHandle = -1;
 
-	while (connectRunning)
+	while (trackCtrl -> connectRunning)
 	{
 		if (trackCtrl -> serverHandle == -1)
 		{
@@ -180,6 +182,10 @@ void *trainConnectThread (void *arg)
 			if (trackCtrl -> serverHandle == -1)
 			{
 				sleep (5);
+			}
+			else
+			{
+				curRead = time (NULL) + 3;
 			}
 		}
 		else
@@ -212,6 +218,11 @@ void *trainConnectThread (void *arg)
 						CloseSocket (&trackCtrl -> serverHandle);
 					}
 				}
+			}
+			if (curRead < time (NULL) && trackCtrl -> serverHandle != -1)
+			{
+				SendSocket (trackCtrl -> serverHandle, "<c>", 3);
+				curRead = time (NULL) + 2;
 			}
 		}
 	}
@@ -259,7 +270,7 @@ int trainConnectSend (trackCtrlDef *trackCtrl, char *buffer, int len)
  */
 int startConnectThread(trackCtrlDef *trackCtrl)
 {
-	int retn = pthread_create (&connectHandle, NULL, trainConnectThread, trackCtrl);
+	int retn = pthread_create (&trackCtrl -> connectHandle, NULL, trainConnectThread, trackCtrl);
 	return (retn == 0 ? 1 : 0);
 }
 
@@ -276,7 +287,7 @@ int startConnectThread(trackCtrlDef *trackCtrl)
  */
 void stopConnectThread(trackCtrlDef *trackCtrl)
 {
-	connectRunning = 0;
-	pthread_join (connectHandle, NULL);
+	trackCtrl -> connectRunning = 0;
+	pthread_join (trackCtrl -> connectHandle, NULL);
 }
 

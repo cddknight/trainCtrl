@@ -69,14 +69,19 @@ typedef struct _trackCtrl
 	int serverHandle;
 	int serverSession;
 	int serverPort;
+	int connectRunning;
+	int rxedCurrent;
+	int showCurrent;
 	char server[81];
-	char remoteProgMsg[111];
+	pthread_t connectHandle;
 
+	char remoteProgMsg[111];
 	int remotePowerState;
 
 	GtkWidget *windowCtrl;
 	GtkWidget *windowTrack;
 	GtkWidget *dialogProgram;
+	GtkWidget *labelPower;
 	GtkWidget *buttonPower;
 	GtkWidget *buttonTrack;
 	GtkWidget *buttonProgram;
