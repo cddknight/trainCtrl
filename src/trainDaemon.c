@@ -48,7 +48,7 @@ int	 debugOutput		=	0;
 int	 goDaemon			=	0;
 int	 inDaemonise		=	0;
 int	 running			=	1;
-trackCtrlDef *trackCtrl;
+trackCtrlDef trackCtrl;
 
 typedef struct _handleInfo
 {
@@ -263,7 +263,7 @@ int SendSerial (char *buffer, int len)
  *  \param len Length of the buffer.
  *  \result None.
  */
-void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
+void checkRecvBuffer (char *buffer, int len)
 {
 	char words[41][41];
 	int wordNum = -1, i = 0, j = 0, inType = 0;
@@ -308,18 +308,21 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 			/* Track power status */
 			if (words[0][0] == 'p' && words[0][1] == 0 && wordNum == 2)
 			{
-				trackCtrl -> remotePowerState = atoi(words[1]);
+				trackCtrl.remotePowerState = atoi(words[1]);
 			}
 			/* Throttle status */
 			else if (words[0][0] == 'T' && words[0][1] == 0 && wordNum == 4)
 			{
 				int trainReg = atoi(words[1]), t;
-				for (t = 0; t < trackCtrl -> trainCount; ++t)
+				for (t = 0; t < trackCtrl.trainCount; ++t)
 				{
-					if (trackCtrl -> trainCtrl[t].trainReg == trainReg)
+					if (trackCtrl.trainCtrl != NULL)
 					{
-						trackCtrl -> trainCtrl[t].remoteCurSpeed = atoi(words[2]);
-						trackCtrl -> trainCtrl[t].remoteReverse = atoi(words[3]);
+						if (trackCtrl.trainCtrl[t].trainReg == trainReg)
+						{
+							trackCtrl.trainCtrl[t].remoteCurSpeed = atoi(words[2]);
+							trackCtrl.trainCtrl[t].remoteReverse = atoi(words[3]);
+						}
 					}
 				}
 			}
@@ -369,7 +372,7 @@ void ReceiveSerial (char *buffer, int len)
 		if (buffer[j] == '>')
 		{
 			outBuffer[outPosn] = 0;
-			checkRecvBuffer (trackCtrl, outBuffer, outPosn);
+			checkRecvBuffer (outBuffer, outPosn);
 			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
 			{
 				if (handleInfo[i].handle != -1)
@@ -461,19 +464,16 @@ int main (int argc, char *argv[])
 	/**********************************************************************************************************************
 	 * Allocate and read in the configuration.                                                                            *
 	 **********************************************************************************************************************/
-	if ((trackCtrl = (trackCtrlDef *)malloc (sizeof (trackCtrlDef))) == NULL)
-	{
-		putLogMessage (LOG_ERR, "Unable to allocate memory.");
-		exit (1);
-	}
-	memset (trackCtrl, 0, sizeof (trackCtrlDef));
-	trackCtrl -> serverPort = 12021;
-	strcpy (trackCtrl -> serialDevice, "/dev/ttyACM0");
-	if (!parseTrackXML (trackCtrl, xmlConfigFile))
+	trackCtrl.serverPort = 12021;
+	strcpy (trackCtrl.serialDevice, "/dev/ttyACM0");
+
+	if (!parseTrackXML (&trackCtrl, xmlConfigFile))
+	if (!i)
 	{
 		putLogMessage (LOG_ERR, "Unable to to read configuration.");
 		exit (1);
 	}
+
 	for (i = 0; i < MAX_HANDLES; ++i)
 	{
 		handleInfo[i].handle = -1;
@@ -490,23 +490,23 @@ int main (int argc, char *argv[])
 	/**********************************************************************************************************************
 	 * Setup listening serial and network ports.                                                                          *
 	 **********************************************************************************************************************/
-	handleInfo[SERIAL_HANDLE].handle = SerialPortSetup (trackCtrl -> serialDevice);
+	handleInfo[SERIAL_HANDLE].handle = SerialPortSetup (trackCtrl.serialDevice);
 	if (handleInfo[SERIAL_HANDLE].handle == -1)
 	{
-		putLogMessage (LOG_ERR, "Unable to connect to: %s", trackCtrl -> serialDevice);
+		putLogMessage (LOG_ERR, "Unable to connect to: %s", trackCtrl.serialDevice);
 	}
 	else
 	{
-		putLogMessage (LOG_INFO, "Listening on serial: %s", trackCtrl -> serialDevice);
+		putLogMessage (LOG_INFO, "Listening on serial: %s", trackCtrl.serialDevice);
 
-		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (trackCtrl -> serverPort);
+		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (trackCtrl.serverPort);
 		if (handleInfo[LISTEN_HANDLE].handle == -1)
 		{
 			putLogMessage (LOG_ERR, "Unable to listen on network port.");
 		}
 		else
 		{
-			putLogMessage (LOG_INFO, "Listening on port: %d", trackCtrl -> serverPort);
+			putLogMessage (LOG_INFO, "Listening on port: %d", trackCtrl.serverPort);
 		}
 	}
 
@@ -594,12 +594,15 @@ int main (int argc, char *argv[])
 							if (--connectedCount == 0)
 							{
 								int t;
-								for (t = 0; t < trackCtrl -> trainCount; ++t)
+								for (t = 0; t < trackCtrl.trainCount; ++t)
 								{
 									char tempBuff[81];
-									trainCtrlDef *train = &trackCtrl -> trainCtrl[t];
-									sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, -1, 0);
-									SendSerial (tempBuff, strlen (tempBuff));
+									if (trackCtrl.trainCtrl != NULL)
+									{
+										trainCtrlDef *train = &trackCtrl.trainCtrl[t];
+										sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, -1, 0);
+										SendSerial (tempBuff, strlen (tempBuff));
+									}
 									usleep (100000);
 								}
 								SendSerial ("<0>", 3);

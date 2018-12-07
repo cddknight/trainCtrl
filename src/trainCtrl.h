@@ -60,6 +60,8 @@ typedef struct _trainCtrl
 	GtkWidget *scaleSpeed;
 	GtkWidget *checkDir;
 	GtkWidget *labelNum;
+#else
+	void *xPointers[5];
 #endif
 }
 trainCtrlDef;
@@ -82,6 +84,9 @@ typedef struct _trackCtrl
 	char remoteProgMsg[111];
 	int remotePowerState;
 
+	trainCtrlDef *trainCtrl;
+	trackLayoutDef *trackLayout;
+
 #ifdef __GTK_H__
 	GtkWidget *windowCtrl;
 	GtkWidget *windowTrack;
@@ -93,10 +98,9 @@ typedef struct _trackCtrl
 	GtkWidget *labelProgram;
 	GtkWidget *drawingArea;
 	GtkWidget *statusBar;
+#else
+	void *xPointers[10];
 #endif
-
-	trainCtrlDef *trainCtrl;
-	trackLayoutDef *trackLayout;
 }
 trackCtrlDef;
 

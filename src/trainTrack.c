@@ -50,6 +50,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 	{
 		return;
 	}
+
 	memset (trackCtrl -> trainCtrl, 0, count * sizeof (trainCtrlDef));
 
 	for (curNode = inNode; curNode && loop < count; curNode = curNode->next)
