@@ -33,12 +33,14 @@
 #include <sys/stat.h>
 #include <termios.h>
 #include "socketC.h"
+#include "trainCtrl.h"
 
 #define MAX_HANDLES		22
 #define SERIAL_HANDLE	0
 #define LISTEN_HANDLE	1
 #define FIRST_HANDLE	2
 
+char xmlConfigFile[81]	=	"track.xml";
 char pidFileName[81]	=	"/var/run/trainDaemon.pid";
 char serialDevice[81]	=	"/dev/ttyACM0";
 int	 logOutput			=	0;
@@ -48,6 +50,7 @@ int	 goDaemon			=	0;
 int	 inDaemonise		=	0;
 int	 running			=	1;
 int	 listenPort			=	21000;
+trackCtrlDef *trackCtrl;
 
 typedef struct _handleInfo
 {
@@ -245,7 +248,103 @@ int SerialPortSetup (char *device)
  */
 int SendSerial (char *buffer, int len)
 {
+	putLogMessage (LOG_DEBUG, "Sending %s[%d] -> Serial", buffer, len);
 	return write (handleInfo[SERIAL_HANDLE].handle, buffer, len);
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  C H E C K  R E C V  B U F F E R                                                                                   *
+ *  ===============================                                                                                   *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Chech what we have received on the socket to see if we should update the display.
+ *  \param trackCtrl Which is the active track.
+ *  \param buffer Buffer that was received.
+ *  \param len Length of the buffer.
+ *  \result None.
+ */
+void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
+{
+	char words[41][41];
+	int wordNum = -1, i = 0, j = 0, inType = 0;
+
+/*------------------------------------------------------------------*
+	printf ("Rxed:[%s]\n", buffer);
+ *------------------------------------------------------------------*/
+	while (i < len)
+	{
+		if (buffer[i] == '<' && wordNum == -1)
+		{
+			words[wordNum = 0][0] = 0;
+		}
+		else if (wordNum >= 0 && ((buffer[i] >= 'a' && buffer[i] <= 'z') || (buffer[i] >= 'A' && buffer[i] <= 'Z')))
+		{
+			if (inType == 2 && j > 0)
+			{
+				words[++wordNum][0] = 0;
+				j = 0;
+			}
+			words[wordNum][j++] = buffer[i];
+			words[wordNum][j] = 0;
+			inType = 1;
+		}
+		else if (wordNum >= 0 && ((buffer[i] >= '0' && buffer[i] <= '9') || buffer[i] == '-' || buffer[i] == '.'))
+		{
+			if (inType == 1 && j > 0)
+			{
+				words[++wordNum][0] = 0;
+				j = 0;
+			}
+			words[wordNum][j++] = buffer[i];
+			words[wordNum][j] = 0;
+			inType = 2;
+		}
+		else if (wordNum >= 0 && buffer[i] == '>')
+		{
+			if (j)
+			{
+				words[++wordNum][0] = 0;
+			}
+			/* Track power status */
+			if (words[0][0] == 'p' && words[0][1] == 0 && wordNum == 2)
+			{
+				trackCtrl -> remotePowerState = atoi(words[1]);
+			}
+			/* Throttle status */
+			else if (words[0][0] == 'T' && words[0][1] == 0 && wordNum == 4)
+			{
+				int trainReg = atoi(words[1]), t;
+				for (t = 0; t < trackCtrl -> trainCount; ++t)
+				{
+					if (trackCtrl -> trainCtrl[t].trainReg == trainReg)
+					{
+						trackCtrl -> trainCtrl[t].remoteCurSpeed = atoi(words[2]);
+						trackCtrl -> trainCtrl[t].remoteReverse = atoi(words[3]);
+					}
+				}
+			}
+			inType = 0;
+			wordNum = -1;
+			j = 0;
+		}
+		else if (wordNum >= 0 && j > 0 && (buffer[i] == ' ' || buffer[i] == '|'))
+		{
+			words[++wordNum][0] = 0;
+			j = 0;
+		}
+		if (wordNum > 40)
+		{
+			words[wordNum = 40][0] = 0;
+			j = 0;
+		}
+		if (j > 40)
+		{
+			j = 40;
+		}
+		++i;
+	}
 }
 
 /**********************************************************************************************************************
@@ -272,6 +371,7 @@ void ReceiveSerial (char *buffer, int len)
 		if (buffer[j] == '>')
 		{
 			outBuffer[outPosn] = 0;
+			checkRecvBuffer (trackCtrl, outBuffer, outPosn);
 			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
 			{
 				if (handleInfo[i].handle != -1)
@@ -309,10 +409,14 @@ int main (int argc, char *argv[])
 	char inAddress[21] = "";
 	int i, c, connectedCount = 0;
 
-	while ((c = getopt(argc, argv, "s:l:dLID")) != -1)
+	while ((c = getopt(argc, argv, "c:s:l:dLID")) != -1)
 	{
 		switch (c)
 		{
+		case 'c':
+			strncpy (xmlConfigFile, optarg, 80);
+			break;
+
 		case 'd':
 			goDaemon = 1;
 			break;
@@ -338,7 +442,8 @@ int main (int argc, char *argv[])
 			break;
 
 		case '?':
-			fprintf (stderr, "Usage: trainDaemon [-l port] [-s device]\n");
+			fprintf (stderr, "Usage: trainDaemon [-c config] [-l port] [-s device]\n");
+			fprintf (stderr, "       -c config.xml . . Name of the config file\n");
 			fprintf (stderr, "       -l port . . . . . Listening port number.\n");
 			fprintf (stderr, "       -s serial . . . . DCC++ serial device.\n");
 			fprintf (stderr, "       -d  . . . . . . . Deamonise the process.\n");
@@ -347,6 +452,17 @@ int main (int argc, char *argv[])
 			fprintf (stderr, "       -D  . . . . . . . Write debug messages.\n");
 			exit (1);
 		}
+	}
+	if ((trackCtrl = (trackCtrlDef *)malloc (sizeof (trackCtrlDef))) == NULL)
+	{
+		putLogMessage (LOG_ERR, "Unable to allocate memory.");
+		exit (1);
+	}
+	memset (trackCtrl, 0, sizeof (trackCtrlDef));
+	if (!parseTrackXML (trackCtrl, xmlConfigFile))
+	{
+		putLogMessage (LOG_ERR, "Unable to to read configuration.");
+		exit (1);
 	}
 	if (goDaemon)
 	{
@@ -447,8 +563,6 @@ int main (int argc, char *argv[])
 						if ((readBytes = RecvSocket (handleInfo[i].handle, buffer, 10240)) > 0)
 						{
 							buffer[readBytes] = 0;
-							putLogMessage (LOG_DEBUG, "Sending %s bytes %s(%d) -> Serial", buffer,
-									handleInfo[i].localName, handleInfo[i].handle);
 							SendSerial (buffer, readBytes);
 						}
 						else if (readBytes == 0)
@@ -457,6 +571,15 @@ int main (int argc, char *argv[])
 							CloseSocket (&handleInfo[i].handle);
 							if (--connectedCount == 0)
 							{
+								int t;
+								for (t = 0; t < trackCtrl -> trainCount; ++t)
+								{
+									char tempBuff[81];
+									trainCtrlDef *train = &trackCtrl -> trainCtrl[t];
+									sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, -1, 0);
+									SendSerial (tempBuff, strlen (tempBuff));
+									usleep (100000);
+								}
 								SendSerial ("<0>", 3);
 							}
 						}
