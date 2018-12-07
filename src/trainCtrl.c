@@ -915,7 +915,7 @@ static void activate (GtkApplication *app, gpointer userData)
 {
 	int i, parseRetn = 0;
 	char tempBuff[21];
-	GtkWidget *grid, *label;
+	GtkWidget *grid;
 	GtkWidget *vbox, *hbox;
 	GMenu *menu;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)malloc (sizeof (trackCtrlDef));
