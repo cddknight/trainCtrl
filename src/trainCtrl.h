@@ -75,6 +75,8 @@ typedef struct _trackCtrl
 	int rxedCurrent;
 	int showCurrent;
 	char server[81];
+	char trackName[81];
+	char serialDevice[81];
 	pthread_t connectHandle;
 
 	char remoteProgMsg[111];

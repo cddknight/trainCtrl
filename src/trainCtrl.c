@@ -914,7 +914,7 @@ static void windowDestroy (GtkWidget *window, gpointer userData)
 static void activate (GtkApplication *app, gpointer userData)
 {
 	int i, parseRetn = 0;
-	char tempBuff[21];
+	char tempBuff[161];
 	GtkWidget *grid;
 	GtkWidget *vbox, *hbox;
 	GMenu *menu;
@@ -940,9 +940,10 @@ static void activate (GtkApplication *app, gpointer userData)
 	{
 		if (startConnectThread (trackCtrl))
 		{
+			sprintf (tempBuff, "Track Control - %s", trackCtrl -> trackName);
 			trackCtrl -> windowCtrl = gtk_application_window_new (app);
 			g_signal_connect (trackCtrl -> windowCtrl, "destroy", G_CALLBACK (windowDestroy), trackCtrl);
-			gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowCtrl), "Train Control");
+			gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowCtrl), tempBuff);
 			gtk_window_set_icon_name (GTK_WINDOW (trackCtrl -> windowCtrl), "preferences-desktop");
 			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), 300, 500);
 

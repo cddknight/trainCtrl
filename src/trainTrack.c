@@ -243,16 +243,26 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 		{
 			if (level == 0 && strcmp ((char *)curNode->name, "track") == 0)
 			{
-				xmlChar *serverStr, *portStr;
+				xmlChar *nameStr, *serverStr, *portStr, *serialStr;
+				if ((nameStr = xmlGetProp(curNode, (const xmlChar*)"name")) != NULL)
+				{
+					strncpy (trackCtrl -> trackName, (char *)nameStr, 80);
+					xmlFree (nameStr);
+				}
 				if ((serverStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
 				{
 					strncpy (trackCtrl -> server, (char *)serverStr, 80);
 					xmlFree (serverStr);
-					if ((portStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)
-					{
-						sscanf ((char *)portStr, "%d", &trackCtrl -> serverPort);
-						xmlFree (portStr);
-					}
+				}
+				if ((portStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)
+				{
+					sscanf ((char *)portStr, "%d", &trackCtrl -> serverPort);
+					xmlFree (portStr);
+				}
+				if ((serialStr = xmlGetProp(curNode, (const xmlChar*)"device")) != NULL)
+				{
+					strncpy (trackCtrl -> serialDevice, (char *)serialStr, 80);
+					xmlFree (serialStr);
 				}
 				parseTree (trackCtrl, curNode -> children, 1);
 			}

@@ -42,14 +42,12 @@
 
 char xmlConfigFile[81]	=	"track.xml";
 char pidFileName[81]	=	"/var/run/trainDaemon.pid";
-char serialDevice[81]	=	"/dev/ttyACM0";
 int	 logOutput			=	0;
 int	 infoOutput			=	0;
 int	 debugOutput		=	0;
 int	 goDaemon			=	0;
 int	 inDaemonise		=	0;
 int	 running			=	1;
-int	 listenPort			=	21000;
 trackCtrlDef *trackCtrl;
 
 typedef struct _handleInfo
@@ -248,7 +246,7 @@ int SerialPortSetup (char *device)
  */
 int SendSerial (char *buffer, int len)
 {
-	putLogMessage (LOG_DEBUG, "Sending %s[%d] -> Serial", buffer, len);
+	putLogMessage (LOG_DEBUG, "Sending -> Serial: %s[%d]", buffer, len);
 	return write (handleInfo[SERIAL_HANDLE].handle, buffer, len);
 }
 
@@ -392,6 +390,27 @@ void ReceiveSerial (char *buffer, int len)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  H E L P  T H E M                                                                                                  *
+ *  ================                                                                                                  *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Display command line help information.
+ *  \result None (program exited).
+ */
+void helpThem()
+{
+	fprintf (stderr, "Usage: trainDaemon [-c config] [-l port] [-s device]\n");
+	fprintf (stderr, "       -c config.xml . . Name of the config file\n");
+	fprintf (stderr, "       -d  . . . . . . . Deamonise the process.\n");
+	fprintf (stderr, "       -L  . . . . . . . Write messages to syslog.\n");
+	fprintf (stderr, "       -I  . . . . . . . Write info messages.\n");
+	fprintf (stderr, "       -D  . . . . . . . Write debug messages.\n");
+	exit (1);
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  M A I N                                                                                                           *
  *  =======                                                                                                           *
  *                                                                                                                    *
@@ -409,7 +428,7 @@ int main (int argc, char *argv[])
 	char inAddress[21] = "";
 	int i, c, connectedCount = 0;
 
-	while ((c = getopt(argc, argv, "c:s:l:dLID")) != -1)
+	while ((c = getopt(argc, argv, "c:dLID")) != -1)
 	{
 		switch (c)
 		{
@@ -419,10 +438,6 @@ int main (int argc, char *argv[])
 
 		case 'd':
 			goDaemon = 1;
-			break;
-
-		case 'l':
-			listenPort = atoi (optarg);
 			break;
 
 		case 'D':
@@ -437,61 +452,67 @@ int main (int argc, char *argv[])
 			logOutput = 1;
 			break;
 
-		case 's':
-			strcpy (serialDevice, optarg);
-			break;
-
 		case '?':
-			fprintf (stderr, "Usage: trainDaemon [-c config] [-l port] [-s device]\n");
-			fprintf (stderr, "       -c config.xml . . Name of the config file\n");
-			fprintf (stderr, "       -l port . . . . . Listening port number.\n");
-			fprintf (stderr, "       -s serial . . . . DCC++ serial device.\n");
-			fprintf (stderr, "       -d  . . . . . . . Deamonise the process.\n");
-			fprintf (stderr, "       -L  . . . . . . . Write messages to syslog.\n");
-			fprintf (stderr, "       -I  . . . . . . . Write info messages.\n");
-			fprintf (stderr, "       -D  . . . . . . . Write debug messages.\n");
-			exit (1);
+			helpThem();
+			break;
 		}
 	}
+
+	/**********************************************************************************************************************
+	 * Allocate and read in the configuration.                                                                            *
+	 **********************************************************************************************************************/
 	if ((trackCtrl = (trackCtrlDef *)malloc (sizeof (trackCtrlDef))) == NULL)
 	{
 		putLogMessage (LOG_ERR, "Unable to allocate memory.");
 		exit (1);
 	}
 	memset (trackCtrl, 0, sizeof (trackCtrlDef));
+	trackCtrl -> serverPort = 12021;
+	strcpy (trackCtrl -> serialDevice, "/dev/ttyACM0");
 	if (!parseTrackXML (trackCtrl, xmlConfigFile))
 	{
 		putLogMessage (LOG_ERR, "Unable to to read configuration.");
 		exit (1);
-	}
-	if (goDaemon)
-	{
-		daemonize();
 	}
 	for (i = 0; i < MAX_HANDLES; ++i)
 	{
 		handleInfo[i].handle = -1;
 	}
 
-	handleInfo[SERIAL_HANDLE].handle = SerialPortSetup (serialDevice);
+	/**********************************************************************************************************************
+	 * Daemonize if needed, all port will close.                                                                          *
+	 **********************************************************************************************************************/
+	if (goDaemon)
+	{
+		daemonize();
+	}
+
+	/**********************************************************************************************************************
+	 * Setup listening serial and network ports.                                                                          *
+	 **********************************************************************************************************************/
+	handleInfo[SERIAL_HANDLE].handle = SerialPortSetup (trackCtrl -> serialDevice);
 	if (handleInfo[SERIAL_HANDLE].handle == -1)
 	{
-		putLogMessage (LOG_ERR, "Unable to connect to serial port.");
+		putLogMessage (LOG_ERR, "Unable to connect to: %s", trackCtrl -> serialDevice);
 	}
 	else
 	{
-		putLogMessage (LOG_INFO, "Listening on serial: %s", serialDevice);
+		putLogMessage (LOG_INFO, "Listening on serial: %s", trackCtrl -> serialDevice);
 
-		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (listenPort);
+		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (trackCtrl -> serverPort);
 		if (handleInfo[LISTEN_HANDLE].handle == -1)
 		{
-			putLogMessage (LOG_ERR, "Unable to listen as a server");
+			putLogMessage (LOG_ERR, "Unable to listen on network port.");
 		}
 		else
 		{
-			putLogMessage (LOG_INFO, "Listening on port %d", listenPort);
+			putLogMessage (LOG_INFO, "Listening on port: %d", trackCtrl -> serverPort);
 		}
 	}
+
+	/**********************************************************************************************************************
+	 * Loop on select, getting and sending work.                                                                          *
+	 **********************************************************************************************************************/
 	while (handleInfo[LISTEN_HANDLE].handle != -1 && running)
 	{
 		int selRetn;
@@ -509,7 +530,7 @@ int main (int argc, char *argv[])
 		selRetn = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
 		if (selRetn == -1)
 		{
-			putLogMessage (LOG_ERR, "Select error %d:%s", errno, strerror (errno));
+			putLogMessage (LOG_ERR, "Select error: %s[%d]", strerror (errno), errno);
 			CloseSocket (&handleInfo[0].handle);
 		}
 		if (selRetn > 0)
@@ -526,6 +547,7 @@ int main (int argc, char *argv[])
 							char outBuffer[41];
 							handleInfo[i].handle = newSocket;
 							strncpy (handleInfo[i].localName, inAddress, 40);
+							putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
 							sprintf (outBuffer, "<V %d>", handleInfo[i].handle);
 							SendSocket (handleInfo[i].handle, outBuffer, strlen (outBuffer));
 							SendSerial ("<s>", 3);
@@ -535,7 +557,7 @@ int main (int argc, char *argv[])
 					}
 					if (i == MAX_HANDLES)
 					{
-						putLogMessage (LOG_INFO, "No free handles.");
+						putLogMessage (LOG_ERR, "No free handles.");
 						CloseSocket (&newSocket);
 					}
 				}
@@ -547,7 +569,7 @@ int main (int argc, char *argv[])
 				if ((readBytes = read (handleInfo[SERIAL_HANDLE].handle, buffer, 10240)) > 0)
 				{
 					buffer[readBytes] = 0;
-					putLogMessage (LOG_DEBUG, "Serial read %d bytes [%s]", readBytes, buffer);
+					putLogMessage (LOG_DEBUG, "Received <- Serial: %s[%d]", buffer, readBytes);
 					ReceiveSerial (buffer, readBytes);
 				}
 			}
@@ -567,7 +589,7 @@ int main (int argc, char *argv[])
 						}
 						else if (readBytes == 0)
 						{
-							putLogMessage (LOG_INFO, "Socket %s(%d) closed", handleInfo[i].localName, handleInfo[i].handle);
+							putLogMessage (LOG_INFO, "Socket closed: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
 							CloseSocket (&handleInfo[i].handle);
 							if (--connectedCount == 0)
 							{
@@ -588,6 +610,9 @@ int main (int argc, char *argv[])
 			}
 		}
 	}
+	/**********************************************************************************************************************
+	 * Killed so tidy up.                                                                                                 *
+	 **********************************************************************************************************************/
 	unlink (pidFileName);
 	return 0;
 }
