@@ -872,7 +872,14 @@ gboolean clockTickCallback (gpointer data)
 			if (trackCtrl -> labelPower != NULL)
 			{
 				char tempBuff[81];
-				sprintf (tempBuff, "Power [%d%%]", (trackCtrl -> rxedCurrent * 100) / 1024);
+				if (trackCtrl -> powerState == POWER_ON)
+				{
+					sprintf (tempBuff, "Power [%d%%]", (trackCtrl -> rxedCurrent * 100) / 1024);
+				}
+				else
+				{
+					sprintf (tempBuff, "Power [0%%]");
+				}
 				gtk_label_set_label (GTK_LABEL (trackCtrl -> labelPower), tempBuff);
 				trackCtrl -> showCurrent = trackCtrl -> rxedCurrent;
 			}

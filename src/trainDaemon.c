@@ -32,6 +32,8 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <termios.h>
+#include <time.h>
+
 #include "socketC.h"
 #include "trainCtrl.h"
 
@@ -308,7 +310,7 @@ void checkRecvBuffer (char *buffer, int len)
 			/* Track power status */
 			if (words[0][0] == 'p' && words[0][1] == 0 && wordNum == 2)
 			{
-				trackCtrl.remotePowerState = atoi(words[1]);
+				trackCtrl.powerState = atoi(words[1]);
 			}
 			/* Throttle status */
 			else if (words[0][0] == 'T' && words[0][1] == 0 && wordNum == 4)
@@ -320,8 +322,8 @@ void checkRecvBuffer (char *buffer, int len)
 					{
 						if (trackCtrl.trainCtrl[t].trainReg == trainReg)
 						{
-							trackCtrl.trainCtrl[t].remoteCurSpeed = atoi(words[2]);
-							trackCtrl.trainCtrl[t].remoteReverse = atoi(words[3]);
+							trackCtrl.trainCtrl[t].curSpeed = atoi(words[2]);
+							trackCtrl.trainCtrl[t].reverse = atoi(words[3]);
 						}
 					}
 				}
@@ -430,6 +432,7 @@ int main (int argc, char *argv[])
 	struct timeval timeout;
 	char inAddress[21] = "";
 	int i, c, connectedCount = 0;
+	time_t curRead = time(NULL) + 5;
 
 	while ((c = getopt(argc, argv, "c:dLID")) != -1)
 	{
@@ -610,6 +613,11 @@ int main (int argc, char *argv[])
 						}
 					}
 				}
+			}
+			if (curRead < time (NULL) && trackCtrl.powerState == POWER_ON)
+			{
+				SendSerial ("<c>", 3);
+				curRead = time (NULL) + 2;
 			}
 		}
 	}

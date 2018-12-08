@@ -171,7 +171,6 @@ void *trainConnectThread (void *arg)
 {
 	int selRetn;
 	fd_set readfds;
-	time_t curRead = 0;
 	struct timeval timeout;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)arg;
 
@@ -186,10 +185,6 @@ void *trainConnectThread (void *arg)
 			if (trackCtrl -> serverHandle == -1)
 			{
 				sleep (5);
-			}
-			else
-			{
-				curRead = time (NULL) + 3;
 			}
 		}
 		else
@@ -222,11 +217,6 @@ void *trainConnectThread (void *arg)
 						CloseSocket (&trackCtrl -> serverHandle);
 					}
 				}
-			}
-			if (curRead < time (NULL) && trackCtrl -> serverHandle != -1)
-			{
-				SendSocket (trackCtrl -> serverHandle, "<c>", 3);
-				curRead = time (NULL) + 2;
 			}
 		}
 	}
