@@ -93,7 +93,12 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 			/* Track power status */
 			if (words[0][0] == 'p' && words[0][1] == 0 && wordNum == 2)
 			{
-				trackCtrl -> remotePowerState = atoi(words[1]);
+				int power = atoi(words[1]);
+				trackCtrl -> remotePowerState = power;
+				if (!power)
+				{
+					trackCtrl -> remoteCurrent = -1;
+				}
 			}
 			/* Throttle status */
 			else if (words[0][0] == 'T' && words[0][1] == 0 && wordNum == 4)
@@ -128,7 +133,10 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 			/* Current monitor */
 			else if (words[0][0] == 'a' && words[0][1] == 0 && wordNum == 2)
 			{
-				trackCtrl -> rxedCurrent = atoi (words[1]);
+				if (trackCtrl -> powerState == POWER_ON)
+				{
+					trackCtrl -> remoteCurrent = atoi (words[1]);
+				}
 			}
 			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 2)
 			{

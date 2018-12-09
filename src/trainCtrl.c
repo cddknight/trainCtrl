@@ -867,21 +867,21 @@ gboolean clockTickCallback (gpointer data)
 				trackCtrl -> remoteProgMsg[0] = 0;
 			}
 		}
-		if (trackCtrl -> rxedCurrent != trackCtrl -> showCurrent)
+		if (trackCtrl -> remoteCurrent != trackCtrl -> shownCurrent)
 		{
 			if (trackCtrl -> labelPower != NULL)
 			{
 				char tempBuff[81];
-				if (trackCtrl -> powerState == POWER_ON)
+				if (trackCtrl -> powerState == POWER_ON && trackCtrl -> remoteCurrent >= 0)
 				{
-					sprintf (tempBuff, "Power [%d%%]", (trackCtrl -> rxedCurrent * 100) / 1024);
+					sprintf (tempBuff, "Power [%d%%]", (trackCtrl -> remoteCurrent * 100) / 1024);
 				}
 				else
 				{
-					sprintf (tempBuff, "Power [0%%]");
+					strcpy (tempBuff, "Power");
 				}
 				gtk_label_set_label (GTK_LABEL (trackCtrl -> labelPower), tempBuff);
-				trackCtrl -> showCurrent = trackCtrl -> rxedCurrent;
+				trackCtrl -> shownCurrent = trackCtrl -> remoteCurrent;
 			}
 		}
 	}
@@ -962,7 +962,6 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_container_add (GTK_CONTAINER (vbox), hbox);
 
 			trackCtrl -> labelPower = gtk_label_new ("Power");
-			trackCtrl -> showCurrent = -1;
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> labelPower);
 			trackCtrl -> buttonPower = gtk_switch_new();
 			gtk_switch_set_active (GTK_SWITCH (trackCtrl -> buttonPower), FALSE);

@@ -519,7 +519,7 @@ int main (int argc, char *argv[])
 	while (handleInfo[LISTEN_HANDLE].handle != -1 && running)
 	{
 		int selRetn;
-		timeout.tv_sec = 10;
+		timeout.tv_sec = 2;
 		timeout.tv_usec = 0;
 
 		FD_ZERO(&readfds);
@@ -614,11 +614,11 @@ int main (int argc, char *argv[])
 					}
 				}
 			}
-			if (curRead < time (NULL) && trackCtrl.powerState == POWER_ON)
-			{
-				SendSerial ("<c>", 3);
-				curRead = time (NULL) + 2;
-			}
+		}
+		if (curRead < time (NULL) && trackCtrl.powerState == POWER_ON)
+		{
+			SendSerial ("<c>", 3);
+			curRead = time (NULL) + 2;
 		}
 	}
 	/**********************************************************************************************************************

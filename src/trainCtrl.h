@@ -74,8 +74,7 @@ typedef struct _trackCtrl
 	int serverSession;
 	int serverPort;
 	int connectRunning;
-	int rxedCurrent;
-	int showCurrent;
+	int shownCurrent;
 	char server[81];
 	char trackName[81];
 	char serialDevice[81];
@@ -83,6 +82,7 @@ typedef struct _trackCtrl
 
 	char remoteProgMsg[111];
 	int remotePowerState;
+	int remoteCurrent;
 
 	trainCtrlDef *trainCtrl;
 	trackLayoutDef *trackLayout;
