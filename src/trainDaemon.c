@@ -254,13 +254,39 @@ int SendSerial (char *buffer, int len)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  S T O P  A L L  T R A I N S                                                                                       *
+ *  ===========================                                                                                       *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Stop all the trains, set throttles to -1, hard stop.
+ *  \result None.
+ */
+void stopAllTrains ()
+{
+	int t;
+	char tempBuff[81];
+
+	for (t = 0; t < trackCtrl.trainCount; ++t)
+	{
+		if (trackCtrl.trainCtrl != NULL)
+		{
+			trainCtrlDef *train = &trackCtrl.trainCtrl[t];
+			sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, -1, 0);
+			SendSerial (tempBuff, strlen (tempBuff));
+		}
+		usleep (100000);
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  C H E C K  R E C V  B U F F E R                                                                                   *
  *  ===============================                                                                                   *
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
  *  \brief Chech what we have received on the socket to see if we should update the display.
- *  \param trackCtrl Which is the active track.
  *  \param buffer Buffer that was received.
  *  \param len Length of the buffer.
  *  \result None.
@@ -307,10 +333,14 @@ void checkRecvBuffer (char *buffer, int len)
 			{
 				words[++wordNum][0] = 0;
 			}
-			/* Track power status */
+			/* Track power status - power off stop trains */
 			if (words[0][0] == 'p' && words[0][1] == 0 && wordNum == 2)
 			{
-				trackCtrl.powerState = atoi(words[1]);
+				int power = atoi(words[1]);
+				if ((trackCtrl.powerState = power) == 0)
+				{
+					stopAllTrains ();
+				}
 			}
 			/* Throttle status */
 			else if (words[0][0] == 'T' && words[0][1] == 0 && wordNum == 4)
@@ -596,18 +626,7 @@ int main (int argc, char *argv[])
 							CloseSocket (&handleInfo[i].handle);
 							if (--connectedCount == 0)
 							{
-								int t;
-								for (t = 0; t < trackCtrl.trainCount; ++t)
-								{
-									char tempBuff[81];
-									if (trackCtrl.trainCtrl != NULL)
-									{
-										trainCtrlDef *train = &trackCtrl.trainCtrl[t];
-										sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, -1, 0);
-										SendSerial (tempBuff, strlen (tempBuff));
-									}
-									usleep (100000);
-								}
+								stopAllTrains ();
 								SendSerial ("<0>", 3);
 							}
 						}
