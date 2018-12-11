@@ -424,17 +424,6 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 				cairo_arc (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf, (double)cellSize / 7.5, 0, 2 * G_PI);
 				cairo_stroke (cr);
 			}
-			if (points)
-			{
-				gdk_cairo_set_source_rgba (cr, &pointCol);
-				cairo_arc (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf, (double)cellSize / 7.5, 0, 2 * G_PI);
-				cairo_fill (cr);
-				cairo_stroke (cr);
-
-				gdk_cairo_set_source_rgba (cr, &circleCol);
-				cairo_arc (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf, (double)cellSize / 7.5, 0, 2 * G_PI);
-				cairo_stroke (cr);
-			}
 		}
 	}
 	return FALSE;
