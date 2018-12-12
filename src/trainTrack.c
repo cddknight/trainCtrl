@@ -382,17 +382,30 @@ int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName)
 		}
 		else if (trackCtrl -> configPort > 0 && trackCtrl -> server[0])
 		{
-			int cfgSocket = ConnectClientSocket (trackCtrl -> server, trackCtrl -> configPort);
-			if (cfgSocket != -1)
+			int cfgSocket = -1;
+			char addrBuffer[81];
+
+			if (!GetAddressFromName (trackCtrl -> server, addrBuffer))
+			{
+				strcpy (addrBuffer, trackCtrl -> server);
+			}
+			if ((cfgSocket = ConnectClientSocket (addrBuffer, trackCtrl -> configPort)) != -1)
 			{
 				if ((memoryXML = (char *)malloc (10241)) != NULL)
 				{
-					int readBytes;
-					if ((readBytes = RecvSocket (cfgSocket, memoryXML, 10240)) > 0)
+					int totalRead = 0, thisRead = 0;
+					sleep (1);
+					while ((thisRead = RecvSocket (cfgSocket, &memoryXML[totalRead], 10240 - totalRead)) > 0)
 					{
-						memoryXML[readBytes] = 0;
+						totalRead += thisRead;
+						memoryXML[totalRead] = 0;
+					}
+					if (totalRead)
+					{
 						retn = parseMemoryXML (trackCtrl);
 					}
+					free (memoryXML);
+					memoryXML = &memoryXMLDef[0];
 				}
 				CloseSocket (&cfgSocket);
 			}

@@ -928,7 +928,7 @@ static void activate (GtkApplication *app, gpointer userData)
 	}
 	else
 	{
-		parseRetn = parseTrackXML (trackCtrl, "track.xml");
+		parseRetn = parseTrackXML (trackCtrl, "/etc/trainconfig.xml");
 	}
 	if (!parseRetn)
 	{
