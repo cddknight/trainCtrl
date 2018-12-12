@@ -355,6 +355,7 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
  *  \brief Read in and process the configuration file.
  *  \param trackCtrl Which is the active track.
  *  \param fileName File name to read in.
+ *  \param level Level to stop too much recursion.
  *  \result 1 if config read OK, 0 on error.
  */
 int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level)
@@ -428,6 +429,7 @@ int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level)
 /**
  *  \brief If all else fails load the default track from memory.
  *  \param trackCtrl Where to read in to.
+ *  \param buffer Pointer to a buffer, NULL will use default buffer.
  *  \result 1 if track was loaded.
  */
 int parseMemoryXML (trackCtrlDef *trackCtrl, char *buffer)
