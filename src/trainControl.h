@@ -73,6 +73,7 @@ typedef struct _trackCtrl
 	int serverHandle;
 	int serverSession;
 	int serverPort;
+	int configPort;
 	int connectRunning;
 	int shownCurrent;
 	char server[81];

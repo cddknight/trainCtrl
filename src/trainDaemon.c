@@ -37,10 +37,11 @@
 #include "socketC.h"
 #include "trainControl.h"
 
-#define MAX_HANDLES		22
+#define MAX_HANDLES		23
 #define SERIAL_HANDLE	0
 #define LISTEN_HANDLE	1
-#define FIRST_HANDLE	2
+#define CONFIG_HANDLE	2
+#define FIRST_HANDLE	3
 
 char xmlConfigFile[81]	=	"track.xml";
 char pidFileName[81]	=	"/var/run/trainDaemon.pid";
@@ -425,6 +426,39 @@ void ReceiveSerial (char *buffer, int len)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  S E N D  C O N F I G  F I L E                                                                                     *
+ *  =============================                                                                                     *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Send out the current config file".
+ *  \param newSocket Socket to send to.
+ *  \result None.
+ */
+void sendConfigFile (int newSocket)
+{
+	struct stat statbuf;
+	if (stat (xmlConfigFile, &statbuf) == 0)
+	{
+		FILE *inFile = fopen (xmlConfigFile, "r");
+		if (inFile != NULL)
+		{
+			int bytesRead;
+			char buffer[10241];
+
+			sprintf (buffer, "<!-- size=\"%d\" -->\n", statbuf.st_size);
+			SendSocket (newSocket, buffer, strlen (buffer));
+			while ((bytesRead = fread (buffer, 1, 10240, inFile)) > 0)
+			{
+				SendSocket (newSocket, buffer, bytesRead);
+			}
+			fclose (inFile);
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  H E L P  T H E M                                                                                                  *
  *  ================                                                                                                  *
  *                                                                                                                    *
@@ -531,6 +565,10 @@ int main (int argc, char *argv[])
 	{
 		putLogMessage (LOG_INFO, "Listening on serial: %s", trackCtrl.serialDevice);
 
+		if (trackCtrl.configPort > 0)	
+		{
+			handleInfo[CONFIG_HANDLE].handle = ServerSocketSetup (trackCtrl.configPort);
+		}
 		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (trackCtrl.serverPort);
 		if (handleInfo[LISTEN_HANDLE].handle == -1)
 		{
@@ -592,6 +630,15 @@ int main (int argc, char *argv[])
 						putLogMessage (LOG_ERR, "No free handles.");
 						CloseSocket (&newSocket);
 					}
+				}
+			}
+			if (FD_ISSET(handleInfo[CONFIG_HANDLE].handle, &readfds))
+			{
+				int newSocket = ServerSocketAccept (handleInfo[LISTEN_HANDLE].handle, inAddress);
+				if (newSocket != -1)
+				{
+					sendConfigFile (newSocket);
+					CloseSocket (&newSocket);
 				}
 			}
 			if (FD_ISSET(handleInfo[SERIAL_HANDLE].handle, &readfds))

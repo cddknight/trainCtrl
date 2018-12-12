@@ -27,29 +27,32 @@
 
 #include "trainControl.h"
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 static char memoryXML[] = 
 "<track name=\"Simple Track\" server=\"127.0.0.1\" port=\"30330\" device=\"/dev/ttyACM0\">"\
-"  <trains count=\"1\">"\
-"    <train num=\"1234\" id=\"3\" desc=\"Train\"/>"\
-"  </trains>"\
-"  <cells rows=\"4\" cols=\"4\" size=\"50\">"\
-"    <cellRow row=\"0\">"\
-"      <cell col=\"1\" layout=\"20\"/>"\
-"      <cell col=\"2\" layout=\"129\"/>"\
-"    </cellRow>"\
-"    <cellRow row=\"1\">"\
-"      <cell col=\"0\" layout=\"72\"/>"\
-"      <cell col=\"3\" layout=\"40\"/>"\
-"    </cellRow>"\
-"    <cellRow row=\"2\">"\
-"      <cell col=\"0\" layout=\"130\"/>"\
-"      <cell col=\"3\" layout=\"18\"/>"\
-"    </cellRow>"\
-"    <cellRow row=\"3\">"\
-"      <cell col=\"1\" layout=\"36\"/>"\
-"      <cell col=\"2\" layout=\"65\"/>"\
-"    </cellRow>"\
-"  </cells>"\
+"<trains count=\"1\">"\
+"<train num=\"1234\" id=\"3\" desc=\"Train\"/>"\
+"</trains>"\
+"<cells rows=\"4\" cols=\"4\" size=\"50\">"\
+"<cellRow row=\"0\">"\
+"<cell col=\"1\" layout=\"20\"/>"\
+"<cell col=\"2\" layout=\"129\"/>"\
+"</cellRow>"\
+"<cellRow row=\"1\">"\
+"<cell col=\"0\" layout=\"72\"/>"\
+"<cell col=\"3\" layout=\"40\"/>"\
+"</cellRow>"\
+"<cellRow row=\"2\">"\
+"<cell col=\"0\" layout=\"130\"/>"\
+"<cell col=\"3\" layout=\"18\"/>"\
+"</cellRow>"\
+"<cellRow row=\"3\">"\
+"<cell col=\"1\" layout=\"36\"/>"\
+"<cell col=\"2\" layout=\"65\"/>"\
+"</cellRow>"\
+"</cells>"\
 "</track>";
 
 /**********************************************************************************************************************
@@ -269,7 +272,7 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 		{
 			if (level == 0 && strcmp ((char *)curNode->name, "track") == 0)
 			{
-				xmlChar *nameStr, *serverStr, *portStr, *serialStr;
+				xmlChar *nameStr, *serverStr, *portStr, *cfgPortStr, *serialStr;
 				if ((nameStr = xmlGetProp(curNode, (const xmlChar*)"name")) != NULL)
 				{
 					strncpy (trackCtrl -> trackName, (char *)nameStr, 80);
@@ -284,6 +287,11 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 				{
 					sscanf ((char *)portStr, "%d", &trackCtrl -> serverPort);
 					xmlFree (portStr);
+				}
+				if ((cfgPortStr = xmlGetProp(curNode, (const xmlChar*)"config")) != NULL)
+				{
+					sscanf ((char *)cfgPortStr, "%d", &trackCtrl -> configPort);
+					xmlFree (cfgPortStr);
 				}
 				if ((serialStr = xmlGetProp(curNode, (const xmlChar*)"device")) != NULL)
 				{
@@ -369,16 +377,23 @@ int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName)
 		{
 			retn = 1;
 		}
-		else
-		{
-			printf ("Unable to read config file: %s\n", fileName);
-		}
 	}
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
 	return retn;
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P A R S E  M E M O R Y  X M L                                                                                     *
+ *  =============================                                                                                     *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief If all else fails load the default track from memory.
+ *  \param trackCtrl Where to read in to.
+ *  \result 1 if track was loaded.
+ */
 int parseMemoryXML (trackCtrlDef *trackCtrl)
 {
 	int retn = 0;
@@ -404,5 +419,12 @@ int parseMemoryXML (trackCtrlDef *trackCtrl)
 	}
 	xmlCleanupParser();
 	return retn;
+}
+
+int findTrackFile (char *fileName)
+{
+	if (fileName[0])
+	{
+	}
 }
 
