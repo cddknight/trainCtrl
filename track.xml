@@ -2,7 +2,7 @@
   <trains count="3">
     <train num="47451" id="305" desc="Jinty"/>
     <train num="68035" id="300" desc="J94"/>
-    <train num="12345" id="5" desc="Testing"/>
+    <train num="16634" id="310" desc="Jinty"/>
   </trains>
   <cells rows="13" cols="16" size="32">
     <cellRow row="0">
