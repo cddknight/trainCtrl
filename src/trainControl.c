@@ -924,15 +924,15 @@ static void activate (GtkApplication *app, gpointer userData)
 
 	if (userData != NULL)
 	{
-		parseRetn = parseTrackXML (trackCtrl, (char *)userData);
+		parseRetn = parseTrackXML (trackCtrl, (char *)userData, 0);
 	}
 	else
 	{
-		parseRetn = parseTrackXML (trackCtrl, "/etc/trainconfig.xml");
+		parseRetn = parseTrackXML (trackCtrl, "/etc/trainconfig.xml", 0);
 	}
 	if (!parseRetn)
 	{
-		parseRetn = parseMemoryXML (trackCtrl);
+		parseRetn = parseMemoryXML (trackCtrl, NULL);
 	}
 	if (parseRetn)
 	{

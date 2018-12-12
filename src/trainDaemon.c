@@ -43,6 +43,8 @@
 #define CONFIG_HANDLE	2
 #define FIRST_HANDLE	3
 
+char *xmlBuffer;
+long xmlBufferSize;
 char xmlConfigFile[81]	=	"track.xml";
 char pidFileName[81]	=	"/var/run/trainDaemon.pid";
 int	 logOutput			=	0;
@@ -424,6 +426,30 @@ void ReceiveSerial (char *buffer, int len)
 	}
 }
 
+int loadConfigFile ()
+{
+	int retn = 0;
+	struct stat statbuf;
+
+	if (stat (xmlConfigFile, &statbuf) == 0)
+	{
+		FILE *inFile = fopen (xmlConfigFile, "r");
+		if (inFile != NULL)
+		{
+			xmlBufferSize = statbuf.st_size;
+			if ((xmlBuffer = (char *)malloc (xmlBufferSize + 10)) != NULL)
+			{
+				if (fread (xmlBuffer, 1, xmlBufferSize, inFile) == xmlBufferSize)
+				{
+					retn = parseMemoryXML (&trackCtrl, xmlBuffer);
+				}
+			}
+			fclose (inFile);
+		}
+	}
+	return retn;
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  S E N D  C O N F I G  F I L E                                                                                     *
@@ -437,23 +463,12 @@ void ReceiveSerial (char *buffer, int len)
  */
 void sendConfigFile (int newSocket)
 {
-	struct stat statbuf;
-	if (stat (xmlConfigFile, &statbuf) == 0)
+	char buffer[81];
+	if (xmlBufferSize && xmlBuffer != NULL)
 	{
-		FILE *inFile = fopen (xmlConfigFile, "r");
-		if (inFile != NULL)
-		{
-			int bytesRead;
-			char buffer[10241];
-
-			sprintf (buffer, "<!-- size=\"%ld\" -->\n", statbuf.st_size);
-			SendSocket (newSocket, buffer, strlen (buffer));
-			while ((bytesRead = fread (buffer, 1, 10240, inFile)) > 0)
-			{
-				SendSocket (newSocket, buffer, bytesRead);
-			}
-			fclose (inFile);
-		}
+		sprintf (buffer, "<!-- size=\"%ld\" -->\n", xmlBufferSize);
+		SendSocket (newSocket, buffer, strlen (buffer));
+		SendSocket (newSocket, xmlBuffer, xmlBufferSize);
 	}
 }
 
@@ -534,7 +549,7 @@ int main (int argc, char *argv[])
 	trackCtrl.serverPort = 12021;
 	strcpy (trackCtrl.serialDevice, "/dev/ttyACM0");
 
-	if (!parseTrackXML (&trackCtrl, xmlConfigFile))
+	if (!loadConfigFile())
 	{
 		putLogMessage (LOG_ERR, "Unable to to read configuration.");
 		exit (1);

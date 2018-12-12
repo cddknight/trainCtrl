@@ -358,7 +358,7 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
  *  \param fileName File name to read in.
  *  \result 1 if config read OK, 0 on error.
  */
-int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName)
+int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName, int level)
 {
 	int retn = 0;
 	xmlDoc *doc = NULL;
@@ -380,7 +380,7 @@ int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName)
 		{
 			retn = 1;
 		}
-		else if (trackCtrl -> configPort > 0 && trackCtrl -> server[0])
+		else if (trackCtrl -> configPort > 0 && trackCtrl -> server[0] && level == 0)
 		{
 			int cfgSocket = -1;
 			char addrBuffer[81];
@@ -391,21 +391,25 @@ int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName)
 			}
 			if ((cfgSocket = ConnectClientSocket (addrBuffer, trackCtrl -> configPort)) != -1)
 			{
-				if ((memoryXML = (char *)malloc (10241)) != NULL)
+				FILE *outFile = fopen ("/tmp/trainconfig.xml", "w+");
+
+				if (outFile != NULL)
 				{
-					int totalRead = 0, thisRead = 0;
+					char buffer[1024];
+					int bytesRead = 0, totalRead = 0;
+
 					sleep (1);
-					while ((thisRead = RecvSocket (cfgSocket, &memoryXML[totalRead], 10240 - totalRead)) > 0)
+					while ((bytesRead = RecvSocket (cfgSocket, buffer, 1024)) > 0)
 					{
-						totalRead += thisRead;
-						memoryXML[totalRead] = 0;
+						fwrite (buffer, 1, bytesRead, outFile);
+						totalRead += bytesRead;
 					}
+					fclose (outFile);
 					if (totalRead)
 					{
-						retn = parseMemoryXML (trackCtrl);
+						retn = parseTrackXML (trackCtrl, "/tmp/trainconfig.xml", 1);
 					}
-					free (memoryXML);
-					memoryXML = &memoryXMLDef[0];
+					unlink ("/tmp/trainconfig.xml");
 				}
 				CloseSocket (&cfgSocket);
 			}
@@ -427,13 +431,21 @@ int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName)
  *  \param trackCtrl Where to read in to.
  *  \result 1 if track was loaded.
  */
-int parseMemoryXML (trackCtrlDef *trackCtrl)
+int parseMemoryXML (trackCtrlDef *trackCtrl, char *buffer)
 {
 	int retn = 0;
 	xmlDoc *doc = NULL;
 	xmlNode *rootElement = NULL;
-	xmlChar *xmlBuffer = xmlCharStrndup (memoryXML, strlen (memoryXML));
+	xmlChar *xmlBuffer = NULL;
 
+	if (buffer == NULL)
+	{
+		xmlBuffer = xmlCharStrndup (memoryXML, strlen (memoryXML));
+	}
+	else
+	{
+		xmlBuffer = xmlCharStrndup (buffer, strlen (buffer));
+	}
 	if (xmlBuffer != NULL)
 	{
 		if ((doc = xmlParseDoc (xmlBuffer)) != NULL)
