@@ -649,7 +649,7 @@ int main (int argc, char *argv[])
 			}
 			if (FD_ISSET(handleInfo[CONFIG_HANDLE].handle, &readfds))
 			{
-				int newSocket = ServerSocketAccept (handleInfo[LISTEN_HANDLE].handle, inAddress);
+				int newSocket = ServerSocketAccept (handleInfo[CONFIG_HANDLE].handle, inAddress);
 				if (newSocket != -1)
 				{
 					sendConfigFile (newSocket);
