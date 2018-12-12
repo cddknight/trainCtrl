@@ -454,10 +454,3 @@ int parseMemoryXML (trackCtrlDef *trackCtrl)
 	return retn;
 }
 
-int findTrackFile (char *fileName)
-{
-	if (fileName[0])
-	{
-	}
-}
-

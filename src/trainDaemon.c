@@ -446,7 +446,7 @@ void sendConfigFile (int newSocket)
 			int bytesRead;
 			char buffer[10241];
 
-			sprintf (buffer, "<!-- size=\"%d\" -->\n", statbuf.st_size);
+			sprintf (buffer, "<!-- size=\"%ld\" -->\n", statbuf.st_size);
 			SendSocket (newSocket, buffer, strlen (buffer));
 			while ((bytesRead = fread (buffer, 1, 10240, inFile)) > 0)
 			{
