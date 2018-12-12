@@ -32,7 +32,7 @@
  *                                                                                                                    *
  **********************************************************************************************************************/
 static const char *tmpConfig = "/tmp/trainconfig.xml";
-static const char *memoryXML = 
+static const char *memoryXML =
 "<track name=\"Simple Track\" server=\"127.0.0.1\" port=\"30330\" device=\"/dev/ttyACM0\">"\
 "<trains count=\"1\">"\
 "<train num=\"1234\" id=\"3\" desc=\"Train\"/>"\
@@ -56,7 +56,6 @@ static const char *memoryXML =
 "</cellRow>"\
 "</cells>"\
 "</track>";
-
 
 /**********************************************************************************************************************
  *                                                                                                                    *

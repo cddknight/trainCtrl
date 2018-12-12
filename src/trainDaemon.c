@@ -580,7 +580,7 @@ int main (int argc, char *argv[])
 	{
 		putLogMessage (LOG_INFO, "Listening on serial: %s", trackCtrl.serialDevice);
 
-		if (trackCtrl.configPort > 0)	
+		if (trackCtrl.configPort > 0)
 		{
 			handleInfo[CONFIG_HANDLE].handle = ServerSocketSetup (trackCtrl.configPort);
 		}
