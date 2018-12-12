@@ -25,7 +25,32 @@
 #include <libxml/tree.h>
 #include <string.h>
 
-#include "trainCtrl.h"
+#include "trainControl.h"
+
+static char memoryXML[] = 
+"<track name=\"Simple Track\" server=\"127.0.0.1\" port=\"30330\" device=\"/dev/ttyACM0\">"\
+"  <trains count=\"1\">"\
+"    <train num=\"1234\" id=\"3\" desc=\"Train\"/>"\
+"  </trains>"\
+"  <cells rows=\"4\" cols=\"4\" size=\"50\">"\
+"    <cellRow row=\"0\">"\
+"      <cell col=\"1\" layout=\"20\"/>"\
+"      <cell col=\"2\" layout=\"129\"/>"\
+"    </cellRow>"\
+"    <cellRow row=\"1\">"\
+"      <cell col=\"0\" layout=\"72\"/>"\
+"      <cell col=\"3\" layout=\"40\"/>"\
+"    </cellRow>"\
+"    <cellRow row=\"2\">"\
+"      <cell col=\"0\" layout=\"130\"/>"\
+"      <cell col=\"3\" layout=\"18\"/>"\
+"    </cellRow>"\
+"    <cellRow row=\"3\">"\
+"      <cell col=\"1\" layout=\"36\"/>"\
+"      <cell col=\"2\" layout=\"65\"/>"\
+"    </cellRow>"\
+"  </cells>"\
+"</track>";
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -350,6 +375,33 @@ int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName)
 		}
 	}
 	xmlFreeDoc(doc);
+	xmlCleanupParser();
+	return retn;
+}
+
+int parseMemoryXML (trackCtrlDef *trackCtrl)
+{
+	int retn = 0;
+	xmlDoc *doc = NULL;
+	xmlNode *rootElement = NULL;
+	xmlChar *xmlBuffer = xmlCharStrndup (memoryXML, strlen (memoryXML));
+
+	if (xmlBuffer != NULL)
+	{
+		if ((doc = xmlParseDoc (xmlBuffer)) != NULL)
+		{
+			if ((rootElement = xmlDocGetRootElement(doc)) != NULL)
+			{
+				parseTree (trackCtrl, rootElement, 0);
+			}
+			if (trackCtrl -> trackLayout != NULL && trackCtrl -> trainCtrl != NULL)
+			{
+				retn = 1;
+			}
+			xmlFreeDoc(doc);
+		}
+		xmlFree (xmlBuffer);
+	}
 	xmlCleanupParser();
 	return retn;
 }

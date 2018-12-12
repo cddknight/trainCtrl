@@ -2,9 +2,9 @@
 # Process this file with autoconf to produce a configure script.
 #
 AC_PREREQ(2.59)
-AC_INIT(trainCtrl, 1.0.0, chris@theknight.co.uk)
+AC_INIT(traincontrol, 1.0.0, chris@theknight.co.uk)
 AM_INIT_AUTOMAKE([subdir-objects])
-AC_CONFIG_SRCDIR([src/trainCtrl.c])
+AC_CONFIG_SRCDIR([src/trainControl.c])
 AC_CONFIG_HEADER([config.h])
 
 # Checks for programs.
@@ -27,7 +27,7 @@ LIBDIR=${libexecdir}
 AC_SUBST([REVISION])
 AC_SUBST([LIBDIR])
 
-AC_CONFIG_FILES([Makefile trainCtrl.spec])
+AC_CONFIG_FILES([Makefile traincontrol.spec])
 AC_CONFIG_FILES([buildrpm.sh],[chmod +x buildrpm.sh])
 AC_CONFIG_FILES([builddeb.sh],[chmod +x builddeb.sh])
 AC_CONFIG_FILES([debian/control debian/changelog])

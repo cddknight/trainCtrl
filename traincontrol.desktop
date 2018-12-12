@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=TrainControl
+Exec=traincontrol
+Icon=traincontrol
+Comment=Control DCC trains
+Categories=Utility;
+Keywords=train;control;DCC;
+X-Desktop-File-Install-Version=0.23

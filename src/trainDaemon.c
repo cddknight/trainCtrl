@@ -35,7 +35,7 @@
 #include <time.h>
 
 #include "socketC.h"
-#include "trainCtrl.h"
+#include "trainControl.h"
 
 #define MAX_HANDLES		22
 #define SERIAL_HANDLE	0
@@ -501,7 +501,6 @@ int main (int argc, char *argv[])
 	strcpy (trackCtrl.serialDevice, "/dev/ttyACM0");
 
 	if (!parseTrackXML (&trackCtrl, xmlConfigFile))
-	if (!i)
 	{
 		putLogMessage (LOG_ERR, "Unable to to read configuration.");
 		exit (1);

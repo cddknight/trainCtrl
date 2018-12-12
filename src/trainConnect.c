@@ -25,7 +25,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "trainCtrl.h"
+#include "trainControl.h"
 #include "socketC.h"
 
 /**********************************************************************************************************************

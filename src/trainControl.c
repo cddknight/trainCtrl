@@ -23,14 +23,13 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
-#include "trainCtrl.h"
+#include "trainControl.h"
 #include "socketC.h"
 
 static char *notConnected = "Train controller not connected";
 static const GdkRGBA blackCol = { 0.1, 0.1, 0.1, 1.0 };
 static const GdkRGBA trackCol = { 0.6, 0.6, 0.6, 1.0 };
 static const GdkRGBA trFillCol = { 0.0, 0.4, 0.0, 1.0 };
-static const GdkRGBA pointCol = { 0.0, 0.0, 0.6, 1.0 };
 static const GdkRGBA bufferCol = { 0.6, 0.0, 0.0, 1.0 };
 static const GdkRGBA inactCol = { 0.8, 0.0, 0.0, 1.0 };
 static const GdkRGBA iaFillCol = { 0.4, 0.0, 0.0, 1.0 };
@@ -341,7 +340,7 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 		for (j = 0; j < cols; ++j)
 		{
 			int lineType, xPos[3]={0,0,0}, yPos[3]={0,0,0}, posMask = 0;
-			int posn = (i * cols) + j, count = 0, points = 0, loop;
+			int posn = (i * cols) + j, count = 0, loop;
 
 			for (loop = 0; loop < 8; ++loop)
 			{
@@ -350,7 +349,6 @@ gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 					++count;
 					if (trackCtrl -> trackLayout -> trackCells[posn].point & (1 << loop))
 					{
-						points = 1;
 						if (!(trackCtrl -> trackLayout -> trackCells[posn].pointState & (1 << loop)))
 						{
 							xPos[2] = (j * cellSize) + xChangeMod[loop];
@@ -931,6 +929,10 @@ static void activate (GtkApplication *app, gpointer userData)
 	else
 	{
 		parseRetn = parseTrackXML (trackCtrl, "track.xml");
+	}
+	if (!parseRetn)
+	{
+		parseRetn = parseMemoryXML (trackCtrl);
 	}
 	if (parseRetn)
 	{
