@@ -26,11 +26,12 @@
 #include <string.h>
 
 #include "trainControl.h"
+#include "socketC.h"
 
 /**********************************************************************************************************************
  *                                                                                                                    *
  **********************************************************************************************************************/
-static char memoryXML[] = 
+static char memoryXMLDef[] = 
 "<track name=\"Simple Track\" server=\"127.0.0.1\" port=\"30330\" device=\"/dev/ttyACM0\">"\
 "<trains count=\"1\">"\
 "<train num=\"1234\" id=\"3\" desc=\"Train\"/>"\
@@ -54,6 +55,8 @@ static char memoryXML[] =
 "</cellRow>"\
 "</cells>"\
 "</track>";
+
+static char *memoryXML = &memoryXMLDef[0];
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -376,6 +379,23 @@ int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName)
 		if (trackCtrl -> trackLayout != NULL && trackCtrl -> trainCtrl != NULL)
 		{
 			retn = 1;
+		}
+		else if (trackCtrl -> configPort > 0 && trackCtrl -> server[0])
+		{
+			int cfgSocket = ConnectClientSocket (trackCtrl -> server, trackCtrl -> configPort);
+			if (cfgSocket != -1)
+			{
+				if ((memoryXML = (char *)malloc (10241)) != NULL)
+				{
+					int readBytes;
+					if ((readBytes = RecvSocket (cfgSocket, memoryXML, 10240)) > 0)
+					{
+						memoryXML[readBytes] = 0;
+						retn = parseMemoryXML (trackCtrl);
+					}
+				}
+				CloseSocket (&cfgSocket);
+			}
 		}
 	}
 	xmlFreeDoc(doc);
