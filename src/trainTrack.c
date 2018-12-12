@@ -31,7 +31,8 @@
 /**********************************************************************************************************************
  *                                                                                                                    *
  **********************************************************************************************************************/
-static char memoryXMLDef[] = 
+static const char *tmpConfig = "/tmp/trainconfig.xml";
+static const char *memoryXML = 
 "<track name=\"Simple Track\" server=\"127.0.0.1\" port=\"30330\" device=\"/dev/ttyACM0\">"\
 "<trains count=\"1\">"\
 "<train num=\"1234\" id=\"3\" desc=\"Train\"/>"\
@@ -56,7 +57,6 @@ static char memoryXMLDef[] =
 "</cells>"\
 "</track>";
 
-static char *memoryXML = &memoryXMLDef[0];
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -358,7 +358,7 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
  *  \param fileName File name to read in.
  *  \result 1 if config read OK, 0 on error.
  */
-int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName, int level)
+int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level)
 {
 	int retn = 0;
 	xmlDoc *doc = NULL;
@@ -391,7 +391,7 @@ int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName, int level)
 			}
 			if ((cfgSocket = ConnectClientSocket (addrBuffer, trackCtrl -> configPort)) != -1)
 			{
-				FILE *outFile = fopen ("/tmp/trainconfig.xml", "w+");
+				FILE *outFile = fopen (tmpConfig, "w+");
 
 				if (outFile != NULL)
 				{
@@ -407,9 +407,9 @@ int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName, int level)
 					fclose (outFile);
 					if (totalRead)
 					{
-						retn = parseTrackXML (trackCtrl, "/tmp/trainconfig.xml", 1);
+						retn = parseTrackXML (trackCtrl, tmpConfig, 1);
 					}
-					unlink ("/tmp/trainconfig.xml");
+					unlink (tmpConfig);
 				}
 				CloseSocket (&cfgSocket);
 			}

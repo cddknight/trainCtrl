@@ -106,7 +106,7 @@ typedef struct _trackCtrl
 trackCtrlDef;
 
 int parseMemoryXML (trackCtrlDef *trackCtrl, char *buffer);
-int parseTrackXML (trackCtrlDef *trackCtrl, char *fileName, int level);
+int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level);
 int startConnectThread (trackCtrlDef *trackCtrl);
 int trainConnectSend (trackCtrlDef *trackCtrl, char *buffer, int len);
 void stopConnectThread (trackCtrlDef *trackCtrl);
