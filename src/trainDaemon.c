@@ -426,6 +426,16 @@ void ReceiveSerial (char *buffer, int len)
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  L O A D  C O N F I G  F I L E                                                                                     *
+ *  =============================                                                                                     *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Read the config file from disk and keep it in memory.
+ *  \result True if it was read and parsed.
+ */
 int loadConfigFile ()
 {
 	int retn = 0;
@@ -546,13 +556,9 @@ int main (int argc, char *argv[])
 	/**********************************************************************************************************************
 	 * Allocate and read in the configuration.                                                                            *
 	 **********************************************************************************************************************/
-	trackCtrl.serverPort = 12021;
-	strcpy (trackCtrl.serialDevice, "/dev/ttyACM0");
-
 	if (!loadConfigFile())
 	{
-		putLogMessage (LOG_ERR, "Unable to to read configuration.");
-		exit (1);
+		parseMemoryXML (&trackCtrl, NULL);
 	}
 
 	for (i = 0; i < MAX_HANDLES; ++i)
