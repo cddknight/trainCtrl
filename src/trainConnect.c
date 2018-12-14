@@ -138,6 +138,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 					trackCtrl -> remoteCurrent = atoi (words[1]);
 				}
 			}
+			/* Our handle number on the server, unique to this client */
 			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 2)
 			{
 				trackCtrl -> serverSession = atoi (words[1]);
