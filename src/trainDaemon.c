@@ -693,7 +693,6 @@ int main (int argc, char *argv[])
 							CloseSocket (&handleInfo[i].handle);
 							if (--connectedCount == 0)
 							{
-								stopAllTrains ();
 								SendSerial ("<0>", 3);
 							}
 						}
