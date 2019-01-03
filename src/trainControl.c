@@ -37,11 +37,13 @@ static const GdkRGBA circleCol = { 0.8, 0.8, 0.8, 1.0 };
 static const double xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
 static const double yChange[8] = { 1, 0, 1, 2, 2, 0, 0, 2 };
 
+static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 static void quitCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 
-static GActionEntry app_entries[] =
+static GActionEntry appEntries[] =
 {
+	{ "preferences", preferencesCallback, NULL, NULL, NULL },
 	{ "about", aboutCallback, NULL, NULL, NULL },
 	{ "quit", quitCallback, NULL, NULL, NULL }
 };
@@ -294,7 +296,7 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
  *  \param data Track to draw.
  *  \result FALSE.
  */
-gboolean drawCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
+gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
@@ -553,7 +555,7 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 		eventBox = gtk_event_box_new ();
 		gtk_container_add (GTK_CONTAINER (eventBox), trackCtrl -> drawingArea);
 
-		g_signal_connect (G_OBJECT (trackCtrl -> drawingArea), "draw", G_CALLBACK (drawCallback), trackCtrl);
+		g_signal_connect (G_OBJECT (trackCtrl -> drawingArea), "draw", G_CALLBACK (drawTrackCallback), trackCtrl);
 		g_signal_connect (G_OBJECT (trackCtrl -> windowTrack), "destroy", G_CALLBACK (closeTrack), trackCtrl);
 		g_signal_connect (G_OBJECT (eventBox), "button_press_event", G_CALLBACK (windowClickCallback), trackCtrl);
 
@@ -718,15 +720,12 @@ static void programTrain (GtkWidget *widget, gpointer data)
 					if (checkRead == TRUE)
 					{
 						/* Read CV number */
-						sprintf (msgBuffer, "Read CV#%d on the programming track?", values[1]);
-						if (programYesNo (trackCtrl, msgBuffer))
-						{
-							sprintf (sendBuffer, "<R %d %d 1>", values[1], trackCtrl -> serverSession);
-						}
+						sprintf (sendBuffer, "<R %d %d 1>", values[1], trackCtrl -> serverSession);
 						allOK = 1;
 					}
 					else if (values[3])
 					{
+						/* Write bit value */
 						if (values[3] <= 8 && (values[4] == 0 || values[4] == 1))
 						{
 							/* Write bit value */
@@ -734,7 +733,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 									values[1], values[3], values[4]);
 							if (programYesNo (trackCtrl, msgBuffer))
 							{
-								sprintf (sendBuffer, "<b %d %d %d %d 2>", values[1], values[3] - 1, values[4],
+								sprintf (sendBuffer, "<B %d %d %d %d 2>", values[1], values[3] - 1, values[4],
 										trackCtrl -> serverSession);
 							}
 							allOK = 1;
@@ -762,6 +761,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 			{
 				if (values[3])
 				{
+					/* Write bit value */
 					if (values[3] <= 8 && (values[4] == 0 || values[4] == 1))
 					{
 						/* Write bit value */
@@ -915,8 +915,9 @@ static void activate (GtkApplication *app, gpointer userData)
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)malloc (sizeof (trackCtrlDef));
 	memset (trackCtrl, 0, sizeof (trackCtrlDef));
 
-	g_action_map_add_action_entries (G_ACTION_MAP (app), app_entries, G_N_ELEMENTS (app_entries), app);
+	g_action_map_add_action_entries (G_ACTION_MAP (app), appEntries, G_N_ELEMENTS (appEntries), app);
 	menu = g_menu_new ();
+	g_menu_append (menu, "Preferences", "app.preferences");
 	g_menu_append (menu, "About", "app.about");
 	g_menu_append (menu, "Quit", "app.quit");
 	gtk_application_set_app_menu (GTK_APPLICATION (app), G_MENU_MODEL (menu));
@@ -1069,6 +1070,10 @@ void openFiles (GtkApplication *application, GFile **files, gint n_files, const 
  *  \result None.
  */
 static void shutdown (GtkApplication *app, gpointer userData)
+{
+}
+
+static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer userData)
 {
 }
 
