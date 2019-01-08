@@ -121,6 +121,68 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  P R O C E S S  P S E R V E R                                                                                      *
+ *  ============================                                                                                      *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Make holders for the point controlling servers.
+ *  \param trackCtrl What to store the information.
+ *  \param inNode Current location in the XML.
+ *  \param count Number of servers to create.
+ *  \result None.
+ */
+void processPServer (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
+{
+	int loop = 0;
+	xmlChar *serverStr, *portStr, *identStr;
+	xmlNode *curNode = NULL;
+
+	if ((trackCtrl -> pointCtrl = (pointCtrlDef *)malloc (count * sizeof (pointCtrlDef))) == NULL)
+	{
+		return;
+	}
+
+	memset (trackCtrl -> pointCtrl, 0, count * sizeof (pointCtrlDef));
+
+	for (curNode = inNode; curNode && loop < count; curNode = curNode->next)
+	{
+		if (curNode->type == XML_ELEMENT_NODE)
+		{
+			if (strcmp ((char *)curNode->name, "pointServer") == 0)
+			{
+				if ((serverStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
+				{
+					if ((portStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)
+					{
+						if ((identStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
+						{
+							int port = -1, ident = -1;
+
+							sscanf ((char *)portStr, "%d", &port);
+							sscanf ((char *)identStr, "%d", &ident);
+
+							if (port != -1 && ident != -1)
+							{
+								strncpy (trackCtrl -> pointCtrl[loop].server, serverStr, 40);
+								trackCtrl -> pointCtrl[loop].port = port;
+								trackCtrl -> pointCtrl[loop].ident = ident;
+								++loop;
+							}
+							xmlFree(identStr);
+						}
+						xmlFree(portStr);
+					}
+					xmlFree(serverStr);
+				}
+			}
+		}
+	}
+	trackCtrl -> pServerCount = loop;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  P R O C E S S  C E L L                                                                                            *
  *  ======================                                                                                            *
  *                                                                                                                    *
@@ -135,7 +197,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 {
 	xmlNode *curNode = NULL;
-	xmlChar *colStr, *layoutStr, *pointStr, *linkStr, *pointStateStr;
+	xmlChar *colStr, *layoutStr, *pointStr, *linkStr, *pointStateStr, *serverStr, *identStr;
 
 	for (curNode = inNode; curNode; curNode = curNode->next)
 	{
@@ -145,7 +207,8 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 			{
 				if ((colStr = xmlGetProp(curNode, (const xmlChar*)"col")) != NULL)
 				{
-					int colNum = -1, layout = 0, point = 0, link = 0, pointState = 0, posn, i;
+					int posn, i;
+					int colNum = -1, layout = 0, point = 0, link = 0, pointState = 0, server = 0, ident = 0;
 					sscanf ((char *)colStr, "%d", &colNum);
 
 					if (colNum > -1)
@@ -172,10 +235,22 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 							sscanf ((char *)pointStateStr, "%d", &pointState);
 							xmlFree(pointStateStr);
 						}
+						if ((serverStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
+						{
+							sscanf ((char *)serverStr, "%d", &server);
+							xmlFree(serverStr);
+						}
+						if ((identStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
+						{
+							sscanf ((char *)identStr, "%d", &ident);
+							xmlFree(identStr);
+						}
 						trackCtrl -> trackLayout -> trackCells[posn].layout = layout;
 						trackCtrl -> trackLayout -> trackCells[posn].point = point;
 						trackCtrl -> trackLayout -> trackCells[posn].link = link;
 						trackCtrl -> trackLayout -> trackCells[posn].pointState = pointState;
+						trackCtrl -> trackLayout -> trackCells[posn].server = server;
+						trackCtrl -> trackLayout -> trackCells[posn].ident = ident;
 						for (i = 0; i < 8 && point && pointState == 0; ++i)
 						{
 							if (point & (1 << i))
@@ -313,6 +388,20 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 					if (count > 0)
 					{
 						processTrains (trackCtrl, curNode -> children, count);
+					}
+				}
+			}
+			else if (level == 1 && strcmp ((char *)curNode->name, "pointServers") == 0)
+			{
+				int count = -1;
+				xmlChar *countStr;
+				if ((countStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
+				{
+					sscanf ((char *)countStr, "%d", &count);
+					xmlFree(countStr);
+					if (count > 0)
+					{
+						processPServer (trackCtrl, curNode -> children, count);
 					}
 				}
 			}

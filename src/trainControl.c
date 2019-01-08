@@ -285,8 +285,8 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  D R A W  C A L L B A C K                                                                                          *
- *  ========================                                                                                          *
+ *  D R A W  T R A C K  C A L L B A C K                                                                               *
+ *  ===================================                                                                               *
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
@@ -465,6 +465,11 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 					newState &= ~(trackCtrl -> trackLayout -> trackCells[posn].pointState);
 					trackCtrl -> trackLayout -> trackCells[posn].pointState = newState;
 
+printf ("Set point state, server: %d,  ident: %d, state: %02X\n",
+		trackCtrl -> trackLayout -> trackCells[posn].server,
+		trackCtrl -> trackLayout -> trackCells[posn].ident,
+		trackCtrl -> trackLayout -> trackCells[posn].pointState);
+
 					/* This point is linked so change the other point */
 					if (trackCtrl -> trackLayout -> trackCells[posn].link)
 					{
@@ -492,6 +497,10 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 													trackCtrl -> trackLayout -> trackCells[newPosn].point &
 													~trackCtrl -> trackLayout -> trackCells[newPosn].link;
 										}
+printf ("Set point state, server: %d,  ident: %d, state: %02X\n",
+		trackCtrl -> trackLayout -> trackCells[newPosn].server,
+		trackCtrl -> trackLayout -> trackCells[newPosn].ident,
+		trackCtrl -> trackLayout -> trackCells[newPosn].pointState);
 									}
 								}
 							}
@@ -1073,6 +1082,19 @@ static void shutdown (GtkApplication *app, gpointer userData)
 {
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P R E F E R E N C E S  C A L L B A C K                                                                            *
+ *  ======================================                                                                            *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Currently not used.
+ *  \param action Not used.
+ *  \param parameter Not used.
+ *  \param userData Not used.
+ *  \result None.
+ */
 static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer userData)
 {
 }

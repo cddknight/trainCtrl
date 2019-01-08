@@ -31,6 +31,8 @@ typedef struct _trackCell
 	unsigned short point;
 	unsigned short link;
 	unsigned short pointState;
+	unsigned short server;
+	unsigned short ident;
 }
 trackCellDef;
 
@@ -66,10 +68,19 @@ typedef struct _trainCtrl
 }
 trainCtrlDef;
 
+typedef struct _pointCtrl
+{
+	char server[41];
+	int port;
+	int ident;
+}
+pointCtrlDef;
+
 typedef struct _trackCtrl
 {
 	int powerState;
 	int trainCount;
+	int pServerCount;
 	int serverHandle;
 	int serverSession;
 	int serverPort;
@@ -86,6 +97,7 @@ typedef struct _trackCtrl
 	int remoteCurrent;
 
 	trainCtrlDef *trainCtrl;
+	pointCtrlDef *pointCtrl;
 	trackLayoutDef *trackLayout;
 
 #ifdef __GTK_H__
