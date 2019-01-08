@@ -248,6 +248,7 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 						trackCtrl -> trackLayout -> trackCells[posn].layout = layout;
 						trackCtrl -> trackLayout -> trackCells[posn].point = point;
 						trackCtrl -> trackLayout -> trackCells[posn].link = link;
+						trackCtrl -> trackLayout -> trackCells[posn].pointDefault = 
 						trackCtrl -> trackLayout -> trackCells[posn].pointState = pointState;
 						trackCtrl -> trackLayout -> trackCells[posn].server = server;
 						trackCtrl -> trackLayout -> trackCells[posn].ident = ident;
@@ -255,6 +256,7 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 						{
 							if (point & (1 << i))
 							{
+								trackCtrl -> trackLayout -> trackCells[posn].pointDefault = 
 								trackCtrl -> trackLayout -> trackCells[posn].pointState = (1 << i);
 								break;
 							}

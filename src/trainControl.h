@@ -31,6 +31,7 @@ typedef struct _trackCell
 	unsigned short point;
 	unsigned short link;
 	unsigned short pointState;
+	unsigned short pointDefault;
 	unsigned short server;
 	unsigned short ident;
 }

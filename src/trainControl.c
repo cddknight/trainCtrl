@@ -465,10 +465,11 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 					newState &= ~(trackCtrl -> trackLayout -> trackCells[posn].pointState);
 					trackCtrl -> trackLayout -> trackCells[posn].pointState = newState;
 
-printf ("Set point state, server: %d,  ident: %d, state: %02X\n",
+printf ("Set point, server: %d,  ident: %d, state: %d\n",
 		trackCtrl -> trackLayout -> trackCells[posn].server,
 		trackCtrl -> trackLayout -> trackCells[posn].ident,
-		trackCtrl -> trackLayout -> trackCells[posn].pointState);
+		trackCtrl -> trackLayout -> trackCells[posn].pointDefault == 
+				trackCtrl -> trackLayout -> trackCells[posn].pointState ? 0 : 1);
 
 					/* This point is linked so change the other point */
 					if (trackCtrl -> trackLayout -> trackCells[posn].link)
@@ -497,10 +498,11 @@ printf ("Set point state, server: %d,  ident: %d, state: %02X\n",
 													trackCtrl -> trackLayout -> trackCells[newPosn].point &
 													~trackCtrl -> trackLayout -> trackCells[newPosn].link;
 										}
-printf ("Set point state, server: %d,  ident: %d, state: %02X\n",
+printf ("Set link point, server: %d,  ident: %d, state: %d\n",
 		trackCtrl -> trackLayout -> trackCells[newPosn].server,
 		trackCtrl -> trackLayout -> trackCells[newPosn].ident,
-		trackCtrl -> trackLayout -> trackCells[newPosn].pointState);
+		trackCtrl -> trackLayout -> trackCells[posn].pointDefault == 
+				trackCtrl -> trackLayout -> trackCells[posn].pointState ? 0 : 1);
 									}
 								}
 							}
