@@ -313,16 +313,17 @@ void sendPointServer (int server, int point, int throw)
 	{
 		if (trackCtrl.pointCtrl != NULL)
 		{
-			pointCtrlDef *point = &trackCtrl.pointCtrl[p];
-			if (server == point -> ident)
+			pointCtrlDef *pointCtrl = &trackCtrl.pointCtrl[p];
+			if (server == pointCtrl -> ident)
 			{
-				if (point -> intHandle != -1)
+				if (pointCtrl -> intHandle != -1)
 				{
-					if (handleInfo[point -> intHandle].handle != -1)
+					if (handleInfo[pointCtrl -> intHandle].handle != -1)
 					{
 						char tempBuff[81];
 						sprintf (tempBuff, "<Y %d %d %d>", server, point, throw);
-						SendSocket (handleInfo[point -> intHandle].handle, tempBuff, strlen (tempBuff));
+						SendSocket (handleInfo[pointCtrl -> intHandle].handle, 
+								tempBuff, strlen (tempBuff));
 					}
 				}
 				break;
@@ -449,8 +450,8 @@ int checkNetworkRecvBuffer (char *buffer, int len)
 	char words[41][41];
 	int retn = 0, wordNum = -1, i = 0, j = 0, inType = 0;
 
-/*------------------------------------------------------------------*
-	printf ("Network Rxed:[%s]\n", buffer);
+/*------------------------------------------------------------------* 
+	putLogMessage (LOG_INFO, "Network Rxed:[%s]", buffer);
  *------------------------------------------------------------------*/
 	while (i < len)
 	{
@@ -489,7 +490,10 @@ int checkNetworkRecvBuffer (char *buffer, int len)
 			/* Set point state */
 			if (words[0][0] == 'Y' && words[0][1] == 0 && wordNum == 4)
 			{
-				sendPointServer (atoi(words[1]), atoi(words[2]), atoi(words[3]));
+				int server = atoi (words[1]);
+				int point = atoi (words[2]);
+				int ident = atoi (words[3]);
+				sendPointServer (server, point, ident);
 				retn = 1;
 			}
 			else if (words[0][0] == 'y' && words[0][1] == 0 && wordNum == 4)

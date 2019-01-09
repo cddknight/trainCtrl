@@ -293,11 +293,11 @@ int main (int argc, char *argv[])
 	handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (serverPort);
 	if (handleInfo[LISTEN_HANDLE].handle == -1)
 	{
-		putLogMessage (LOG_ERR, "Unable to listen on network port.");
+		putLogMessage (LOG_ERR, "P:Unable to listen on network port.");
 	}
 	else
 	{
-		putLogMessage (LOG_INFO, "Listening on port: %d", serverPort);
+		putLogMessage (LOG_INFO, "P:Listening on port: %d", serverPort);
 	}
 
 	/**********************************************************************************************************************
@@ -320,7 +320,7 @@ int main (int argc, char *argv[])
 		selRetn = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
 		if (selRetn == -1)
 		{
-			putLogMessage (LOG_ERR, "Select error: %s[%d]", strerror (errno), errno);
+			putLogMessage (LOG_ERR, "P:Select error: %s[%d]", strerror (errno), errno);
 			CloseSocket (&handleInfo[0].handle);
 		}
 		if (selRetn > 0)
@@ -337,14 +337,14 @@ int main (int argc, char *argv[])
 							char outBuffer[41];
 							handleInfo[i].handle = newSocket;
 							strncpy (handleInfo[i].localName, inAddress, 40);
-							putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
+							putLogMessage (LOG_INFO, "P:Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
 							++connectedCount;
 							break;
 						}
 					}
 					if (i == MAX_HANDLES)
 					{
-						putLogMessage (LOG_ERR, "No free handles.");
+						putLogMessage (LOG_ERR, "P:No free handles.");
 						CloseSocket (&newSocket);
 					}
 				}
@@ -360,15 +360,14 @@ int main (int argc, char *argv[])
 
 						if ((readBytes = RecvSocket (handleInfo[i].handle, buffer, 10240)) > 0)
 						{
-							/* SendSerial (buffer, readBytes); */
+							buffer[readBytes] = 0;
+							putLogMessage (LOG_INFO, "P:Socket rxed: %s(%d)", buffer, handleInfo[i].handle);
 						}
 						else if (readBytes == 0)
 						{
-							putLogMessage (LOG_INFO, "Socket closed: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
+							putLogMessage (LOG_INFO, "P:Socket closed: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
 							CloseSocket (&handleInfo[i].handle);
-							if (--connectedCount == 0)
-							{
-							}
+							--connectedCount;
 						}
 					}
 				}

@@ -472,8 +472,7 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 							cell -> pointDefault == newState ? 0 : 1);
 					if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
 					{
-						printf ("Set point, server: %d, ident: %d, state: %d\n",
-								cell -> server, cell -> ident, cell -> pointDefault == newState ? 0 : 1);
+						printf ("Set point (1): %s\n", tempBuff);
 					}
 
 					/* This point is linked so change the other point */
@@ -506,8 +505,7 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 												newCell -> pointDefault == newCell -> pointState ? 0 : 1);
 										if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
 										{
-											printf ("Set point, server: %d, ident: %d, state: %d\n",
-													newCell -> server, newCell -> ident, newCell -> pointDefault == newCell -> pointState ? 0 : 1);
+											printf ("Set point (2): %s\n", tempBuff);
 										}
 									}
 								}
