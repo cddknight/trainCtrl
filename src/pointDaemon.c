@@ -48,7 +48,7 @@ int	 debugOutput		=	0;
 int	 goDaemon			=	0;
 int	 inDaemonise		=	0;
 int	 running			=	1;
-int  serverPort			=	30333;
+int  serverPort			=	30332;
 
 typedef struct _handleInfo
 {
@@ -338,8 +338,6 @@ int main (int argc, char *argv[])
 							handleInfo[i].handle = newSocket;
 							strncpy (handleInfo[i].localName, inAddress, 40);
 							putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
-							sprintf (outBuffer, "<V %d>", handleInfo[i].handle);
-							SendSocket (handleInfo[i].handle, outBuffer, strlen (outBuffer));
 							++connectedCount;
 							break;
 						}

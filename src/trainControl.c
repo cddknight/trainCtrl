@@ -461,15 +461,20 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 
 				if (trackCtrl -> trackLayout -> trackCells[posn].point)
 				{
-					unsigned short newState = trackCtrl -> trackLayout -> trackCells[posn].point;
-					newState &= ~(trackCtrl -> trackLayout -> trackCells[posn].pointState);
-					trackCtrl -> trackLayout -> trackCells[posn].pointState = newState;
+					char tempBuff[81];
+					trackCellDef *cell = &trackCtrl -> trackLayout -> trackCells[posn];
+					unsigned short newState = cell -> point;
 
-printf ("Set point, server: %d,  ident: %d, state: %d\n",
-		trackCtrl -> trackLayout -> trackCells[posn].server,
-		trackCtrl -> trackLayout -> trackCells[posn].ident,
-		trackCtrl -> trackLayout -> trackCells[posn].pointDefault == 
-				trackCtrl -> trackLayout -> trackCells[posn].pointState ? 0 : 1);
+					newState &= ~(cell -> pointState);
+					cell -> pointState = newState;
+
+					sprintf (tempBuff, "<Y %d %d %d>", cell -> server, cell -> ident, 
+							cell -> pointDefault == newState ? 0 : 1);
+					if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
+					{
+						printf ("Set point, server: %d, ident: %d, state: %d\n",
+								cell -> server, cell -> ident, cell -> pointDefault == newState ? 0 : 1);
+					}
 
 					/* This point is linked so change the other point */
 					if (trackCtrl -> trackLayout -> trackCells[posn].link)
@@ -477,32 +482,33 @@ printf ("Set point, server: %d,  ident: %d, state: %d\n",
 						int i;
 						for (i = 0; i < 8; ++i)
 						{
-							if (trackCtrl -> trackLayout -> trackCells[posn].link & (1 << i))
+							if (cell -> link & (1 << i))
 							{
 								int newPosn = posn + (cols * linkRow[i]) + linkCol[i];
 								if (newPosn >= 0 && newPosn < (rows * cols))
 								{
+									trackCellDef *newCell = &trackCtrl -> trackLayout -> trackCells[newPosn];
+
 									/* The new point should have a link, we hope to us */
-									if (trackCtrl -> trackLayout -> trackCells[newPosn].link)
+									if (newCell -> link)
 									{
-										if (trackCtrl -> trackLayout -> trackCells[posn].link == newState)
+										if (cell -> link == newState)
 										{
 											/* We are setting to the link, so set other point to the link */
-											trackCtrl -> trackLayout -> trackCells[newPosn].pointState =
-													trackCtrl -> trackLayout -> trackCells[newPosn].link;
+											newCell -> pointState = newCell -> link;
 										}
 										else
 										{
 											/* We are breaking the link, so set other point away from link */
-											trackCtrl -> trackLayout -> trackCells[newPosn].pointState =
-													trackCtrl -> trackLayout -> trackCells[newPosn].point &
-													~trackCtrl -> trackLayout -> trackCells[newPosn].link;
+											newCell -> pointState = newCell -> point & ~newCell -> link;
 										}
-printf ("Set link point, server: %d,  ident: %d, state: %d\n",
-		trackCtrl -> trackLayout -> trackCells[newPosn].server,
-		trackCtrl -> trackLayout -> trackCells[newPosn].ident,
-		trackCtrl -> trackLayout -> trackCells[posn].pointDefault == 
-				trackCtrl -> trackLayout -> trackCells[posn].pointState ? 0 : 1);
+										sprintf (tempBuff, "<Y %d %d %d>", newCell -> server, newCell -> ident, 
+												newCell -> pointDefault == newCell -> pointState ? 0 : 1);
+										if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
+										{
+											printf ("Set point, server: %d, ident: %d, state: %d\n",
+													newCell -> server, newCell -> ident, newCell -> pointDefault == newCell -> pointState ? 0 : 1);
+										}
 									}
 								}
 							}

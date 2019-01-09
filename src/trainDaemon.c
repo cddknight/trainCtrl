@@ -37,11 +37,18 @@
 #include "socketC.h"
 #include "trainControl.h"
 
-#define MAX_HANDLES		23
+#define RXED_BUFF_SIZE	1024
+#define MAX_HANDLES		25
 #define SERIAL_HANDLE	0
 #define LISTEN_HANDLE	1
 #define CONFIG_HANDLE	2
 #define FIRST_HANDLE	3
+
+#define SERIAL_HTYPE	1
+#define LISTEN_HTYPE	2
+#define CONFIG_HTYPE	3
+#define POINTC_HTYPE	4
+#define CONTRL_HTYPE	5
 
 char *xmlBuffer;
 long xmlBufferSize;
@@ -58,8 +65,11 @@ trackCtrlDef trackCtrl;
 typedef struct _handleInfo
 {
 	int handle;
+	int handleType;
+	int rxedPosn;
 	char localName[81];
 	char remoteName[81];
+	char rxedBuff[RXED_BUFF_SIZE + 1];
 }
 HANDLEINFO;
 
@@ -284,8 +294,47 @@ void stopAllTrains ()
 
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  C H E C K  R E C V  B U F F E R                                                                                   *
+ *  S E N D  P O I N T  S E R V E R                                                                                   *
  *  ===============================                                                                                   *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Send a message to the point server.
+ *  \param server Server identity.
+ *  \param point Point identity.
+ *  \param throw Direction for the point.
+ *  \result None.
+ */
+void sendPointServer (int server, int point, int throw)
+{
+	int p;
+
+	for (p = 0; p < trackCtrl.pServerCount; ++p)
+	{
+		if (trackCtrl.pointCtrl != NULL)
+		{
+			pointCtrlDef *point = &trackCtrl.pointCtrl[p];
+			if (server == point -> ident)
+			{
+				if (point -> intHandle != -1)
+				{
+					if (handleInfo[point -> intHandle].handle != -1)
+					{
+						char tempBuff[81];
+						sprintf (tempBuff, "<Y %d %d %d>", server, point, throw);
+						SendSocket (handleInfo[point -> intHandle].handle, tempBuff, strlen (tempBuff));
+					}
+				}
+				break;
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  C H E C K  S E R I A L  R E C V  B U F F E R                                                                      *
+ *  ============================================                                                                      *
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
@@ -294,13 +343,13 @@ void stopAllTrains ()
  *  \param len Length of the buffer.
  *  \result None.
  */
-void checkRecvBuffer (char *buffer, int len)
+void checkSerialRecvBuffer (char *buffer, int len)
 {
 	char words[41][41];
 	int wordNum = -1, i = 0, j = 0, inType = 0;
 
 /*------------------------------------------------------------------*
-	printf ("Rxed:[%s]\n", buffer);
+	printf ("Serial Rxed:[%s]\n", buffer);
  *------------------------------------------------------------------*/
 	while (i < len)
 	{
@@ -385,41 +434,173 @@ void checkRecvBuffer (char *buffer, int len)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  C H E C K  N E T W O R K  R E C V  B U F F E R                                                                    *
+ *  ==============================================                                                                    *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Check the buffer received from the network.
+ *  \param buffer Received buffer.
+ *  \param len Size of data in the buffer.
+ *  \result 1 if data was processed locally, 0 if it should be sent to serial.
+ */
+int checkNetworkRecvBuffer (char *buffer, int len)
+{
+	char words[41][41];
+	int retn = 0, wordNum = -1, i = 0, j = 0, inType = 0;
+
+/*------------------------------------------------------------------*
+	printf ("Network Rxed:[%s]\n", buffer);
+ *------------------------------------------------------------------*/
+	while (i < len)
+	{
+		if (buffer[i] == '<' && wordNum == -1)
+		{
+			words[wordNum = 0][0] = 0;
+		}
+		else if (wordNum >= 0 && ((buffer[i] >= 'a' && buffer[i] <= 'z') || (buffer[i] >= 'A' && buffer[i] <= 'Z')))
+		{
+			if (inType == 2 && j > 0)
+			{
+				words[++wordNum][0] = 0;
+				j = 0;
+			}
+			words[wordNum][j++] = buffer[i];
+			words[wordNum][j] = 0;
+			inType = 1;
+		}
+		else if (wordNum >= 0 && ((buffer[i] >= '0' && buffer[i] <= '9') || buffer[i] == '-' || buffer[i] == '.'))
+		{
+			if (inType == 1 && j > 0)
+			{
+				words[++wordNum][0] = 0;
+				j = 0;
+			}
+			words[wordNum][j++] = buffer[i];
+			words[wordNum][j] = 0;
+			inType = 2;
+		}
+		else if (wordNum >= 0 && buffer[i] == '>')
+		{
+			if (j)
+			{
+				words[++wordNum][0] = 0;
+			}
+			/* Set point state */
+			if (words[0][0] == 'Y' && words[0][1] == 0 && wordNum == 4)
+			{
+				sendPointServer (atoi(words[1]), atoi(words[2]), atoi(words[3]));
+				retn = 1;
+			}
+			else if (words[0][0] == 'y' && words[0][1] == 0 && wordNum == 4)
+			{
+				int i;
+				for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
+				{
+					if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
+					{
+						SendSocket (handleInfo[i].handle, buffer, len);
+					}
+				}
+				retn = 1;
+			}
+			inType = 0;
+			wordNum = -1;
+			j = 0;
+		}
+		else if (wordNum >= 0 && j > 0 && (buffer[i] == ' ' || buffer[i] == '|'))
+		{
+			words[++wordNum][0] = 0;
+			j = 0;
+		}
+		if (wordNum > 40)
+		{
+			words[wordNum = 40][0] = 0;
+			j = 0;
+		}
+		if (j > 40)
+		{
+			j = 40;
+		}
+		++i;
+	}
+	return retn;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  R E C E I V E  S E R I A L                                                                                        *
  *  ==========================                                                                                        *
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
  *  \brief Keep buffering until we get a closing '>' and the send to all.
+ *  \param handle Internal handle of the serial port.
  *  \param buffer Received buffer.
  *  \param len Buffer length.
  *  \result None.
  */
-void ReceiveSerial (char *buffer, int len)
+void ReceiveSerial (int handle, char *buffer, int len)
 {
-	static char outBuffer[10241];
-	static int outPosn = 0;
 	int i = 0, j = 0;
 
 	while (j < len)
 	{
-		outBuffer[outPosn++] = buffer[j];
+		handleInfo[handle].rxedBuff[handleInfo[handle].rxedPosn++] = buffer[j];
 		if (buffer[j] == '>')
 		{
-			outBuffer[outPosn] = 0;
-			checkRecvBuffer (outBuffer, outPosn);
+			handleInfo[handle].rxedBuff[handleInfo[handle].rxedPosn] = 0;
+			checkSerialRecvBuffer (handleInfo[handle].rxedBuff, handleInfo[handle].rxedPosn);
 			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
 			{
-				if (handleInfo[i].handle != -1)
+				if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
 				{
-					SendSocket (handleInfo[i].handle, outBuffer, outPosn);
+					SendSocket (handleInfo[i].handle, handleInfo[handle].rxedBuff, handleInfo[handle].rxedPosn);
 				}
 			}
-			outPosn = 0;
+			handleInfo[handle].rxedPosn = 0;
 		}
-		if (outPosn >= 10240)
+		if (handleInfo[handle].rxedPosn >= RXED_BUFF_SIZE)
 		{
-			outPosn = 0;
+			handleInfo[handle].rxedPosn = 0;
+			break;
+		}
+		++j;
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  R E C E I V E  N E T W O R K                                                                                      *
+ *  ============================                                                                                      *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Process blocks read from the network port.
+ *  \param handle Internal handle that the data was received on.
+ *  \param buffer Data that was received.
+ *  \param len Size of data that was received.
+ *  \result None.
+ */
+void ReceiveNetwork (int handle, char *buffer, int len)
+{
+	int i = 0, j = 0;
+
+	while (j < len)
+	{
+		handleInfo[handle].rxedBuff[handleInfo[handle].rxedPosn++] = buffer[j];
+		if (buffer[j] == '>')
+		{
+			handleInfo[handle].rxedBuff[handleInfo[handle].rxedPosn] = 0;
+			if (!checkNetworkRecvBuffer (handleInfo[handle].rxedBuff, handleInfo[handle].rxedPosn))
+			{
+				SendSerial (handleInfo[handle].rxedBuff, len);
+			}
+			handleInfo[handle].rxedPosn = 0;
+		}
+		if (handleInfo[handle].rxedPosn >= RXED_BUFF_SIZE)
+		{
+			handleInfo[handle].rxedPosn = 0;
 			break;
 		}
 		++j;
@@ -484,6 +665,68 @@ void sendConfigFile (int newSocket)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  C H E C K  P O I N T  C O N N E C T                                                                               *
+ *  ===================================                                                                               *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Check that the point servers are connected.
+ *  \result None.
+ */
+void checkPointConnect()
+{
+	int p, i;
+
+	for (p = 0; p < trackCtrl.pServerCount; ++p)
+	{
+		if (trackCtrl.pointCtrl != NULL)
+		{
+			pointCtrlDef *point = &trackCtrl.pointCtrl[p];
+			if (point -> intHandle == -1)
+			{
+				if (point -> retry > 0)
+				{
+					point -> retry--;
+				}
+				if (point -> retry == 0)
+				{
+					for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
+					{
+						if (handleInfo[i].handle == -1)
+						{
+							char addrBuffer[81];
+
+							if (!GetAddressFromName (point -> server, addrBuffer))
+							{
+								strcpy (addrBuffer, point -> server);
+							}
+							if ((handleInfo[i].handle = ConnectClientSocket (addrBuffer, point -> port)) != -1)
+							{
+								point -> intHandle = i;
+								handleInfo[i].handleType = POINTC_HTYPE;
+								strncpy (handleInfo[i].localName, addrBuffer, 40);
+								putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
+								point -> retry = 0;
+							}
+							else
+							{
+								point -> retry = 30;
+							}
+						}
+					}
+					if (i == MAX_HANDLES)
+					{
+						putLogMessage (LOG_ERR, "No free handles.");
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  H E L P  T H E M                                                                                                  *
  *  ================                                                                                                  *
  *                                                                                                                    *
@@ -520,7 +763,7 @@ int main (int argc, char *argv[])
 	fd_set readfds;
 	struct timeval timeout;
 	char inAddress[21] = "";
-	int i, c, connectedCount = 0;
+	int i, c, p, connectedCount = 0;
 	time_t curRead = time(NULL) + 5;
 
 	while ((c = getopt(argc, argv, "c:dLID")) != -1)
@@ -584,11 +827,13 @@ int main (int argc, char *argv[])
 	}
 	else
 	{
+		handleInfo[SERIAL_HANDLE].handleType = SERIAL_HTYPE;
 		putLogMessage (LOG_INFO, "Listening on serial: %s", trackCtrl.serialDevice);
 
 		if (trackCtrl.configPort > 0)
 		{
 			handleInfo[CONFIG_HANDLE].handle = ServerSocketSetup (trackCtrl.configPort);
+			handleInfo[SERIAL_HANDLE].handleType = CONFIG_HTYPE;
 		}
 		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (trackCtrl.serverPort);
 		if (handleInfo[LISTEN_HANDLE].handle == -1)
@@ -597,7 +842,16 @@ int main (int argc, char *argv[])
 		}
 		else
 		{
+			handleInfo[SERIAL_HANDLE].handleType = LISTEN_HTYPE;
 			putLogMessage (LOG_INFO, "Listening on port: %d", trackCtrl.serverPort);
+		}
+	}
+	for (p = 0; p < trackCtrl.pServerCount; ++p)
+	{
+		if (trackCtrl.pointCtrl != NULL)
+		{
+			pointCtrlDef *point = &trackCtrl.pointCtrl[p];
+			point -> intHandle = -1;
 		}
 	}
 
@@ -607,7 +861,7 @@ int main (int argc, char *argv[])
 	while (handleInfo[LISTEN_HANDLE].handle != -1 && running)
 	{
 		int selRetn;
-		timeout.tv_sec = 2;
+		timeout.tv_sec = 1;
 		timeout.tv_usec = 0;
 
 		FD_ZERO(&readfds);
@@ -637,6 +891,7 @@ int main (int argc, char *argv[])
 						{
 							char outBuffer[41];
 							handleInfo[i].handle = newSocket;
+							handleInfo[i].handleType = CONTRL_HTYPE;
 							strncpy (handleInfo[i].localName, inAddress, 40);
 							putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
 							sprintf (outBuffer, "<V %d>", handleInfo[i].handle);
@@ -670,7 +925,7 @@ int main (int argc, char *argv[])
 				{
 					buffer[readBytes] = 0;
 					putLogMessage (LOG_DEBUG, "Received <- Serial: %s[%d]", buffer, readBytes);
-					ReceiveSerial (buffer, readBytes);
+					ReceiveSerial (SERIAL_HANDLE, buffer, readBytes);
 				}
 			}
 			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
@@ -685,15 +940,33 @@ int main (int argc, char *argv[])
 						if ((readBytes = RecvSocket (handleInfo[i].handle, buffer, 10240)) > 0)
 						{
 							buffer[readBytes] = 0;
-							SendSerial (buffer, readBytes);
+							ReceiveNetwork (i, buffer, readBytes);
 						}
 						else if (readBytes == 0)
 						{
 							putLogMessage (LOG_INFO, "Socket closed: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
 							CloseSocket (&handleInfo[i].handle);
-							if (--connectedCount == 0)
+							if (handleInfo[i].handleType == CONTRL_HTYPE)
 							{
-								SendSerial ("<0>", 3);
+								if (--connectedCount == 0)
+								{
+									SendSerial ("<0>", 3);
+								}
+							}
+							else if (handleInfo[i].handleType == POINTC_HTYPE)
+							{
+								for (p = 0; p < trackCtrl.pServerCount; ++p)
+								{
+									if (trackCtrl.pointCtrl != NULL)
+									{
+										pointCtrlDef *point = &trackCtrl.pointCtrl[p];
+										if (point -> intHandle == i)
+										{
+											point -> intHandle = -1;
+											break;
+										}
+									}
+								}
 							}
 						}
 					}
@@ -705,6 +978,7 @@ int main (int argc, char *argv[])
 			SendSerial ("<c>", 3);
 			curRead = time (NULL) + 2;
 		}
+		checkPointConnect();
 	}
 	/**********************************************************************************************************************
 	 * Killed so tidy up.                                                                                                 *

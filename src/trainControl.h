@@ -74,6 +74,8 @@ typedef struct _pointCtrl
 	char server[41];
 	int port;
 	int ident;
+	int intHandle;
+	int retry;
 }
 pointCtrlDef;
 
