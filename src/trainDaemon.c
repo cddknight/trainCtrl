@@ -686,7 +686,7 @@ void checkPointConnect()
 			{
 				if (point -> retry > 0)
 				{
-					point -> retry--;
+					--point -> retry;
 				}
 				if (point -> retry == 0)
 				{
@@ -712,12 +712,12 @@ void checkPointConnect()
 							{
 								point -> retry = 30;
 							}
+							break;
 						}
 					}
 					if (i == MAX_HANDLES)
 					{
 						putLogMessage (LOG_ERR, "No free handles.");
-						break;
 					}
 				}
 			}
