@@ -579,6 +579,35 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 	}
 }
 
+void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
+{
+	int i, cells = trackCtrl -> trackLayout -> trackRows * trackCtrl -> trackLayout -> trackCols;
+	
+	for (i = 0; i < cells; ++i)
+	{
+		trackCellDef *cell = &trackCtrl -> trackLayout -> trackCells[i];
+		if (cell -> point)
+		{
+			if (cell -> server == server && cell -> ident == point)
+			{
+				if (state == 0)
+				{
+					cell -> pointState = cell -> pointDefault;
+				}
+				else
+				{
+					cell -> pointState = cell-> point & ~(cell -> pointDefault);
+				}
+				if (trackCtrl -> windowTrack != NULL)
+				{
+					gtk_widget_queue_draw (trackCtrl -> drawingArea);
+				}
+				break;
+			}
+		}
+	}
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  P R O G R A M  Y E S  N O                                                                                         *
