@@ -576,6 +576,20 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  U P D A T E  P O I N T  P O S N                                                                                   *
+ *  ===============================                                                                                   *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Update the current state of the point.
+ *  \param trackCtrl Track config.
+ *  \param server Server that is sending the update.
+ *  \param point Point to change.
+ *  \param state New point state.
+ *  \result None.
+ */
 void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
 {
 	int i, cells = trackCtrl -> trackLayout -> trackRows * trackCtrl -> trackLayout -> trackCols;

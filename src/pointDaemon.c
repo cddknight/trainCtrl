@@ -42,6 +42,7 @@
 #define LISTEN_HANDLE	0
 #define FIRST_HANDLE	1
 
+char xmlConfigFile[81]	=	"points.xml";
 char pidFileName[81]	=	"/var/run/pointDaemon.pid";
 int	 logOutput			=	0;
 int	 infoOutput			=	0;
@@ -49,7 +50,8 @@ int	 debugOutput		=	0;
 int	 goDaemon			=	0;
 int	 inDaemonise		=	0;
 int	 running			=	1;
-int  serverPort			=	30332;
+int	 serverIdent		=	1;
+pointCtrlDef pointCtrl;
 
 typedef struct _handleInfo
 {
@@ -227,6 +229,44 @@ void helpThem()
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  L O A D  C O N F I G  F I L E                                                                                     *
+ *  =============================                                                                                     *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Read the config file from disk and keep it in memory.
+ *  \result True if it was read and parsed.
+ */
+int loadConfigFile ()
+{
+	int retn = 0;
+	struct stat statbuf;
+	long xmlBufferSize = 0;
+	char *xmlBuffer = NULL;
+
+	putLogMessage (LOG_INFO, "P:Config file: %s", xmlConfigFile);
+	if (stat (xmlConfigFile, &statbuf) == 0)
+	{
+		FILE *inFile = fopen (xmlConfigFile, "r");
+		if (inFile != NULL)
+		{
+			xmlBufferSize = statbuf.st_size;
+			if ((xmlBuffer = (char *)malloc (xmlBufferSize + 10)) != NULL)
+			{
+				if (fread (xmlBuffer, 1, xmlBufferSize, inFile) == xmlBufferSize)
+				{
+					retn = parseMemoryXML (&pointCtrl, xmlBuffer);
+				}
+				free (xmlBuffer);
+			}
+			fclose (inFile);
+		}
+	}
+	return retn;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  M A I N                                                                                                           *
  *  =======                                                                                                           *
  *                                                                                                                    *
@@ -245,12 +285,16 @@ int main (int argc, char *argv[])
 	int i, c, connectedCount = 0;
 	time_t curRead = time(NULL) + 5;
 
-	while ((c = getopt(argc, argv, "l:dLID")) != -1)
+	while ((c = getopt(argc, argv, "c:s:dLID")) != -1)
 	{
 		switch (c)
 		{
-		case 'l':
-			serverPort = atoi (optarg);
+		case 'c':
+			strncpy (xmlConfigFile, optarg, 80);
+			break;
+
+		case 's':
+			serverIdent = atoi (optarg);
 			break;
 
 		case 'd':
@@ -275,6 +319,9 @@ int main (int argc, char *argv[])
 		}
 	}
 
+	pointCtrl.server = serverIdent;
+	loadConfigFile ();
+
 	for (i = 0; i < MAX_HANDLES; ++i)
 	{
 		handleInfo[i].handle = -1;
@@ -291,14 +338,14 @@ int main (int argc, char *argv[])
 	/**********************************************************************************************************************
 	 * Setup listening network ports.                                                                                     *
 	 **********************************************************************************************************************/
-	handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (serverPort);
+	handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (pointCtrl.serverPort);
 	if (handleInfo[LISTEN_HANDLE].handle == -1)
 	{
 		putLogMessage (LOG_ERR, "P:Unable to listen on network port.");
 	}
 	else
 	{
-		putLogMessage (LOG_INFO, "P:Listening on port: %d", serverPort);
+		putLogMessage (LOG_INFO, "P:Listening on port: %d", pointCtrl.serverPort);
 	}
 
 	/**********************************************************************************************************************

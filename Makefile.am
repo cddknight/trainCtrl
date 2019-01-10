@@ -5,6 +5,7 @@ traincontrol_LDADD = $(DEPS_LIBS) -lpthread
 traindaemon_SOURCES = src/trainDaemon.c src/trainTrack.c src/socketC.c src/trainControl.h src/socketC.h
 traindaemon_LDADD = -lxml2
 pointdaemon_SOURCES = src/pointDaemon.c src/pointControl.c src/socketC.c src/pointControl.h src/socketC.h
+pointdaemon_LDADD = -lxml2
 traincalc_SOURCES = src/trainCalc.c
 AM_CPPFLAGS = $(DEPS_CFLAGS)
 EXTRA_DIST = trainconfig.xml traincontrol.desktop traincontrol.svg COPYING AUTHORS

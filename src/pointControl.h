@@ -20,5 +20,25 @@
  *  \file
  *  \brief Control the points taking commands from the network.
  */
+
+typedef struct _pointState
+{
+	int ident;
+	int state;
+	int defaultPos;
+	int turnoutPos;
+}
+pointStateDef;
+
+typedef struct _pointCtrl
+{
+	int server;
+	int serverPort;
+	int pointCount;
+	pointStateDef *pointStates;
+}
+pointCtrlDef;
+
+int parseMemoryXML (pointCtrlDef *pointCtrl, char *buffer);
 void checkRecvBuffer (int handle, char *buffer, int len);
 
