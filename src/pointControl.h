@@ -40,5 +40,5 @@ typedef struct _pointCtrl
 pointCtrlDef;
 
 int parseMemoryXML (pointCtrlDef *pointCtrl, char *buffer);
-void checkRecvBuffer (int handle, char *buffer, int len);
+void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len);
 

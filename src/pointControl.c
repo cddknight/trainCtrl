@@ -198,18 +198,81 @@ int parseMemoryXML (pointCtrlDef *pointCtrl, char *buffer)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  U P D A T E  P O I N T                                                                                            *
+ *  ======================                                                                                            *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Update the state of a point.
+ *  \param pointCtrl Current point states.
+ *  \param handle Socket handle to send reply.
+ *  \param server Selected server (check it is for us).
+ *  \param point Identity of the point to change.
+ *  \param state New state for the point.
+ *  \result None.
+ */
+void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, int state)
+{
+	int i;
+
+	if (server == pointCtrl -> server)
+	{
+		for (i = 0; i < pointCtrl -> pointCount; ++i)
+		{
+			if (pointCtrl -> pointStates[i].ident == point)
+			{
+				char tempBuff[81];
+
+				pointCtrl -> pointStates[i].state = state;
+				sprintf (tempBuff, "<y %d %d %d>", server, point, state);
+				SendSocket (handle, tempBuff, strlen (tempBuff));
+				break;
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  U P D A T E  A L L  P O I N T S                                                                                   *
+ *  ===============================                                                                                   *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Send out a message with the state of all the points.
+ *  \param pointCtrl Current point states.
+ *  \param handle Socket handle to send reply.
+ *  \result None.
+ */
+void updateAllPoints (pointCtrlDef *pointCtrl, int handle)
+{
+	int i;
+	char tempBuff[81];
+
+	for (i = 0; i < pointCtrl -> pointCount; ++i)
+	{
+		sprintf (tempBuff, "<y %d %d %d>", pointCtrl -> server, 
+				pointCtrl -> pointStates[i].ident, 
+				pointCtrl -> pointStates[i].state);
+		SendSocket (handle, tempBuff, strlen (tempBuff));
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  C H E C K  R E C V  B U F F E R                                                                                   *
  *  ===============================                                                                                   *
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
  *  \brief Process the received buffer looking for point commands.
+ *  \param pointCtrl Current point states.
  *  \param handle Socket handle.
  *  \param buffer Buffer received from the network.
  *  \param len Lenght of the buffer received.
  *  \result None.
  */
-void checkRecvBuffer (int handle, char *buffer, int len)
+void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len)
 {
 	char words[41][41];
 	int wordNum = -1, i = 0, j = 0, inType = 0;
@@ -259,14 +322,19 @@ void checkRecvBuffer (int handle, char *buffer, int len)
 			printf ("(%d)\n", wordNum);
  *------------------------------------------------------------------*/
 			/* Point control */
-			if (words[0][0] == 'Y' && words[0][1] == 0 && wordNum == 4)
+			if (words[0][0] == 'Y' && words[0][1] == 0)
 			{
-				char tempBuff[81];
-				int server = atoi (words[1]);
-				int point = atoi (words[2]);
-				int state = atoi (words[3]);
-				sprintf (tempBuff, "<y %d %d %d>", server, point, state);
-				SendSocket (handle, tempBuff, strlen (tempBuff));
+				if (wordNum == 4)
+				{
+					int server = atoi (words[1]);
+					int point = atoi (words[2]);
+					int state = atoi (words[3]);
+					updatePoint (pointCtrl, handle, server, point, state);
+				}
+				else
+				{
+					updateAllPoints (pointCtrl, handle);
+				}
 			}
 			inType = 0;
 			wordNum = -1;

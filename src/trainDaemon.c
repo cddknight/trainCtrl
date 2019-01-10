@@ -294,6 +294,36 @@ void stopAllTrains ()
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  G E T  A L L  P O I N T  S T A T E S                                                                              *
+ *  ====================================                                                                              *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Tell all the point controllers to output their state.
+ *  \result None.
+ */
+void GetAllPointStates ()
+{
+	int p;
+
+	if (trackCtrl.pointCtrl != NULL)
+	{
+		for (p = 0; p < trackCtrl.pServerCount; ++p)
+		{
+			pointCtrlDef *point = &trackCtrl.pointCtrl[p];
+			if (point -> intHandle != -1)
+			{
+				if (handleInfo[point -> intHandle].handle != -1)
+				{
+					SendSocket (handleInfo[point -> intHandle].handle, "<Y>", 3);
+				}
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  S E N D  P O I N T  S E R V E R                                                                                   *
  *  ===============================                                                                                   *
  *                                                                                                                    *
@@ -710,6 +740,7 @@ void checkPointConnect()
 								handleInfo[i].handleType = POINTC_HTYPE;
 								strncpy (handleInfo[i].localName, addrBuffer, 40);
 								putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
+								SendSocket (handleInfo[i].handle, "<Y>", 3);
 								point -> retry = 0;
 							}
 							else
@@ -901,6 +932,7 @@ int main (int argc, char *argv[])
 							sprintf (outBuffer, "<V %d>", handleInfo[i].handle);
 							SendSocket (handleInfo[i].handle, outBuffer, strlen (outBuffer));
 							SendSerial ("<s>", 3);
+							GetAllPointStates ();
 							++connectedCount;
 							break;
 						}
