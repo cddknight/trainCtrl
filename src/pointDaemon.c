@@ -35,7 +35,8 @@
 #include <time.h>
 
 #include "socketC.h"
-#include "trainControl.h"
+//#include "trainControl.h"
+#include "pointControl.h"
 
 #define MAX_HANDLES		5
 #define LISTEN_HANDLE	0
@@ -362,6 +363,7 @@ int main (int argc, char *argv[])
 						{
 							buffer[readBytes] = 0;
 							putLogMessage (LOG_INFO, "P:Socket rxed: %s(%d)", buffer, handleInfo[i].handle);
+							checkRecvBuffer (handleInfo[i].handle, buffer, readBytes);
 						}
 						else if (readBytes == 0)
 						{
