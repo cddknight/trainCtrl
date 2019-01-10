@@ -120,6 +120,7 @@ typedef struct _trackCtrl
 }
 trackCtrlDef;
 
+void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state);
 int parseMemoryXML (trackCtrlDef *trackCtrl, char *buffer);
 int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level);
 int startConnectThread (trackCtrlDef *trackCtrl);
