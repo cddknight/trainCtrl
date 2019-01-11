@@ -969,7 +969,7 @@ static void activate (GtkApplication *app, gpointer userData)
 
 	g_action_map_add_action_entries (G_ACTION_MAP (app), appEntries, G_N_ELEMENTS (appEntries), app);
 	menu = g_menu_new ();
-	g_menu_append (menu, "Preferences", "app.preferences");
+/*	g_menu_append (menu, "Preferences", "app.preferences"); */
 	g_menu_append (menu, "About", "app.about");
 	g_menu_append (menu, "Quit", "app.quit");
 	gtk_application_set_app_menu (GTK_APPLICATION (app), G_MENU_MODEL (menu));
@@ -1178,7 +1178,7 @@ static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer 
 
 	gtk_show_about_dialog (GTK_WINDOW (NULL),
 			"program-name", "Train Control",
-			"version", g_strdup_printf ("%s,\nRunning against GTK+ %d.%d.%d",
+			"version", g_strdup_printf ("Version: %s\nRunning against GTK+ %d.%d.%d",
 			 VERSION,
 				 gtk_get_major_version (),
 				 gtk_get_minor_version (),
