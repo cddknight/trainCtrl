@@ -618,7 +618,7 @@ void ReceiveSerial (int handle, char *buffer, int len)
  */
 void ReceiveNetwork (int handle, char *buffer, int len)
 {
-	int i = 0, j = 0;
+	int j = 0;
 
 	while (j < len)
 	{

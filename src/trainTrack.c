@@ -164,7 +164,7 @@ void processPServer (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 
 							if (port != -1 && ident != -1)
 							{
-								strncpy (trackCtrl -> pointCtrl[loop].server, serverStr, 40);
+								strncpy (trackCtrl -> pointCtrl[loop].server, (char *)serverStr, 40);
 								trackCtrl -> pointCtrl[loop].port = port;
 								trackCtrl -> pointCtrl[loop].ident = ident;
 								++loop;

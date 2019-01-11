@@ -283,7 +283,6 @@ int main (int argc, char *argv[])
 	struct timeval timeout;
 	char inAddress[21] = "";
 	int i, c, connectedCount = 0;
-	time_t curRead = time(NULL) + 5;
 
 	while ((c = getopt(argc, argv, "c:s:dLID")) != -1)
 	{
@@ -382,7 +381,6 @@ int main (int argc, char *argv[])
 					{
 						if (handleInfo[i].handle == -1)
 						{
-							char outBuffer[41];
 							handleInfo[i].handle = newSocket;
 							strncpy (handleInfo[i].localName, inAddress, 40);
 							putLogMessage (LOG_INFO, "P:Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
