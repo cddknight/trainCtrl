@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <points>
   <server ident="1" port="30332" count="11">
     <point ident="1" default="45" turnout="135"/>
@@ -24,3 +25,4 @@
     <point ident="9" default="45" turnout="135"/>
   </server>
 </points>
+
