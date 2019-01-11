@@ -22,6 +22,7 @@
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -37,25 +38,54 @@
  */
 int main (int argc, char *argv[])
 {
-	int i, trainID = 3;
+	int i, trainID = 3, cv29 = 0;
 
-	for (i = 1; i < argc; ++i)
+	while ((i = getopt(argc, argv, "rsdac")) != -1)
 	{
-	
-		trainID = atoi (argv[i]);
+		switch (i)
+		{
+		case 'r':
+			cv29 |= 1;
+			break;
+		case 's':
+			cv29 |= 2;
+			break;
+		case 'd':
+			cv29 |= 4;
+			break;
+		case 'a':
+			cv29 |= 8;
+			break;
+		case 'c':
+			cv29 |= 16;
+			break;
+		case '?':
+			printf ("traincalc [-rsdac] <train cab>\n");
+			printf ("    -r . . . Reverse directions.\n");
+			printf ("    -s . . . 28/128 Speed steps.\n");
+			printf ("    -d . . . DC operation.\n");
+			printf ("    -a . . . Railcom.\n");
+			printf ("    -c . . . Complex speed curve.\n");
+			exit (1);
+		}
+	}
+	for (; optind < argc; ++optind)
+	{
+		trainID = atoi (argv[optind]);
 		if (trainID > 0 && trainID < 100)
 		{
-			printf ("CV 1: %d (0x%X)\nCV 29-5: 0\n", trainID, trainID);
+			printf ("CV  1: %3d (0x%02X)\nCV 29: %3d (0x%02X)\n", trainID, trainID, cv29, cv29);
 		}
 		else if (trainID > 123 && trainID < 10000)
 		{
-			int reg17 = 0, reg18 = 0;
+			int cv17 = 0, cv18 = 0;
 
-			reg17 = (trainID >> 8) + 0xC0;
-			reg18 = trainID & 0xFF;
+			cv17 = (trainID >> 8) + 0xC0;
+			cv18 = trainID & 0xFF;
+			cv29 |= 32;
 			
-			printf ("CV 17: %3d (0x%02X)\nCV 18: %3d (0x%02X)\nCV 29-5: 1\n",
-					reg17, reg17, reg18, reg18);
+			printf ("CV 17: %3d (0x%02X)\nCV 18: %3d (0x%02X)\nCV 29: %3d (0x%02X)\n",
+					cv17, cv17, cv18, cv18, cv29, cv29);
 		}
 		else
 		{

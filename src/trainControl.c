@@ -24,6 +24,7 @@
 #include <sys/stat.h>
 #include <string.h>
 
+#include "config.h"
 #include "trainControl.h"
 #include "socketC.h"
 
@@ -1178,7 +1179,7 @@ static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer 
 	gtk_show_about_dialog (GTK_WINDOW (NULL),
 			"program-name", "Train Control",
 			"version", g_strdup_printf ("%s,\nRunning against GTK+ %d.%d.%d",
-			 "0.0",
+			 VERSION,
 				 gtk_get_major_version (),
 				 gtk_get_minor_version (),
 				 gtk_get_micro_version ()),
