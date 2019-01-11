@@ -21,6 +21,7 @@
  *  \brief Graphical DCC++ controller interface.
  */
 #include <gtk/gtk.h>
+#include <sys/stat.h>
 #include <string.h>
 
 #include "trainControl.h"
@@ -979,7 +980,20 @@ static void activate (GtkApplication *app, gpointer userData)
 	}
 	else
 	{
-		parseRetn = parseTrackXML (trackCtrl, "/etc/trainconfig.xml", 0);
+		char configPath[1025], *home;
+		struct stat statBuff;
+
+		home = getenv ("HOME");
+		strncpy (configPath, home, 1024);
+		strncat (configPath, "/.traincontrolrc.xml", 1024 - strlen (configPath));
+		if (stat (configPath, &statBuff) == 0)
+		{
+			parseRetn = parseTrackXML (trackCtrl, configPath, 0);
+		}
+		else
+		{
+			parseRetn = parseTrackXML (trackCtrl, "/etc/traincontrolrc.xml", 0);
+		}
 	}
 	if (!parseRetn)
 	{
