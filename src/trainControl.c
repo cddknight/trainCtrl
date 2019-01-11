@@ -470,40 +470,35 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 							cell -> pointDefault == newState ? 0 : 1);
 					if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
 					{
-						printf ("Set point (1): %s\n", tempBuff);
-					}
-
-					/* This point is linked so change the other point */
-					if (trackCtrl -> trackLayout -> trackCells[posn].link)
-					{
-						int i;
-						for (i = 0; i < 8; ++i)
+						/* This point is linked so change the other point */
+						if (trackCtrl -> trackLayout -> trackCells[posn].link)
 						{
-							if (cell -> link & (1 << i))
+							int i;
+							for (i = 0; i < 8; ++i)
 							{
-								int newLinkState, newPosn = posn + (cols * linkRow[i]) + linkCol[i];
-								if (newPosn >= 0 && newPosn < (rows * cols))
+								if (cell -> link & (1 << i))
 								{
-									trackCellDef *newCell = &trackCtrl -> trackLayout -> trackCells[newPosn];
-
-									/* The new point should have a link, we hope to us */
-									if (newCell -> link)
+									int newLinkState, newPosn = posn + (cols * linkRow[i]) + linkCol[i];
+									if (newPosn >= 0 && newPosn < (rows * cols))
 									{
-										if (cell -> link == newState)
+										trackCellDef *newCell = &trackCtrl -> trackLayout -> trackCells[newPosn];
+
+										/* The new point should have a link, we hope to us */
+										if (newCell -> link)
 										{
-											/* We are setting to the link, so set other point to the link */
-											newLinkState = newCell -> link;
-										}
-										else
-										{
-											/* We are breaking the link, so set other point away from link */
-											newLinkState = newCell -> point & ~newCell -> link;
-										}
-										sprintf (tempBuff, "<Y %d %d %d>", newCell -> server, newCell -> ident, 
-												newCell -> pointDefault == newLinkState ? 0 : 1);
-										if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
-										{
-											printf ("Set point (2): %s\n", tempBuff);
+											if (cell -> link == newState)
+											{
+												/* We are setting to the link, so set other point to the link */
+												newLinkState = newCell -> link;
+											}
+											else
+											{
+												/* We are breaking the link, so set other point away from link */
+												newLinkState = newCell -> point & ~newCell -> link;
+											}
+											sprintf (tempBuff, "<Y %d %d %d>", newCell -> server, newCell -> ident, 
+													newCell -> pointDefault == newLinkState ? 0 : 1);
+											trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff));
 										}
 									}
 								}
@@ -609,7 +604,6 @@ void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
 				{
 					cell -> pointState = cell-> point & ~(cell -> pointDefault);
 				}
-				printf ("Found point set: %d\n", cell -> pointState);
 				if (trackCtrl -> windowTrack != NULL)
 				{
 					gtk_widget_queue_draw (trackCtrl -> drawingArea);
