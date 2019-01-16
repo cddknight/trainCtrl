@@ -691,8 +691,6 @@ void sendConfigFile (int newSocket)
 	char buffer[81];
 	if (xmlBufferSize && xmlBuffer != NULL)
 	{
-		sprintf (buffer, "<!-- size=\"%ld\" -->\n", xmlBufferSize);
-		SendSocket (newSocket, buffer, strlen (buffer));
 		SendSocket (newSocket, xmlBuffer, xmlBufferSize);
 	}
 }
