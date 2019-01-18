@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <track name="The Office Line" server="tinyfivew" port="30330" config="30331" device="/dev/ttyACM0">
-  <trains count="4">
-    <train num="4560" id="320" desc="Prairie"/>
+  <trains count="5">
+    <train num="4560" id="320" desc="Black Prairie"/>
+    <train num="4569" id="3" desc="Green Prairie"/>
     <train num="4666" id="330" desc="Pannier Tank"/>
     <train num="47451" id="310" desc="Jinty"/>
     <train num="68035" id="300" desc="J94"/>

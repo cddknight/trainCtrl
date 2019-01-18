@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "config.h"
 #include "trainControl.h"
