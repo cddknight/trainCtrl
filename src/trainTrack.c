@@ -105,7 +105,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 								trackCtrl -> trainCtrl[loop].trainReg = loop + 1;
 								trackCtrl -> trainCtrl[loop].trainID = id;
 								trackCtrl -> trainCtrl[loop].trainNum = num;
-								strncpy (trackCtrl -> trainCtrl[loop].trainDesc, descStr, 40);
+								strncpy (trackCtrl -> trainCtrl[loop].trainDesc, (char *)descStr, 40);
 								++loop;
 							}
 							xmlFree(descStr);

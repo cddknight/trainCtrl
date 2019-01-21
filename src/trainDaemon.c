@@ -688,7 +688,6 @@ int loadConfigFile ()
  */
 void sendConfigFile (int newSocket)
 {
-	char buffer[81];
 	if (xmlBufferSize && xmlBuffer != NULL)
 	{
 		SendSocket (newSocket, xmlBuffer, xmlBufferSize);
