@@ -54,6 +54,7 @@ typedef struct _trainCtrl
 	int curSpeed;
 	int reverse;
 
+	struct timeval lastChange;
 	int remoteCurSpeed;
 	int remoteReverse;
 

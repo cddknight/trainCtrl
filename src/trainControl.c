@@ -59,6 +59,66 @@ static GdkPixbuf *defaultIcon;
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  D I F F  T I M E                                                                                                  *
+ *  ================                                                                                                  *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Calculate the differenc in mili-seconds between to timevals.
+ *  \param start Start time.
+ *  \param end End time.
+ *  \result Difference in milli seconds.
+ */
+long diffTime (struct timeval *start, struct timeval *end)
+{
+	struct timeval inStartStore;
+	struct timeval inEndStore;
+	struct timeval *inStart = &inStartStore;
+	struct timeval *inEnd = &inEndStore;
+
+	inStartStore.tv_sec = start -> tv_sec;
+	inStartStore.tv_usec = start -> tv_usec;
+	inEndStore.tv_sec = end -> tv_sec;
+	inEndStore.tv_usec = end -> tv_usec;
+
+	inStart -> tv_usec /= 1000;
+	inEnd -> tv_usec /= 1000;
+
+	if (inStart -> tv_sec > inEnd -> tv_sec || 
+			(inStart -> tv_sec == inEnd -> tv_sec && inStart -> tv_usec > inEnd -> tv_usec))
+	{
+		inStart = &inEndStore;
+		inEnd = &inStartStore;
+	}
+	if (inStart -> tv_usec > inEnd -> tv_usec)
+	{
+		inEnd -> tv_usec += 1000;
+		inEnd -> tv_sec -= 1;
+	}
+	return (inEnd -> tv_usec - inStart -> tv_usec) + 
+			((inEnd -> tv_sec - inStart -> tv_sec) * 1000);
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  D I F F  T I M E  T O  N O W                                                                                      *
+ *  ============================                                                                                      *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Different between a time and now.
+ *  \param start The start time.
+ *  \result Different between a time and now.
+ */
+long diffTimeToNow (struct timeval *start)
+{
+    struct timeval now;
+    gettimeofday(&now, NULL);
+	return diffTime (start, &now);
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  S T O P  T R A I N                                                                                                *
  *  ==================                                                                                                *
  *                                                                                                                    *
@@ -241,6 +301,7 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 		sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, newValue, train -> reverse);
 		if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
 		{
+		    gettimeofday(&train -> lastChange, NULL);
 			train -> curSpeed = train -> remoteCurSpeed = newValue;
 			sprintf (tempBuff, "Set speed: %d for train %d", newValue, train -> trainNum);
 			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
@@ -891,8 +952,11 @@ gboolean clockTickCallback (gpointer data)
 		trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
 		if (train -> curSpeed != train -> remoteCurSpeed)
 		{
-			train -> curSpeed = train -> remoteCurSpeed;
-			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), (double)train -> curSpeed);
+			if (diffTimeToNow (&train -> lastChange) > 750)
+			{
+				train -> curSpeed = train -> remoteCurSpeed;
+				gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), (double)train -> curSpeed);
+			}
 		}
 		if (train -> reverse != train -> remoteReverse)
 		{
@@ -1067,6 +1131,7 @@ static void activate (GtkApplication *app, gpointer userData)
 				gtk_scale_set_value_pos (GTK_SCALE(trackCtrl -> trainCtrl[i].scaleSpeed), GTK_POS_TOP);
 				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].scaleSpeed, GTK_ALIGN_CENTER);
 				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].scaleSpeed, i, 2, 1, 1);
+			    gettimeofday(&trackCtrl -> trainCtrl[i].lastChange, NULL);
 
 				trackCtrl -> trainCtrl[i].checkDir = gtk_check_button_new_with_label ("Reverse");
 				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].checkDir), "train", &trackCtrl -> trainCtrl[i]);
