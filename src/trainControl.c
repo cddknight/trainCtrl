@@ -21,6 +21,7 @@
  *  \brief Graphical DCC++ controller interface.
  */
 #include <gtk/gtk.h>
+#include <sys/time.h>
 #include <sys/stat.h>
 #include <string.h>
 #include <stdlib.h>
@@ -154,6 +155,27 @@ static void stopTrain (GtkWidget *widget, gpointer data)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  T R A I N  I N F O                                                                                                *
+ *  ==================                                                                                                *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Display information about the train on the status bar.
+ *  \param widget Widget calling this.
+ *  \param data Track data.
+ *  \result None.
+ */
+static void trainInfo (GtkWidget *widget, gpointer data)
+{
+	char tempBuff[181];
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
+	snprintf (tempBuff, 180, "%d, %s, DCC %d", train -> trainNum, train -> trainDesc, train -> trainID);
+	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  H A L T  T R A I N                                                                                                *
  *  ==================                                                                                                *
  *                                                                                                                    *
@@ -204,8 +226,8 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 	gboolean state = (trackCtrl -> powerState == POWER_ON ? TRUE : FALSE);
 	for (i = 0; i < trackCtrl -> trainCount; ++i)
 	{
-		if (trackCtrl -> trainCtrl[i].labelNum != NULL)
-			gtk_widget_set_sensitive (trackCtrl -> trainCtrl[i].labelNum, state);
+		if (trackCtrl -> trainCtrl[i].buttonNum != NULL)
+			gtk_widget_set_sensitive (trackCtrl -> trainCtrl[i].buttonNum, state);
 		if (trackCtrl -> trainCtrl[i].buttonHalt != NULL)
 			gtk_widget_set_sensitive (trackCtrl -> trainCtrl[i].buttonHalt, state);
 		if (trackCtrl -> trainCtrl[i].scaleSpeed != NULL)
@@ -1113,14 +1135,16 @@ static void activate (GtkApplication *app, gpointer userData)
 			for (i = 0; i < trackCtrl -> trainCount; ++i)
 			{
 				sprintf (tempBuff, "%d", trackCtrl -> trainCtrl[i].trainNum);
-				trackCtrl -> trainCtrl[i].labelNum = gtk_label_new (tempBuff);
-				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].labelNum, GTK_ALIGN_CENTER);
-				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].labelNum, i, 0, 1, 1);
+				trackCtrl -> trainCtrl[i].buttonNum = gtk_button_new_with_label (tempBuff);
+				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].buttonNum), "train", &trackCtrl -> trainCtrl[i]);
+				g_signal_connect (trackCtrl -> trainCtrl[i].buttonNum, "clicked", G_CALLBACK (trainInfo), trackCtrl);
+				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonNum, GTK_ALIGN_FILL);
+				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].buttonNum, i, 0, 1, 1);
 
 				trackCtrl -> trainCtrl[i].buttonHalt = gtk_button_new_with_label ("Halt");
 				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].buttonHalt), "train", &trackCtrl -> trainCtrl[i]);
 				g_signal_connect (trackCtrl -> trainCtrl[i].buttonHalt, "clicked", G_CALLBACK (haltTrain), trackCtrl);
-				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonHalt, GTK_ALIGN_CENTER);
+				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonHalt, GTK_ALIGN_FILL);
 				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].buttonHalt, i, 1, 1, 1);
 
 				trackCtrl -> trainCtrl[i].scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 126, 1);
@@ -1142,7 +1166,7 @@ static void activate (GtkApplication *app, gpointer userData)
 				trackCtrl -> trainCtrl[i].buttonStop = gtk_button_new_with_label ("STOP");
 				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].buttonStop), "train", &trackCtrl -> trainCtrl[i]);
 				g_signal_connect (trackCtrl -> trainCtrl[i].buttonStop, "clicked", G_CALLBACK (stopTrain), trackCtrl);
-				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonStop, GTK_ALIGN_CENTER);
+				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonStop, GTK_ALIGN_FILL);
 				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].buttonStop, i, 4, 1, 1);
 
 			}

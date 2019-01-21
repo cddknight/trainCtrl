@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <track name="The Office Line" server="tinyfivew" port="30330" config="30331" device="/dev/ttyACM0">
   <trains count="5">
-    <train num="4560" id="320" desc="Black Prairie"/>
-    <train num="4569" id="340" desc="Green Prairie"/>
-    <train num="4666" id="330" desc="Pannier Tank"/>
-    <train num="47451" id="310" desc="Jinty"/>
-    <train num="68035" id="300" desc="J94"/>
+    <train num="4560" id="320" desc="Black GWR Class 5101 (2-6-2)"/>
+    <train num="4569" id="340" desc="Green GWR Class 5101 (2-6-2)"/>
+    <train num="4666" id="330" desc="GWR Class 5700 Pannier (0-6-0)"/>
+    <train num="47451" id="310" desc="Fowler Class 3F 'Jinty' (0-6-0)"/>
+    <train num="68035" id="300" desc="Austerity Saddle Tank J94 (0-6-0)"/>
   </trains>
   <pointServers count="2">
     <pointServer server="tinyfivew" port="30332" ident="1"/>

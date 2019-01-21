@@ -53,17 +53,18 @@ typedef struct _trainCtrl
 	int trainNum;
 	int curSpeed;
 	int reverse;
+	char trainDesc[41];
 
 	struct timeval lastChange;
 	int remoteCurSpeed;
 	int remoteReverse;
 
 #ifdef __GTK_H__
+	GtkWidget *buttonNum;
 	GtkWidget *buttonStop;
 	GtkWidget *buttonHalt;
 	GtkWidget *scaleSpeed;
 	GtkWidget *checkDir;
-	GtkWidget *labelNum;
 #else
 	void *xPointers[5];
 #endif
