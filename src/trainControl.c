@@ -1096,7 +1096,7 @@ static void activate (GtkApplication *app, gpointer userData)
 			g_signal_connect (trackCtrl -> windowCtrl, "destroy", G_CALLBACK (windowDestroy), trackCtrl);
 			gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowCtrl), tempBuff);
 			gtk_window_set_icon_name (GTK_WINDOW (trackCtrl -> windowCtrl), "preferences-desktop");
-			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), 300, 500);
+			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), 300, 600);
 
 			vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
 			gtk_container_add (GTK_CONTAINER (trackCtrl -> windowCtrl), vbox);
