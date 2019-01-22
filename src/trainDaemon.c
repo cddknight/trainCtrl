@@ -406,7 +406,7 @@ void savePointState (int pSvrIdent, int ident, int direc)
  **********************************************************************************************************************/
 /**
  *  \brief Send a message to the point server.
- *  \param server Server identity.
+ *  \param pSvrIdent Point server identity.
  *  \param ident Identity of the point server.
  *  \param direc Direction for the point.
  *  \result None.
