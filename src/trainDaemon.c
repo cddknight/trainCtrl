@@ -229,7 +229,7 @@ void daemonize(void)
  *  \param device Serial port to open.
  *  \result Handle of the port.
  */
-int SerialPortSetup (char *device)
+int serialPortSetup (char *device)
 {
 	int portFD = -1;
 	struct termios options;
@@ -259,7 +259,7 @@ int SerialPortSetup (char *device)
  *  \param len Size to send.
  *  \result The number of bytes sent.
  */
-int SendSerial (char *buffer, int len)
+int sendSerial (char *buffer, int len)
 {
 	putLogMessage (LOG_DEBUG, "Sending -> Serial: %s[%d]", buffer, len);
 	return write (handleInfo[SERIAL_HANDLE].handle, buffer, len);
@@ -286,7 +286,7 @@ void stopAllTrains ()
 		{
 			trainCtrlDef *train = &trackCtrl.trainCtrl[t];
 			sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, -1, 0);
-			SendSerial (tempBuff, strlen (tempBuff));
+			sendSerial (tempBuff, strlen (tempBuff));
 		}
 		usleep (100000);
 	}
@@ -302,7 +302,7 @@ void stopAllTrains ()
  *  \brief Tell all the point controllers to output their state.
  *  \result None.
  */
-void GetAllPointStates ()
+void getAllPointStates ()
 {
 	int p;
 
@@ -324,6 +324,82 @@ void GetAllPointStates ()
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  S E T  A L L  P O I N T  S T A T E S                                                                              *
+ *  ====================================                                                                              *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Send the current point states to the point server.
+ *  \param pSvrIdent Server to sent to.
+ *  \result None.
+ */
+void setAllPointStates (int pSvrIdent)
+{
+	if (trackCtrl.pointCtrl != NULL)
+	{
+		pointCtrlDef *point = &trackCtrl.pointCtrl[pSvrIdent];
+		if (point -> intHandle != -1)
+		{
+			char tempBuff[80];
+			int i, cells = trackCtrl.trackLayout -> trackRows * trackCtrl.trackLayout -> trackCols;
+	
+			for (i = 0; i < cells; ++i)
+			{
+				trackCellDef *cell = &trackCtrl.trackLayout -> trackCells[i];
+				if (cell -> point)
+				{
+					if (cell -> server == pSvrIdent)
+					{
+						sprintf (tempBuff, "<Y %d %d %d>", pSvrIdent, cell -> ident, 
+								cell -> pointState == cell -> pointDefault ? 0 : 1);
+						SendSocket (handleInfo[point -> intHandle].handle, tempBuff, strlen (tempBuff));
+					}
+				}
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  S A V E  P O I N T  S T A T E                                                                                     *
+ *  =============================                                                                                     *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Save the current state of the point as it is changed.
+ *  \param pSvrIdent Server number.
+ *  \param ident Point number.
+ *  \param direc Point direction.
+ *  \result None.
+ */
+void savePointState (int pSvrIdent, int ident, int direc)
+{
+	int i, cells = trackCtrl.trackLayout -> trackRows * trackCtrl.trackLayout -> trackCols;
+
+	for (i = 0; i < cells; ++i)
+	{
+		trackCellDef *cell = &trackCtrl.trackLayout -> trackCells[i];
+		if (cell -> point)
+		{
+			if (cell -> server == pSvrIdent && cell -> ident == ident)
+			{
+				if (direc == 0)
+				{
+					cell -> pointState = cell -> pointDefault;
+				}
+				else
+				{
+					cell -> pointState = cell -> point & ~(cell -> pointDefault);
+				}
+				break;
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  S E N D  P O I N T  S E R V E R                                                                                   *
  *  ===============================                                                                                   *
  *                                                                                                                    *
@@ -331,29 +407,30 @@ void GetAllPointStates ()
 /**
  *  \brief Send a message to the point server.
  *  \param server Server identity.
- *  \param point Point identity.
- *  \param throw Direction for the point.
+ *  \param ident Identity of the point server.
+ *  \param direc Direction for the point.
  *  \result None.
  */
-void sendPointServer (int server, int point, int throw)
+void sendPointServer (int pSvrIdent, int ident, int direc)
 {
 	int p;
 
-	for (p = 0; p < trackCtrl.pServerCount; ++p)
+	if (trackCtrl.pointCtrl != NULL)
 	{
-		if (trackCtrl.pointCtrl != NULL)
+		for (p = 0; p < trackCtrl.pServerCount; ++p)
 		{
 			pointCtrlDef *pointCtrl = &trackCtrl.pointCtrl[p];
-			if (server == pointCtrl -> ident)
+			if (pSvrIdent == pointCtrl -> ident)
 			{
 				if (pointCtrl -> intHandle != -1)
 				{
 					if (handleInfo[pointCtrl -> intHandle].handle != -1)
 					{
 						char tempBuff[81];
-						sprintf (tempBuff, "<Y %d %d %d>", server, point, throw);
+						sprintf (tempBuff, "<Y %d %d %d>", pSvrIdent, ident, direc);
 						SendSocket (handleInfo[pointCtrl -> intHandle].handle, 
 								tempBuff, strlen (tempBuff));
+						savePointState (pSvrIdent, ident, direc);
 					}
 				}
 				break;
@@ -521,9 +598,9 @@ int checkNetworkRecvBuffer (char *buffer, int len)
 			if (words[0][0] == 'Y' && words[0][1] == 0 && wordNum == 4)
 			{
 				int server = atoi (words[1]);
-				int point = atoi (words[2]);
-				int ident = atoi (words[3]);
-				sendPointServer (server, point, ident);
+				int ident = atoi (words[2]);
+				int direc = atoi (words[3]);
+				sendPointServer (server, ident, direc);
 				retn = 1;
 			}
 			else if (words[0][0] == 'y' && words[0][1] == 0 && wordNum == 4)
@@ -574,7 +651,7 @@ int checkNetworkRecvBuffer (char *buffer, int len)
  *  \param len Buffer length.
  *  \result None.
  */
-void ReceiveSerial (int handle, char *buffer, int len)
+void receiveSerial (int handle, char *buffer, int len)
 {
 	int i = 0, j = 0;
 
@@ -616,7 +693,7 @@ void ReceiveSerial (int handle, char *buffer, int len)
  *  \param len Size of data that was received.
  *  \result None.
  */
-void ReceiveNetwork (int handle, char *buffer, int len)
+void receiveNetwork (int handle, char *buffer, int len)
 {
 	int j = 0;
 
@@ -628,7 +705,7 @@ void ReceiveNetwork (int handle, char *buffer, int len)
 			handleInfo[handle].rxedBuff[handleInfo[handle].rxedPosn] = 0;
 			if (!checkNetworkRecvBuffer (handleInfo[handle].rxedBuff, handleInfo[handle].rxedPosn))
 			{
-				SendSerial (handleInfo[handle].rxedBuff, len);
+				sendSerial (handleInfo[handle].rxedBuff, len);
 			}
 			handleInfo[handle].rxedPosn = 0;
 		}
@@ -737,7 +814,7 @@ void checkPointConnect()
 								handleInfo[i].handleType = POINTC_HTYPE;
 								strncpy (handleInfo[i].localName, addrBuffer, 40);
 								putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
-								SendSocket (handleInfo[i].handle, "<Y>", 3);
+								setAllPointStates (point -> ident);
 								point -> retry = 0;
 							}
 							else
@@ -852,7 +929,7 @@ int main (int argc, char *argv[])
 	/**********************************************************************************************************************
 	 * Setup listening serial and network ports.                                                                          *
 	 **********************************************************************************************************************/
-	handleInfo[SERIAL_HANDLE].handle = SerialPortSetup (trackCtrl.serialDevice);
+	handleInfo[SERIAL_HANDLE].handle = serialPortSetup (trackCtrl.serialDevice);
 	if (handleInfo[SERIAL_HANDLE].handle == -1)
 	{
 		putLogMessage (LOG_ERR, "Unable to connect to: %s", trackCtrl.serialDevice);
@@ -928,8 +1005,8 @@ int main (int argc, char *argv[])
 							putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
 							sprintf (outBuffer, "<V %d>", handleInfo[i].handle);
 							SendSocket (handleInfo[i].handle, outBuffer, strlen (outBuffer));
-							SendSerial ("<s>", 3);
-							GetAllPointStates ();
+							sendSerial ("<s>", 3);
+							getAllPointStates ();
 							++connectedCount;
 							break;
 						}
@@ -958,7 +1035,7 @@ int main (int argc, char *argv[])
 				{
 					buffer[readBytes] = 0;
 					putLogMessage (LOG_DEBUG, "Received <- Serial: %s[%d]", buffer, readBytes);
-					ReceiveSerial (SERIAL_HANDLE, buffer, readBytes);
+					receiveSerial (SERIAL_HANDLE, buffer, readBytes);
 				}
 			}
 			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
@@ -973,7 +1050,7 @@ int main (int argc, char *argv[])
 						if ((readBytes = RecvSocket (handleInfo[i].handle, buffer, 10240)) > 0)
 						{
 							buffer[readBytes] = 0;
-							ReceiveNetwork (i, buffer, readBytes);
+							receiveNetwork (i, buffer, readBytes);
 						}
 						else if (readBytes == 0)
 						{
@@ -983,7 +1060,7 @@ int main (int argc, char *argv[])
 							{
 								if (--connectedCount == 0)
 								{
-									SendSerial ("<0>", 3);
+									sendSerial ("<0>", 3);
 								}
 							}
 							else if (handleInfo[i].handleType == POINTC_HTYPE)
@@ -1008,7 +1085,7 @@ int main (int argc, char *argv[])
 		}
 		if (curRead < time (NULL) && trackCtrl.powerState == POWER_ON)
 		{
-			SendSerial ("<c>", 3);
+			sendSerial ("<c>", 3);
 			curRead = time (NULL) + 2;
 		}
 		checkPointConnect();
