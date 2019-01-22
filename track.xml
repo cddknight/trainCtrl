@@ -110,8 +110,8 @@
       <cell col="1" layout="69" point="68" link="64" server="1" ident="15"/>
       <cell col="2" layout="5"/>
       <cell col="3" layout="5"/>
-      <cell col="4" layout="133" point="132" link="128" server="1" ident="16"/>
-      <cell col="5" layout="37" point="33" server="1" ident="17"/>
+      <cell col="4" layout="133" point="132" link="128" state="128" server="1" ident="16"/>
+      <cell col="5" layout="37" point="33" state="32" server="1" ident="17"/>
       <cell col="6" layout="133" point="132" link="128" server="1" ident="18"/>
       <cell col="7" layout="5"/>
       <cell col="8" layout="5"/>
@@ -125,7 +125,7 @@
     <cellRow row="12">
       <cell col="3" layout="4"/>
       <cell col="4" layout="5"/>
-      <cell col="5" layout="37" point="33" link="32" server="1" ident="20"/>
+      <cell col="5" layout="37" point="33" link="32" state="32" server="1" ident="20"/>
       <cell col="6" layout="5"/>
       <cell col="7" layout="37" point="33" link="32" server="1" ident="21"/>
       <cell col="8" layout="5"/>
