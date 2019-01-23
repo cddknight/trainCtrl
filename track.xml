@@ -9,7 +9,7 @@
   </trains>
   <pointServers count="2">
     <pointServer server="tinyfivew" port="30332" ident="1"/>
-    <pointServer server="tinysixw" port="30332" ident="2"/>
+    <pointServer server="tinysixw" port="30333" ident="2"/>
   </pointServers>
   <cells rows="13" cols="16" size="42" pCount="18">
     <cellRow row="0">
