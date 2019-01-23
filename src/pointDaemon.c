@@ -219,11 +219,12 @@ void daemonize(void)
 void helpThem()
 {
 	fprintf (stderr, "Usage: pointDaemon -l <port>\n");
-    fprintf (stderr, "       -l <port> . . . . Listen port number.\n");
-	fprintf (stderr, "       -d  . . . . . . . Deamonise the process.\n");
-	fprintf (stderr, "       -L  . . . . . . . Write messages to syslog.\n");
-	fprintf (stderr, "       -I  . . . . . . . Write info messages.\n");
-	fprintf (stderr, "       -D  . . . . . . . Write debug messages.\n");
+	fprintf (stderr, "       -c <config.xml>  . Config file to load.\n");
+	fprintf (stderr, "       -s <identity>  . . Specify server identity.\n");
+	fprintf (stderr, "       -d . . . . . . . . Deamonise the process.\n");
+	fprintf (stderr, "       -L . . . . . . . . Write messages to syslog.\n");
+	fprintf (stderr, "       -I . . . . . . . . Write info messages.\n");
+	fprintf (stderr, "       -D . . . . . . . . Write debug messages.\n");
 	exit (1);
 }
 

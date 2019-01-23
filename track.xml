@@ -7,9 +7,9 @@
     <train num="47451" id="310" desc="Fowler Class 3F 'Jinty' (0-6-0)"/>
     <train num="68035" id="300" desc="Austerity Saddle Tank J94 (0-6-0)"/>
   </trains>
-  <pointServers count="1">
+  <pointServers count="2">
     <pointServer server="tinyfivew" port="30332" ident="1"/>
-<!--    <pointServer server="tinysixw" port="30332" ident="2"/>	-->
+    <pointServer server="tinysixw" port="30332" ident="2"/>
   </pointServers>
   <cells rows="13" cols="16" size="42" pCount="18">
     <cellRow row="0">
@@ -90,7 +90,7 @@
       <cell col="0" layout="4"/>
       <cell col="1" layout="5"/>
       <cell col="2" layout="5"/>
-      <cell col="3" layout="133" point="132" link="128" server="1" ident="12"/>
+      <cell col="3" layout="133" point="132" link="128" server="2" ident="12"/>
       <cell col="4" layout="5"/>
       <cell col="5" layout="1"/>
       <cell col="14" layout="10"/>
@@ -99,39 +99,39 @@
     <cellRow row="10">
       <cell col="0" layout="4"/>
       <cell col="1" layout="5"/>
-      <cell col="2" layout="21" point="17" link="16" server="1" ident="13"/>
+      <cell col="2" layout="21" point="17" link="16" server="2" ident="13"/>
       <cell col="3" layout="5"/>
-      <cell col="4" layout="161" point="33" link="32" server="1" ident="14"/>
+      <cell col="4" layout="161" point="33" link="32" server="2" ident="14"/>
       <cell col="14" layout="18"/>
       <cell col="15" layout="18"/>
     </cellRow>
     <cellRow row="11">
       <cell col="0" layout="4"/>
-      <cell col="1" layout="69" point="68" link="64" server="1" ident="15"/>
+      <cell col="1" layout="69" point="68" link="64" server="2" ident="15"/>
       <cell col="2" layout="5"/>
       <cell col="3" layout="5"/>
-      <cell col="4" layout="133" point="132" link="128" state="128" server="1" ident="16"/>
-      <cell col="5" layout="37" point="33" state="32" server="1" ident="17"/>
-      <cell col="6" layout="133" point="132" link="128" server="1" ident="18"/>
+      <cell col="4" layout="133" point="132" link="128" state="128" server="2" ident="16"/>
+      <cell col="5" layout="37" point="33" state="32" server="2" ident="17"/>
+      <cell col="6" layout="133" point="132" link="128" server="2" ident="18"/>
       <cell col="7" layout="5"/>
       <cell col="8" layout="5"/>
       <cell col="9" layout="5"/>
       <cell col="10" layout="5"/>
       <cell col="11" layout="5"/>
-      <cell col="12" layout="21" point="17" link="16" server="1" ident="19"/>
+      <cell col="12" layout="21" point="17" link="16" server="2" ident="19"/>
       <cell col="13" layout="65"/>
       <cell col="14" layout="80"/>
     </cellRow>
     <cellRow row="12">
       <cell col="3" layout="4"/>
       <cell col="4" layout="5"/>
-      <cell col="5" layout="37" point="33" link="32" state="32" server="1" ident="20"/>
+      <cell col="5" layout="37" point="33" link="32" state="32" server="2" ident="20"/>
       <cell col="6" layout="5"/>
-      <cell col="7" layout="37" point="33" link="32" server="1" ident="21"/>
+      <cell col="7" layout="37" point="33" link="32" server="2" ident="21"/>
       <cell col="8" layout="5"/>
       <cell col="9" layout="5"/>
       <cell col="10" layout="5"/>
-      <cell col="11" layout="69" point="68" link="64" server="1" ident="22"/>
+      <cell col="11" layout="69" point="68" link="64" server="2" ident="22"/>
       <cell col="12" layout="5"/>
       <cell col="13" layout="65"/>
     </cellRow>
