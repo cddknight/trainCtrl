@@ -168,6 +168,8 @@ void processPServer (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 								strncpy (trackCtrl -> pointCtrl[loop].server, (char *)serverStr, 40);
 								trackCtrl -> pointCtrl[loop].port = port;
 								trackCtrl -> pointCtrl[loop].ident = ident;
+								trackCtrl -> pointCtrl[loop].intHandle = -1;
+								trackCtrl -> pointCtrl[loop].retry = 0;
 								++loop;
 							}
 							xmlFree(identStr);
