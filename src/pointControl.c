@@ -118,7 +118,7 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int count)
  */
 void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 {
-	int readIdent = 0, readCount = 0;
+	int readIdent = -1, readCount = -1, port = -1;
 	xmlNode *curNode = NULL;
 
 	for (curNode = inNode; curNode; curNode = curNode->next)
@@ -132,6 +132,7 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 			else if (level == 1 && strcmp ((char *)curNode->name, "server") == 0)
 			{
 				xmlChar *identStr, *portStr, *countStr;
+
 				if ((identStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{
 					sscanf ((char *)identStr, "%d", &readIdent);
@@ -139,7 +140,7 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 				}
 				if ((portStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)
 				{
-					sscanf ((char *)portStr, "%d", &pointCtrl -> serverPort);
+					sscanf ((char *)portStr, "%d", &port);
 					xmlFree (portStr);
 				}
 				if ((countStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
@@ -147,8 +148,9 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 					sscanf ((char *)countStr, "%d", &readCount);
 					xmlFree (countStr);
 				}
-				if (readCount > 0 && readIdent == pointCtrl -> server)
+				if (readCount != -1 && port != -1 && readIdent == pointCtrl -> server)
 				{
+					pointCtrl -> serverPort = port;
 					processPoints (pointCtrl, curNode -> children, readCount);
 				}
 			}

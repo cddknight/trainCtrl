@@ -335,24 +335,37 @@ void getAllPointStates ()
  */
 void setAllPointStates (int pSvrIdent)
 {
+	int p;
 	if (trackCtrl.pointCtrl != NULL)
 	{
-		pointCtrlDef *point = &trackCtrl.pointCtrl[pSvrIdent];
-		if (point -> intHandle != -1)
+		pointCtrlDef *pointSever = NULL;
+
+		for (p = 0; p < trackCtrl.pServerCount; ++p)
 		{
-			char tempBuff[80];
-			int i, cells = trackCtrl.trackLayout -> trackRows * trackCtrl.trackLayout -> trackCols;
-	
-			for (i = 0; i < cells; ++i)
+			if (trackCtrl.pointCtrl[p].ident == pSvrIdent)
 			{
-				trackCellDef *cell = &trackCtrl.trackLayout -> trackCells[i];
-				if (cell -> point)
+				pointSever = &trackCtrl.pointCtrl[p];
+				break;
+			}
+		}
+		if (pointSever)
+		{
+			if (pointSever -> intHandle != -1)
+			{
+				char tempBuff[80];
+				int i, cells = trackCtrl.trackLayout -> trackRows * trackCtrl.trackLayout -> trackCols;
+	
+				for (i = 0; i < cells; ++i)
 				{
-					if (cell -> server == pSvrIdent)
+					trackCellDef *cell = &trackCtrl.trackLayout -> trackCells[i];
+					if (cell -> point)
 					{
-						sprintf (tempBuff, "<Y %d %d %d>", pSvrIdent, cell -> ident, 
-								cell -> pointState == cell -> pointDefault ? 0 : 1);
-						SendSocket (handleInfo[point -> intHandle].handle, tempBuff, strlen (tempBuff));
+						if (cell -> server == pSvrIdent)
+						{
+							sprintf (tempBuff, "<Y %d %d %d>", pSvrIdent, cell -> ident, 
+									cell -> pointState == cell -> pointDefault ? 0 : 1);
+							SendSocket (handleInfo[pointSever -> intHandle].handle, tempBuff, strlen (tempBuff));
+						}
 					}
 				}
 			}
