@@ -26,6 +26,7 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/pixmaps
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
 install -p -m 755 @PACKAGE_NAME@ $RPM_BUILD_ROOT%{_bindir}/
+install -p -m 755 traincalc $RPM_BUILD_ROOT%{_bindir}/traincalc
 install -p -m 755 traindaemon $RPM_BUILD_ROOT%{_bindir}/traindaemon
 install -p -m 644 @PACKAGE_NAME@.svg $RPM_BUILD_ROOT%{_datadir}/pixmaps/@PACKAGE_NAME@.svg
 install -m 644 traincontrolrc.xml $RPM_BUILD_ROOT%{_sysconfdir}/traincontrolrc.xml
@@ -37,6 +38,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %{_bindir}/@PACKAGE_NAME@
+%{_bindir}/traincalc
 %{_bindir}/traindaemon
 %{_datadir}/pixmaps/@PACKAGE_NAME@.svg
 %{_datadir}/applications/@PACKAGE_NAME@.desktop
