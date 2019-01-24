@@ -28,7 +28,7 @@ mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
 install -p -m 755 @PACKAGE_NAME@ $RPM_BUILD_ROOT%{_bindir}/
 install -p -m 755 traindaemon $RPM_BUILD_ROOT%{_bindir}/traindaemon
 install -p -m 644 @PACKAGE_NAME@.svg $RPM_BUILD_ROOT%{_datadir}/pixmaps/@PACKAGE_NAME@.svg
-install -m 644 trainconfig.xml $RPM_BUILD_ROOT%{_sysconfdir}/trainconfig.xml
+install -m 644 traincontrolrc.xml $RPM_BUILD_ROOT%{_sysconfdir}/traincontrolrc.xml
 desktop-file-install --vendor="" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications @PACKAGE_NAME@.desktop
 
 %clean
@@ -40,7 +40,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/traindaemon
 %{_datadir}/pixmaps/@PACKAGE_NAME@.svg
 %{_datadir}/applications/@PACKAGE_NAME@.desktop
-%config(noreplace) %{_sysconfdir}/trainconfig.xml
+%config(noreplace) %{_sysconfdir}/traincontrolrc.xml
 
 %changelog
 * Fri Nov 30 2018 Chris Knight <chris@theknight.co.uk> 1.0.0-1%{?dist}
