@@ -1080,7 +1080,11 @@ static void activate (GtkApplication *app, gpointer userData)
 		}
 		else
 		{
-			parseRetn = parseTrackXML (trackCtrl, "/etc/traincontrolrc.xml", 0);
+			strcpy (configPath, "/etc/traincontrolrc.xml");
+			if (stat (configPath, &statBuff) == 0)
+			{
+				parseRetn = parseTrackXML (trackCtrl, configPath, 0);
+			}
 		}
 	}
 	if (!parseRetn)

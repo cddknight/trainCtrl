@@ -8,11 +8,11 @@ pointdaemon_SOURCES = src/pointDaemon.c src/pointControl.c src/socketC.c src/poi
 pointdaemon_LDADD = -lxml2
 traincalc_SOURCES = src/trainCalc.c
 AM_CPPFLAGS = $(DEPS_CFLAGS)
-EXTRA_DIST = trainconfig.xml traincontrol.desktop traincontrol.svg COPYING AUTHORS
+EXTRA_DIST = traincontrolrc.xml traincontrol.desktop traincontrol.svg COPYING AUTHORS
 Icondir = $(datadir)/pixmaps
 Icon_DATA = traincontrol.svg
 Applicationsdir = $(datadir)/applications
 Applications_DATA = traincontrol.desktop
 Configdir = /etc
-Config_DATA = trainconfig.xml
+Config_DATA = traincontrolrc.xml
 
