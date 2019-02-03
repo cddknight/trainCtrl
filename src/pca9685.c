@@ -24,6 +24,8 @@
  **************************************************************************
  */
 
+#include "config.h"
+#ifdef HAVE_WIRINGPI_H
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
 
@@ -282,7 +284,7 @@ static int myOnRead(struct wiringPiNodeStruct *node, int pin)
 	return on;
 }
 
-
+#endif
 
 
 

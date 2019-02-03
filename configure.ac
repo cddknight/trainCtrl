@@ -15,9 +15,13 @@ PKG_CHECK_MODULES([DEPS], [gtk+-3.0 libxml-2.0])
 AC_SUBST(DEPS_CFLAGS)
 AC_SUBST(DEPS_LIBS)
 
+WIRING_LIBS=""
+AC_CHECK_LIB(wiringPi, wiringPiSetup, [WIRING_LIBS="-lwiringPi"])
+AC_SUBST(WIRING_LIBS)
+
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([ctype.h math.h stdio.h stdlib.h string.h time.h])
+AC_CHECK_HEADERS([ctype.h math.h stdio.h stdlib.h string.h time.h wiringPi.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

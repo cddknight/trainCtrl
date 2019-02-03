@@ -20,6 +20,8 @@
  *  \file
  *  \brief Control the points taking commands from the network.
  */
+
+#include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -33,9 +35,11 @@
 #include <sys/stat.h>
 #include <termios.h>
 #include <time.h>
-#include <wiringPi.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#ifdef HAVE_WIRINGPI_H
+#include <wiringPi.h>
+#endif
 
 #include "socketC.h"
 #include "pointControl.h"
@@ -238,10 +242,12 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 			{
 				char tempBuff[81];
 				
+#ifdef HAVE_WIRINGPI_H
 				pwmWrite(PIN_BASE + pointCtrl -> pointStates[i].channel, state ? 
 						pointCtrl -> pointStates[i].turnoutPos : 
 						pointCtrl -> pointStates[i].defaultPos);
 				delay(200);
+#endif
 				pointCtrl -> pointStates[i].state = state;
 				sprintf (tempBuff, "<y %d %d %d>", server, point, state);
 				SendSocket (handle, tempBuff, strlen (tempBuff));
@@ -389,6 +395,7 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
  */
 int pointControlSetup ()
 {
+#ifdef HAVE_WIRINGPI_H
 	wiringPiSetup();
 
 	if ((servoFD = pca9685Setup(PIN_BASE, 0x40, HERTZ)) < 0)
@@ -400,6 +407,7 @@ int pointControlSetup ()
 
 	pwmWrite (PIN_BASE + 16, 307);
 	delay (500);
+#endif
 	return 1;
 }
 
