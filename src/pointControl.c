@@ -33,12 +33,19 @@
 #include <sys/stat.h>
 #include <termios.h>
 #include <time.h>
-
+#include <wiringPi.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
 #include "socketC.h"
 #include "pointControl.h"
+#include "pca9685.h"
+
+#define PIN_BASE 300
+#define MAX_PWM 4096
+#define HERTZ 50
+
+int servoFD = -1; 
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -56,7 +63,7 @@
 void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int count)
 {
 	int loop = 0;
-	xmlChar *identStr, *defaultStr, *turnoutStr;
+	xmlChar *identStr, *channelStr, *defaultStr, *turnoutStr;
 	xmlNode *curNode = NULL;
 
 	if ((pointCtrl -> pointStates = (pointStateDef *)malloc (count * sizeof (pointStateDef))) == NULL)
@@ -74,26 +81,32 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int count)
 			{
 				if ((identStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{
-					if ((defaultStr = xmlGetProp(curNode, (const xmlChar*)"default")) != NULL)
+					if ((channelStr = xmlGetProp(curNode, (const xmlChar*)"channel")) != NULL)
 					{
-						if ((turnoutStr = xmlGetProp(curNode, (const xmlChar*)"turnout")) != NULL)
+						if ((defaultStr = xmlGetProp(curNode, (const xmlChar*)"default")) != NULL)
 						{
-							int ident = -1, defaultPos = -1, turnoutPos = -1;
-
-							sscanf ((char *)identStr, "%d", &ident);
-							sscanf ((char *)defaultStr, "%d", &defaultPos);
-							sscanf ((char *)turnoutStr, "%d", &turnoutPos);
-
-							if (ident != -1 && defaultPos != -1 && turnoutPos != -1)
+							if ((turnoutStr = xmlGetProp(curNode, (const xmlChar*)"turnout")) != NULL)
 							{
-								pointCtrl -> pointStates[loop].ident = ident;
-								pointCtrl -> pointStates[loop].defaultPos = defaultPos;
-								pointCtrl -> pointStates[loop].turnoutPos = turnoutPos;
-								++loop;
+								int ident = -1, channel = -1, defaultPos = -1, turnoutPos = -1;
+
+								sscanf ((char *)identStr, "%d", &ident);
+								sscanf ((char *)channelStr, "%d", &channel);
+								sscanf ((char *)defaultStr, "%d", &defaultPos);
+								sscanf ((char *)turnoutStr, "%d", &turnoutPos);
+
+								if (ident != -1 && channel != -1 && defaultPos != -1 && turnoutPos != -1)
+								{
+									pointCtrl -> pointStates[loop].ident = ident;
+									pointCtrl -> pointStates[loop].channel = channel;
+									pointCtrl -> pointStates[loop].defaultPos = defaultPos;
+									pointCtrl -> pointStates[loop].turnoutPos = turnoutPos;
+									++loop;
+								}
+								xmlFree(turnoutStr);
 							}
-							xmlFree(turnoutStr);
+							xmlFree(defaultStr);
 						}
-						xmlFree(defaultStr);
+						xmlFree(channelStr);
 					}
 					xmlFree(identStr);
 				}
@@ -217,14 +230,18 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 {
 	int i;
 
-	if (server == pointCtrl -> server)
+	if (server == pointCtrl -> server && servoFD != -1)
 	{
 		for (i = 0; i < pointCtrl -> pointCount; ++i)
 		{
 			if (pointCtrl -> pointStates[i].ident == point)
 			{
 				char tempBuff[81];
-
+				
+				pwmWrite(PIN_BASE + pointCtrl -> pointStates[i].channel, state ? 
+						pointCtrl -> pointStates[i].turnoutPos : 
+						pointCtrl -> pointStates[i].defaultPos);
+				delay(200);
 				pointCtrl -> pointStates[i].state = state;
 				sprintf (tempBuff, "<y %d %d %d>", server, point, state);
 				SendSocket (handle, tempBuff, strlen (tempBuff));
@@ -360,4 +377,29 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P O I N T  C O N T R O L  S E T U P                                                                               *
+ *  ===================================                                                                               *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Set up the I2C interface for controlling the servos.
+ *  \result 1 if all went OK.
+ */
+int pointControlSetup ()
+{
+	wiringPiSetup();
+
+	if ((servoFD = pca9685Setup(PIN_BASE, 0x40, HERTZ)) < 0)
+	{
+		putLogMessage (LOG_ERR, "Error setting up point control");
+		return 0;
+	}
+	pca9685PWMReset (servoFD);
+
+	pwmWrite (PIN_BASE + 16, 307);
+	delay (500);
+	return 1;
+}
 

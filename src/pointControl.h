@@ -25,6 +25,7 @@ typedef struct _pointState
 {
 	int ident;
 	int state;
+	int channel;
 	int defaultPos;
 	int turnoutPos;
 }
@@ -41,4 +42,6 @@ pointCtrlDef;
 
 int parseMemoryXML (pointCtrlDef *pointCtrl, char *buffer);
 void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len);
+void putLogMessage (int priority, const char *fmt, ...);
+int pointControlSetup ();
 

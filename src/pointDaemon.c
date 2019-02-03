@@ -336,16 +336,26 @@ int main (int argc, char *argv[])
 	}
 
 	/**********************************************************************************************************************
-	 * Setup listening network ports.                                                                                     *
+	 * Setup the I2C servo control interface.                                                                             *
 	 **********************************************************************************************************************/
-	handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (pointCtrl.serverPort);
-	if (handleInfo[LISTEN_HANDLE].handle == -1)
+	if (pointControlSetup ())
 	{
-		putLogMessage (LOG_ERR, "P:Unable to listen on network port.");
+		/**********************************************************************************************************************
+		 * Setup listening network ports.                                                                                     *
+		 **********************************************************************************************************************/
+		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (pointCtrl.serverPort);
+		if (handleInfo[LISTEN_HANDLE].handle == -1)
+		{
+			putLogMessage (LOG_ERR, "P:Unable to listen on network port.");
+		}
+		else
+		{
+			putLogMessage (LOG_INFO, "P:Listening on port: %d", pointCtrl.serverPort);
+		}
 	}
 	else
 	{
-		putLogMessage (LOG_INFO, "P:Listening on port: %d", pointCtrl.serverPort);
+		putLogMessage (LOG_ERR, "P:Unable to servo control interface.");
 	}
 
 	/**********************************************************************************************************************

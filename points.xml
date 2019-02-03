@@ -1,30 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <points>
   <server ident="1" port="30332" count="11">
-    <point ident="1" default="45" turnout="135"/>
-    <point ident="2" default="45" turnout="135"/>
-    <point ident="3" default="45" turnout="135"/>
-    <point ident="4" default="45" turnout="135"/>
-    <point ident="5" default="45" turnout="135"/>
-    <point ident="6" default="45" turnout="135"/>
-    <point ident="7" default="45" turnout="135"/>
-    <point ident="8" default="45" turnout="135"/>
-    <point ident="9" default="45" turnout="135"/>
-    <point ident="10" default="45" turnout="135"/>
-    <point ident="11" default="45" turnout="135"/>
+    <point ident="1" channel="0" default="290" turnout="320"/>
+    <point ident="2" channel="1" default="290" turnout="320"/>
+    <point ident="3" channel="2" default="290" turnout="320"/>
+    <point ident="4" channel="3" default="290" turnout="320"/>
+    <point ident="5" channel="4" default="290" turnout="320"/>
+    <point ident="6" channel="5" default="290" turnout="320"/>
+    <point ident="7" channel="6" default="290" turnout="320"/>
+    <point ident="8" channel="7" default="290" turnout="320"/>
+    <point ident="9" channel="8" default="290" turnout="320"/>
+    <point ident="10" channel="9" default="290" turnout="320"/>
+    <point ident="11" channel="10" default="290" turnout="320"/>
   </server>
   <server ident="2" port="30333" count="11">
-    <point ident="12" default="45" turnout="135"/>
-    <point ident="13" default="45" turnout="135"/>
-    <point ident="14" default="45" turnout="135"/>
-    <point ident="15" default="45" turnout="135"/>
-    <point ident="16" default="45" turnout="135"/>
-    <point ident="17" default="45" turnout="135"/>
-    <point ident="18" default="45" turnout="135"/>
-    <point ident="19" default="45" turnout="135"/>
-    <point ident="20" default="45" turnout="135"/>
-    <point ident="21" default="45" turnout="135"/>
-    <point ident="22" default="45" turnout="135"/>
+    <point ident="12" channel="0" default="285" turnout="257"/>
+    <point ident="13" channel="1" default="290" turnout="320"/>
+    <point ident="14" channel="2" default="290" turnout="320"/>
+    <point ident="15" channel="3" default="290" turnout="320"/>
+    <point ident="16" channel="4" default="290" turnout="320"/>
+    <point ident="17" channel="5" default="290" turnout="320"/>
+    <point ident="18" channel="6" default="290" turnout="320"/>
+    <point ident="19" channel="7" default="290" turnout="320"/>
+    <point ident="20" channel="8" default="290" turnout="320"/>
+    <point ident="21" channel="9" default="290" turnout="320"/>
+    <point ident="22" channel="10" default="290" turnout="320"/>
   </server>
 </points>
 
