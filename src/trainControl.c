@@ -1133,7 +1133,6 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 
 			grid = gtk_grid_new();
-			gtk_widget_set_halign (grid, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (vbox), grid);
 
 			for (i = 0; i < trackCtrl -> trainCount; ++i)
@@ -1142,6 +1141,7 @@ static void activate (GtkApplication *app, gpointer userData)
 				trackCtrl -> trainCtrl[i].buttonNum = gtk_button_new_with_label (tempBuff);
 				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].buttonNum), "train", &trackCtrl -> trainCtrl[i]);
 				g_signal_connect (trackCtrl -> trainCtrl[i].buttonNum, "clicked", G_CALLBACK (trainInfo), trackCtrl);
+				gtk_widget_set_hexpand (trackCtrl -> trainCtrl[i].buttonNum, TRUE);
 				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonNum, GTK_ALIGN_FILL);
 				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].buttonNum, i, 0, 1, 1);
 
