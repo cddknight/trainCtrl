@@ -246,7 +246,7 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 				pwmWrite(PIN_BASE + pointCtrl -> pointStates[i].channel, state ? 
 						pointCtrl -> pointStates[i].turnoutPos : 
 						pointCtrl -> pointStates[i].defaultPos);
-				delay(200);
+				delay(150);
 #endif
 				pointCtrl -> pointStates[i].state = state;
 				sprintf (tempBuff, "<y %d %d %d>", server, point, state);
@@ -393,9 +393,10 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
  *  \brief Set up the I2C interface for controlling the servos.
  *  \result 1 if all went OK.
  */
-int pointControlSetup ()
+int pointControlSetup (pointCtrlDef *pointCtrl)
 {
 #ifdef HAVE_WIRINGPI_H
+	int i;
 	wiringPiSetup();
 
 	if ((servoFD = pca9685Setup(PIN_BASE, 0x40, HERTZ)) < 0)
@@ -405,8 +406,11 @@ int pointControlSetup ()
 	}
 	pca9685PWMReset (servoFD);
 
-	pwmWrite (PIN_BASE + 16, 307);
-	delay (500);
+	for (i = 0; i < pointCtrl -> pointCount; ++i)
+	{
+		pwmWrite (PIN_BASE + pointCtrl -> pointStates[i].channel, pointCtrl -> pointStates[i].defaultPos);
+		delay (150);
+	}
 #endif
 	return 1;
 }

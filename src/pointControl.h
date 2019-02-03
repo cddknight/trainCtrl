@@ -43,5 +43,5 @@ pointCtrlDef;
 int parseMemoryXML (pointCtrlDef *pointCtrl, char *buffer);
 void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len);
 void putLogMessage (int priority, const char *fmt, ...);
-int pointControlSetup ();
+int pointControlSetup (pointCtrlDef *pointCtrl);
 
