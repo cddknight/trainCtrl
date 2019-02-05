@@ -39,11 +39,11 @@
 #include <libxml/tree.h>
 #ifdef HAVE_WIRINGPI_H
 #include <wiringPi.h>
+#include "pca9685.h"
 #endif
 
 #include "socketC.h"
 #include "pointControl.h"
-#include "pca9685.h"
 
 #define PIN_BASE 300
 #define MAX_PWM 4096
