@@ -139,9 +139,14 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				}
 			}
 			/* Our handle number on the server, unique to this client */
-			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 2)
+			else if (words[0][0] == 'V' && words[0][1] == 0 && (wordNum == 2 || wordNum == 7))
 			{
 				trackCtrl -> serverSession = atoi (words[1]);
+				if (wordNum == 7)
+				{
+					printf ("Status: %s,%s,%s,%s,%s,%s\n", words[1], words[2], words[3], 
+							words[4], words[5], words[6]);
+				}
 			}
 			/* Point change update */
 			else if (words[0][0] == 'y' && words[0][1] == 0 && wordNum == 4)

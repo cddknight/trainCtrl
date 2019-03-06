@@ -30,7 +30,7 @@
 #include "trainControl.h"
 #include "socketC.h"
 
-static char *notConnected = "Train controller not connected";
+static char *notConnected = "Not connected to the train controller";
 static const GdkRGBA blackCol = { 0.1, 0.1, 0.1, 1.0 };
 static const GdkRGBA trackCol = { 0.6, 0.6, 0.6, 1.0 };
 static const GdkRGBA trFillCol = { 0.0, 0.4, 0.0, 1.0 };
@@ -584,7 +584,6 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 											}
 											sprintf (tempBuff, "<Y %d %d %d>", newCell -> server, newCell -> ident, 
 													newCell -> pointDefault == newLinkState ? 0 : 1);
-											trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff));
 										}
 									}
 								}
@@ -632,6 +631,16 @@ static void closeTrack (GtkWidget *widget, gpointer data)
 static void displayTrack (GtkWidget *widget, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+	if (trackCtrl -> serverHandle == -1)
+	{
+		GtkWidget *errDialog = gtk_message_dialog_new (GTK_WINDOW (trackCtrl -> windowCtrl),
+				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+				"%s", notConnected);
+		gtk_dialog_run (GTK_DIALOG (errDialog));
+		gtk_widget_destroy (errDialog);
+		return;
+	}
 	if (trackCtrl -> windowTrack == NULL)
 	{
 		GtkWidget *eventBox;
@@ -758,7 +767,6 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		"* If the bit number is zero then set the byte value.",
 		NULL
 	};
-	static char daemonError[] = { "Not connected to the daemon" };
 	static double maxValues[] = { 10294.0, 1025.0, 256.0, 9.0, 2.0 };
 
 	int i = 0;
@@ -772,7 +780,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		GtkWidget *errDialog = gtk_message_dialog_new (GTK_WINDOW (trackCtrl -> windowCtrl),
 				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 				GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-				"%s", daemonError);
+				"%s", notConnected);
 		gtk_dialog_run (GTK_DIALOG (errDialog));
 		gtk_widget_destroy (errDialog);
 		return;
@@ -938,7 +946,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 				}
 				else
 				{
-					gtk_label_set_label (GTK_LABEL (trackCtrl -> labelProgram), daemonError);
+					gtk_label_set_label (GTK_LABEL (trackCtrl -> labelProgram), notConnected);
 				}
 				sendBuffer[0] = 0;
 			}
@@ -1056,7 +1064,7 @@ static void activate (GtkApplication *app, gpointer userData)
 
 	g_action_map_add_action_entries (G_ACTION_MAP (app), appEntries, G_N_ELEMENTS (appEntries), app);
 	menu = g_menu_new ();
-/*	g_menu_append (menu, "Preferences", "app.preferences"); */
+	g_menu_append (menu, "Status", "app.preferences");
 	g_menu_append (menu, "About", "app.about");
 	g_menu_append (menu, "Quit", "app.quit");
 	gtk_application_set_app_menu (GTK_APPLICATION (app), G_MENU_MODEL (menu));
@@ -1248,6 +1256,8 @@ static void shutdown (GtkApplication *app, gpointer userData)
  */
 static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer userData)
 {
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)userData;
+	trainConnectSend (trackCtrl, "<V>", 3);
 }
 
 /**********************************************************************************************************************
