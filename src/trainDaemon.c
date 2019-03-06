@@ -570,7 +570,7 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 	char words[41][41];
 	int retn = 0, wordNum = -1, i = 0, j = 0, inType = 0;
 
-/*------------------------------------------------------------------* 
+/*------------------------------------------------------------------*
 	putLogMessage (LOG_INFO, "Network Rxed:[%s]", buffer);
  *------------------------------------------------------------------*/
 	while (i < len)
@@ -630,11 +630,12 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 				retn = 1;
 			}
 			/* Get socket status */
-			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 0)
+			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 1)
 			{
 				char buffer[101];
 				int i, conCounts[5] = { 0, 0, 0, 0, 0 };
-				for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
+
+				for (i = SERIAL_HANDLE; i < MAX_HANDLES; ++i)
 				{
 					if (handleInfo[i].handle != -1)
 					{
@@ -643,10 +644,11 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 							++conCounts[handleInfo[i].handleType - 1];
 						}
 					}
-					sprintf (buffer, "<V %d %d %d %d %d %d>", handle, conCounts[0], conCounts[1], conCounts[2], 
-							conCounts[3], conCounts[4]);
-					SendSocket (handle, buffer, strlen (buffer));
 				}
+				sprintf (buffer, "<V %d %d %d %d %d %d>", handleInfo[handle].handle, 
+						conCounts[0], conCounts[1], conCounts[2], conCounts[3], conCounts[4]);
+				putLogMessage (LOG_INFO, "Status: %s", buffer);
+				SendSocket (handleInfo[handle].handle, buffer, strlen (buffer));
 				retn = 1;
 			}
 			inType = 0;
