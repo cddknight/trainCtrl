@@ -666,11 +666,6 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 	}
 }
 
-static void connectStatus (GtkWidget *widget, gpointer data)
-{
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
-	trainConnectSend (trackCtrl, "<V>", 3);
-}
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -712,6 +707,83 @@ void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
 				break;
 			}
 		}
+	}
+}
+
+void updateStatusDialog (trackCtrlDef *trackCtrl, int *states)
+{
+	int i;
+
+	for (i = 0; i < 5; ++i)
+	{
+		printf ("Server value[%d] = %d\n", i, states[i]);
+		trackCtrl -> serverStatus[i] = states[i];
+	}
+	trackCtrl -> serverStatus[5] = 1;
+}
+
+static void connectStatus (GtkWidget *widget, gpointer data)
+{
+	int i = 0;
+	GtkWidget *contentArea;
+	GtkWidget *label, *grid, *vbox;
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+
+	static char *statusLables[] =
+	{
+		"Serial port",
+		"Listen socket",
+		"Configuration",
+		"Point control",
+		"Clients",
+		NULL
+	};
+
+	if (trackCtrl -> dialogStatus == NULL)
+	{
+		trackCtrl -> dialogStatus = gtk_dialog_new_with_buttons ("Server Status",
+				GTK_WINDOW (trackCtrl -> windowCtrl),
+				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+				"Close", GTK_RESPONSE_CLOSE,
+				NULL);
+
+		contentArea = gtk_dialog_get_content_area (GTK_DIALOG (trackCtrl -> dialogStatus));
+
+		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
+		gtk_widget_set_valign (vbox, GTK_ALIGN_FILL);
+		gtk_box_pack_start (GTK_BOX (contentArea), vbox, TRUE, TRUE, 0);
+
+		grid = gtk_grid_new();
+		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
+		gtk_widget_set_valign (grid, GTK_ALIGN_FILL);
+		gtk_grid_set_row_spacing (GTK_GRID (grid), 3);
+		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
+		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 6);
+
+		for (i = 0; i < 5; ++i)
+		{
+			label = gtk_label_new (statusLables[i]);
+			gtk_widget_set_halign (label, GTK_ALIGN_END);
+			gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
+
+			trackCtrl -> statusLabels[i] = gtk_label_new ("Pending");
+			gtk_widget_set_halign (trackCtrl -> statusLabels[i], GTK_ALIGN_START);
+			gtk_grid_attach (GTK_GRID(grid), trackCtrl -> statusLabels[i], 1, i, 1, 1);
+
+			trackCtrl -> serverStatus[i] = -1;
+		}
+		trackCtrl -> serverStatus[5] = 0;
+
+		gtk_widget_show_all (trackCtrl -> dialogStatus);
+		trainConnectSend (trackCtrl, "<V>", 3);
+
+		while (gtk_dialog_run (GTK_DIALOG (trackCtrl -> dialogStatus)) != GTK_RESPONSE_CLOSE)
+		{
+			;
+		}
+		gtk_widget_destroy (trackCtrl -> dialogStatus);
+		trackCtrl -> dialogStatus = NULL;
 	}
 }
 
@@ -791,6 +863,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		gtk_widget_destroy (errDialog);
 		return;
 	}
+
 	if (trackCtrl -> dialogProgram == NULL)
 	{
 		trackCtrl -> dialogProgram = gtk_dialog_new_with_buttons ("Program Train",
@@ -1023,6 +1096,25 @@ gboolean clockTickCallback (gpointer data)
 				gtk_label_set_label (GTK_LABEL (trackCtrl -> labelPower), tempBuff);
 				trackCtrl -> shownCurrent = trackCtrl -> remoteCurrent;
 			}
+		}
+	}
+	if (trackCtrl -> dialogStatus != NULL)
+	{
+		if (trackCtrl -> serverStatus[5] == 1)
+		{
+			char tempBuff[81];
+
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[0]), 
+					trackCtrl -> serverStatus[0] > 0 ? "OK" : "Not connected");
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[1]), 
+					trackCtrl -> serverStatus[1] > 0 ? "OK" : "Not listening");
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[2]), 
+					trackCtrl -> serverStatus[2] > 0 ? "OK" : "No configuration");
+			sprintf (tempBuff, "%d connected", trackCtrl -> serverStatus[3]);
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[3]), tempBuff);
+			sprintf (tempBuff, "%d connected", trackCtrl -> serverStatus[4]);
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[4]), tempBuff);
+			trackCtrl -> serverStatus[5] = 0;
 		}
 	}
 	return TRUE;
