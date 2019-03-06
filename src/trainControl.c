@@ -710,6 +710,18 @@ void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  U P D A T E  S T A T U S  D I A L O G                                                                             *
+ *  =====================================                                                                             *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief .
+ *  \param trackCtrl .
+ *  \param states Returned states.
+ *  \result None.
+ */
 void updateStatusDialog (trackCtrlDef *trackCtrl, int *states)
 {
 	int i;
@@ -722,6 +734,18 @@ void updateStatusDialog (trackCtrlDef *trackCtrl, int *states)
 	trackCtrl -> serverStatus[5] = 1;
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  C O N N E C T  S T A T U S                                                                                        *
+ *  ==========================                                                                                        *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Display the connection status from the server.
+ *  \param widget Not used.
+ *  \param data Pointer to track control.
+ *  \result None.
+ */
 static void connectStatus (GtkWidget *widget, gpointer data)
 {
 	int i = 0;
@@ -731,11 +755,11 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 
 	static char *statusLables[] =
 	{
-		"Serial port",
-		"Listen socket",
-		"Configuration",
-		"Point control",
-		"Clients",
+		"Serial port:",
+		"Listen socket:",
+		"Configuration:",
+		"Point control:",
+		"Clients:",
 		NULL
 	};
 
@@ -1109,10 +1133,10 @@ gboolean clockTickCallback (gpointer data)
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[1]), 
 					trackCtrl -> serverStatus[1] > 0 ? "OK" : "Not listening");
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[2]), 
-					trackCtrl -> serverStatus[2] > 0 ? "OK" : "No configuration");
-			sprintf (tempBuff, "%d connected", trackCtrl -> serverStatus[3]);
+					trackCtrl -> serverStatus[2] > 0 ? "OK" : "Not listening");
+			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[3]);
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[3]), tempBuff);
-			sprintf (tempBuff, "%d connected", trackCtrl -> serverStatus[4]);
+			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[4]);
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[4]), tempBuff);
 			trackCtrl -> serverStatus[5] = 0;
 		}
@@ -1348,32 +1372,12 @@ static void shutdown (GtkApplication *app, gpointer userData)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  P R E F E R E N C E S  C A L L B A C K                                                                            *
- *  ======================================                                                                            *
- *                                                                                                                    *
- **********************************************************************************************************************/
-/**
- *  \brief Currently not used.
- *  \param action Not used.
- *  \param parameter Not used.
- *  \param userData Not used.
- *  \result None.
- *
-static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer userData)
-{
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)userData;
-	trainConnectSend (trackCtrl, "<V>", 3);
-}
-*/
-
-/**********************************************************************************************************************
- *                                                                                                                    *
  *  A B O U T  C A L L B A C K                                                                                        *
  *  ==========================                                                                                        *
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
- *  \brief Called when about selected on the menu.
+ *  \brief Currently not used.
  *  \param action Not used.
  *  \param parameter Not used.
  *  \param userData Not used.

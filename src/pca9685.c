@@ -50,12 +50,18 @@ static int myOnRead(struct wiringPiNodeStruct *node, int pin);
 int baseReg(int pin);
 
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P C A 9 6 8 5 S E T U P                                                                                           *
+ *  =======================                                                                                           *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Setup a PCA9685 device with wiringPi.
- *  
- * pinBase: 	Use a pinBase > 64, eg. 300
- * i2cAddress:	The default address is 0x40
- * freq:		Frequency will be capped to range [40..1000] Hertz. Try 50 for servos
+ *  \brief .
+ *  \param pinBase .
+ *  \param i2cAddress .
+ *  \param freq .
+ *  \result .
  */
 int pca9685Setup(const int pinBase, const int i2cAddress, float freq)
 {
@@ -91,9 +97,17 @@ int pca9685Setup(const int pinBase, const int i2cAddress, float freq)
 	return fd;
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P C A 9 6 8 5 P W M F R E Q                                                                                       *
+ *  ===========================                                                                                       *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Sets the frequency of PWM signals.
- * Frequency will be capped to range [40..1000] Hertz. Try 50 for servos.
+ *  \brief .
+ *  \param fd .
+ *  \param freq .
+ *  \result .
  */
 void pca9685PWMFreq(int fd, float freq)
 {
@@ -121,8 +135,16 @@ void pca9685PWMFreq(int fd, float freq)
 	wiringPiI2CWriteReg8(fd, PCA9685_MODE1, restart);
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P C A 9 6 8 5 P W M R E S E T                                                                                     *
+ *  =============================                                                                                     *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Set all leds back to default values (: fullOff = 1)
+ *  \brief .
+ *  \param fd .
+ *  \result .
  */
 void pca9685PWMReset(int fd)
 {
@@ -130,9 +152,19 @@ void pca9685PWMReset(int fd)
 	wiringPiI2CWriteReg16(fd, LEDALL_ON_L + 2, 0x1000);
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P C A 9 6 8 5 P W M W R I T E                                                                                     *
+ *  =============================                                                                                     *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Write on and off ticks manually to a pin
- * (Deactivates any full-on and full-off)
+ *  \brief .
+ *  \param fd .
+ *  \param pin .
+ *  \param on .
+ *  \param off .
+ *  \result .
  */
 void pca9685PWMWrite(int fd, int pin, int on, int off)
 {
@@ -143,11 +175,19 @@ void pca9685PWMWrite(int fd, int pin, int on, int off)
 	wiringPiI2CWriteReg16(fd, reg + 2, off & 0x0FFF);
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P C A 9 6 8 5 P W M R E A D                                                                                       *
+ *  ===========================                                                                                       *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Reads both on and off registers as 16 bit of data
- * To get PWM: mask each value with 0xFFF
- * To get full-on or off bit: mask with 0x1000
- * Note: ALL_LED pin will always return 0
+ *  \brief .
+ *  \param fd .
+ *  \param pin .
+ *  \param on .
+ *  \param off .
+ *  \result .
  */
 void pca9685PWMRead(int fd, int pin, int *on, int *off)
 {
@@ -159,10 +199,18 @@ void pca9685PWMRead(int fd, int pin, int *on, int *off)
 		*off = wiringPiI2CReadReg16(fd, reg + 2);
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P C A 9 6 8 5 F U L L  O N                                                                                        *
+ *  ==========================                                                                                        *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Enables or deactivates full-on
- * tf = true: full-on
- * tf = false: according to PWM
+ *  \brief .
+ *  \param fd .
+ *  \param pin .
+ *  \param tf .
+ *  \result .
  */
 void pca9685FullOn(int fd, int pin, int tf)
 {
@@ -179,10 +227,18 @@ void pca9685FullOn(int fd, int pin, int tf)
 		pca9685FullOff(fd, pin, 0);
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P C A 9 6 8 5 F U L L  O F F                                                                                      *
+ *  ============================                                                                                      *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Enables or deactivates full-off
- * tf = true: full-off
- * tf = false: according to PWM or full-on
+ *  \brief .
+ *  \param fd .
+ *  \param pin .
+ *  \param tf .
+ *  \result .
  */
 void pca9685FullOff(int fd, int pin, int tf)
 {
@@ -195,8 +251,16 @@ void pca9685FullOff(int fd, int pin, int tf)
 	wiringPiI2CWriteReg8(fd, reg, state);
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  B A S E  R E G                                                                                                    *
+ *  ==============                                                                                                    *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Helper function to get to register
+ *  \brief .
+ *  \param pin .
+ *  \result .
  */
 int baseReg(int pin)
 {
@@ -206,20 +270,18 @@ int baseReg(int pin)
 
 
 
-//------------------------------------------------------------------------------------------------------------------
-//
-//	WiringPi functions
-//
-//------------------------------------------------------------------------------------------------------------------
-
-
-
-
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  M Y  P W M  W R I T E                                                                                             *
+ *  =====================                                                                                             *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Simple PWM control which sets on-tick to 0 and off-tick to value.
- * If value is <= 0, full-off will be enabled
- * If value is >= 4096, full-on will be enabled
- * Every value in between enables PWM output
+ *  \brief .
+ *  \param node .
+ *  \param pin .
+ *  \param value .
+ *  \result .
  */
 static void myPwmWrite(struct wiringPiNodeStruct *node, int pin, int value)
 {
@@ -234,10 +296,18 @@ static void myPwmWrite(struct wiringPiNodeStruct *node, int pin, int value)
 		pca9685FullOff(fd, ipin, 1);
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  M Y  O N  O F F  W R I T E                                                                                        *
+ *  ==========================                                                                                        *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Simple full-on and full-off control
- * If value is 0, full-off will be enabled
- * If value is not 0, full-on will be enabled
+ *  \brief .
+ *  \param node .
+ *  \param pin .
+ *  \param value .
+ *  \result .
  */
 static void myOnOffWrite(struct wiringPiNodeStruct *node, int pin, int value)
 {
@@ -250,11 +320,17 @@ static void myOnOffWrite(struct wiringPiNodeStruct *node, int pin, int value)
 		pca9685FullOff(fd, ipin, 1);
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  M Y  O F F  R E A D                                                                                               *
+ *  ===================                                                                                               *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Reads off registers as 16 bit of data
- * To get PWM: mask with 0xFFF
- * To get full-off bit: mask with 0x1000
- * Note: ALL_LED pin will always return 0
+ *  \brief .
+ *  \param node .
+ *  \param pin .
+ *  \result .
  */
 static int myOffRead(struct wiringPiNodeStruct *node, int pin)
 {
@@ -267,11 +343,17 @@ static int myOffRead(struct wiringPiNodeStruct *node, int pin)
 	return off;
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  M Y  O N  R E A D                                                                                                 *
+ *  =================                                                                                                 *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
 /**
- * Reads on registers as 16 bit of data
- * To get PWM: mask with 0xFFF
- * To get full-on bit: mask with 0x1000
- * Note: ALL_LED pin will always return 0
+ *  \brief .
+ *  \param node .
+ *  \param pin .
+ *  \result .
  */
 static int myOnRead(struct wiringPiNodeStruct *node, int pin)
 {

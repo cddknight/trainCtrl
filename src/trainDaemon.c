@@ -561,6 +561,7 @@ void checkSerialRecvBuffer (char *buffer, int len)
  **********************************************************************************************************************/
 /**
  *  \brief Check the buffer received from the network.
+ *  \param handle Handle to send reply to.
  *  \param buffer Received buffer.
  *  \param len Size of data in the buffer.
  *  \result 1 if data was processed locally, 0 if it should be sent to serial.
