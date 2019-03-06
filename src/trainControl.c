@@ -41,13 +41,13 @@ static const GdkRGBA circleCol = { 0.8, 0.8, 0.8, 1.0 };
 static const double xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
 static const double yChange[8] = { 1, 0, 1, 2, 2, 0, 0, 2 };
 
-static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
+//static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 static void quitCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 
 static GActionEntry appEntries[] =
 {
-	{ "preferences", preferencesCallback, NULL, NULL, NULL },
+//	{ "preferences", preferencesCallback, NULL, NULL, NULL },
 	{ "about", aboutCallback, NULL, NULL, NULL },
 	{ "quit", quitCallback, NULL, NULL, NULL }
 };
@@ -666,6 +666,12 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 	}
 }
 
+static void connectStatus (GtkWidget *widget, gpointer data)
+{
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+	trainConnectSend (trackCtrl, "<V>", 3);
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  U P D A T E  P O I N T  P O S N                                                                                   *
@@ -1064,7 +1070,7 @@ static void activate (GtkApplication *app, gpointer userData)
 
 	g_action_map_add_action_entries (G_ACTION_MAP (app), appEntries, G_N_ELEMENTS (appEntries), app);
 	menu = g_menu_new ();
-	g_menu_append (menu, "Status", "app.preferences");
+//	g_menu_append (menu, "Preferences", "app.preferences");
 	g_menu_append (menu, "About", "app.about");
 	g_menu_append (menu, "Quit", "app.quit");
 	gtk_application_set_app_menu (GTK_APPLICATION (app), G_MENU_MODEL (menu));
@@ -1134,11 +1140,18 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_widget_set_halign (trackCtrl -> buttonTrack, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonTrack);
 
+			trackCtrl -> buttonStatus = gtk_button_new_with_label ("Status");
+			g_signal_connect (trackCtrl -> buttonStatus, "clicked", G_CALLBACK (connectStatus), trackCtrl);
+			gtk_widget_set_halign (trackCtrl -> buttonStatus, GTK_ALIGN_CENTER);
+			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonStatus);
+
 			trackCtrl -> buttonProgram = gtk_button_new_with_label ("Program");
 			g_signal_connect (trackCtrl -> buttonProgram, "clicked", G_CALLBACK (programTrain), trackCtrl);
 			gtk_widget_set_halign (trackCtrl -> buttonProgram, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonProgram);
 			gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
+
+
 
 			grid = gtk_grid_new();
 			gtk_container_add (GTK_CONTAINER (vbox), grid);
@@ -1253,12 +1266,13 @@ static void shutdown (GtkApplication *app, gpointer userData)
  *  \param parameter Not used.
  *  \param userData Not used.
  *  \result None.
- */
+ *
 static void preferencesCallback (GSimpleAction *action, GVariant *parameter, gpointer userData)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)userData;
 	trainConnectSend (trackCtrl, "<V>", 3);
 }
+*/
 
 /**********************************************************************************************************************
  *                                                                                                                    *

@@ -112,12 +112,13 @@ typedef struct _trackCtrl
 	GtkWidget *labelPower;
 	GtkWidget *buttonPower;
 	GtkWidget *buttonTrack;
+	GtkWidget *buttonStatus;
 	GtkWidget *buttonProgram;
 	GtkWidget *labelProgram;
 	GtkWidget *drawingArea;
 	GtkWidget *statusBar;
 #else
-	void *xPointers[10];
+	void *xPointers[11];
 #endif
 }
 trackCtrlDef;
