@@ -243,6 +243,11 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 				char tempBuff[81];
 				
 #ifdef HAVE_WIRINGPI_H
+				putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",  
+						PIN_BASE + pointCtrl -> pointStates[i].channel, state ? 
+						pointCtrl -> pointStates[i].turnoutPos : 
+						pointCtrl -> pointStates[i].defaultPos);
+
 				pwmWrite(PIN_BASE + pointCtrl -> pointStates[i].channel, state ? 
 						pointCtrl -> pointStates[i].turnoutPos : 
 						pointCtrl -> pointStates[i].defaultPos);
