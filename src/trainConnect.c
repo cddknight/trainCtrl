@@ -144,14 +144,12 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				trackCtrl -> serverSession = atoi (words[1]);
 				if (wordNum == 7)
 				{
-					int i, states[5];
-					printf ("Status: %s,%s,%s,%s,%s,%s\n", words[1], words[2], words[3], 
-							words[4], words[5], words[6]);
+					int i;
 					for (i = 0; i < 5; ++i)
 					{
-						states[i] = atoi (words[i + 2]);
+						trackCtrl -> serverStatus[i] = atoi (words[i + 2]);
 					}
-					updateStatusDialog (trackCtrl, &states[0]);
+					trackCtrl -> serverStatus[5] = 1;
 				}
 			}
 			/* Point change update */

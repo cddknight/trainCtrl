@@ -712,30 +712,6 @@ void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  U P D A T E  S T A T U S  D I A L O G                                                                             *
- *  =====================================                                                                             *
- *                                                                                                                    *
- **********************************************************************************************************************/
-/**
- *  \brief .
- *  \param trackCtrl .
- *  \param states Returned states.
- *  \result None.
- */
-void updateStatusDialog (trackCtrlDef *trackCtrl, int *states)
-{
-	int i;
-
-	for (i = 0; i < 5; ++i)
-	{
-		printf ("Server value[%d] = %d\n", i, states[i]);
-		trackCtrl -> serverStatus[i] = states[i];
-	}
-	trackCtrl -> serverStatus[5] = 1;
-}
-
-/**********************************************************************************************************************
- *                                                                                                                    *
  *  C O N N E C T  S T A T U S                                                                                        *
  *  ==========================                                                                                        *
  *                                                                                                                    *
