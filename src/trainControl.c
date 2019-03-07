@@ -744,6 +744,7 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 		trackCtrl -> dialogStatus = gtk_dialog_new_with_buttons ("Server Status",
 				GTK_WINDOW (trackCtrl -> windowCtrl),
 				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+				"Update", GTK_RESPONSE_APPLY,
 				"Close", GTK_RESPONSE_CLOSE,
 				NULL);
 
@@ -776,12 +777,12 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 		trackCtrl -> serverStatus[5] = 0;
 
 		gtk_widget_show_all (trackCtrl -> dialogStatus);
-		trainConnectSend (trackCtrl, "<V>", 3);
-
-		while (gtk_dialog_run (GTK_DIALOG (trackCtrl -> dialogStatus)) != GTK_RESPONSE_CLOSE)
+		do
 		{
-			;
+			trainConnectSend (trackCtrl, "<V>", 3);
 		}
+		while (gtk_dialog_run (GTK_DIALOG (trackCtrl -> dialogStatus)) == GTK_RESPONSE_APPLY);
+
 		gtk_widget_destroy (trackCtrl -> dialogStatus);
 		trackCtrl -> dialogStatus = NULL;
 	}
