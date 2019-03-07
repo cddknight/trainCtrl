@@ -14,7 +14,7 @@
     <point ident="11" channel="10" default="290" turnout="320"/>
   </server>
   <server ident="2" port="30333" count="11">
-    <point ident="12" channel="0" default="285" turnout="257"/>
+    <point ident="12" channel="0" default="285" turnout="250"/>
     <point ident="13" channel="1" default="290" turnout="320"/>
     <point ident="14" channel="2" default="290" turnout="320"/>
     <point ident="15" channel="3" default="290" turnout="320"/>
