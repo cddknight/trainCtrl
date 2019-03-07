@@ -107,21 +107,21 @@ typedef struct _trackCtrl
 	trackLayoutDef *trackLayout;
 
 #ifdef __GTK_H__
-	GtkWidget *windowCtrl;
-	GtkWidget *windowTrack;
-	GtkWidget *dialogProgram;
-	GtkWidget *dialogStatus;
-	GtkWidget *labelPower;
-	GtkWidget *buttonPower;
-	GtkWidget *buttonTrack;
-	GtkWidget *buttonStatus;
-	GtkWidget *buttonProgram;
-	GtkWidget *labelProgram;
-	GtkWidget *drawingArea;
-	GtkWidget *statusBar;
-	GtkWidget *statusLabels[5];
+	GtkWidget *windowCtrl;				//  1
+	GtkWidget *windowTrack;				//  2
+	GtkWidget *dialogProgram;			//  3
+	GtkWidget *dialogStatus;			//  4
+	GtkWidget *labelPower;				//  5
+	GtkWidget *buttonPower;				//  6
+	GtkWidget *buttonTrack;				//  7
+	GtkWidget *buttonStatus;			//  8
+	GtkWidget *buttonProgram;			//  9
+	GtkWidget *labelProgram;			// 10
+	GtkWidget *drawingArea;				// 11
+	GtkWidget *statusBar;				// 12
+	GtkWidget *statusLabels[6];			// 18
 #else
-	void *xPointers[17];
+	void *xPointers[18];
 #endif
 }
 trackCtrlDef;

@@ -731,6 +731,7 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 
 	static char *statusLables[] =
 	{
+		"Server:",
 		"Serial port:",
 		"Listen socket:",
 		"Configuration:",
@@ -762,24 +763,36 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
 		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 6);
 
-		for (i = 0; i < 5; ++i)
+		for (i = 0; i < 6; ++i)
 		{
 			label = gtk_label_new (statusLables[i]);
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
 			gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
 
-			trackCtrl -> statusLabels[i] = gtk_label_new ("Pending");
-			gtk_widget_set_halign (trackCtrl -> statusLabels[i], GTK_ALIGN_START);
-			gtk_grid_attach (GTK_GRID(grid), trackCtrl -> statusLabels[i], 1, i, 1, 1);
-
-			trackCtrl -> serverStatus[i] = -1;
+			if (i == 0)
+			{
+				trackCtrl -> statusLabels[i] = gtk_label_new (trackCtrl -> serverHandle == -1 
+						? "Not connected" : "Connected");
+				gtk_widget_set_halign (trackCtrl -> statusLabels[i], GTK_ALIGN_START);
+				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> statusLabels[i], 1, i, 1, 1);
+			}
+			else
+			{
+				trackCtrl -> statusLabels[i] = gtk_label_new ("Pending");
+				gtk_widget_set_halign (trackCtrl -> statusLabels[i], GTK_ALIGN_START);
+				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> statusLabels[i], 1, i, 1, 1);
+				trackCtrl -> serverStatus[i - 1] = -1;
+			}
 		}
 		trackCtrl -> serverStatus[5] = 0;
 
 		gtk_widget_show_all (trackCtrl -> dialogStatus);
 		do
 		{
-			trainConnectSend (trackCtrl, "<V>", 3);
+			if (!trainConnectSend (trackCtrl, "<V>", 3))
+			{
+				gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[0]), "Not connected");
+			}
 		}
 		while (gtk_dialog_run (GTK_DIALOG (trackCtrl -> dialogStatus)) == GTK_RESPONSE_APPLY);
 
@@ -1106,15 +1119,17 @@ gboolean clockTickCallback (gpointer data)
 			char tempBuff[81];
 
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[0]), 
-					trackCtrl -> serverStatus[0] > 0 ? "OK" : "Not connected");
+					trackCtrl -> serverHandle == -1 ? "Not connected" : "Connected");
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[1]), 
-					trackCtrl -> serverStatus[1] > 0 ? "OK" : "Not listening");
+					trackCtrl -> serverStatus[0] > 0 ? "OK" : "Not connected");
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[2]), 
+					trackCtrl -> serverStatus[1] > 0 ? "OK" : "Not listening");
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[3]), 
 					trackCtrl -> serverStatus[2] > 0 ? "OK" : "Not listening");
 			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[3]);
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[3]), tempBuff);
-			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[4]);
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[4]), tempBuff);
+			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[4]);
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[5]), tempBuff);
 			trackCtrl -> serverStatus[5] = 0;
 		}
 	}
