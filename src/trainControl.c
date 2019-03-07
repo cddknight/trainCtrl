@@ -584,6 +584,7 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 											}
 											sprintf (tempBuff, "<Y %d %d %d>", newCell -> server, newCell -> ident, 
 													newCell -> pointDefault == newLinkState ? 0 : 1);
+											trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff));
 										}
 									}
 								}
