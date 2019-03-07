@@ -778,7 +778,7 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 			}
 			else
 			{
-				trackCtrl -> statusLabels[i] = gtk_label_new ("Pending");
+				trackCtrl -> statusLabels[i] = gtk_label_new ("Unknown");
 				gtk_widget_set_halign (trackCtrl -> statusLabels[i], GTK_ALIGN_START);
 				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> statusLabels[i], 1, i, 1, 1);
 				trackCtrl -> serverStatus[i - 1] = -1;
@@ -789,9 +789,15 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 		gtk_widget_show_all (trackCtrl -> dialogStatus);
 		do
 		{
-			if (!trainConnectSend (trackCtrl, "<V>", 3))
+			int sendRes = trainConnectSend (trackCtrl, "<V>", 3);
+
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[0]),
+					sendRes == 3 ?  "Connected" :  "Not connected");
+
+			for (i = 1; i < 6; ++i)
 			{
-				gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[0]), "Not connected");
+				gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[i]), 
+						 sendRes == 3 ? "Pending" : "Unknown");
 			}
 		}
 		while (gtk_dialog_run (GTK_DIALOG (trackCtrl -> dialogStatus)) == GTK_RESPONSE_APPLY);
