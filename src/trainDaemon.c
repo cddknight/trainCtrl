@@ -561,16 +561,17 @@ void checkSerialRecvBuffer (char *buffer, int len)
  **********************************************************************************************************************/
 /**
  *  \brief Check the buffer received from the network.
+ *  \param handle Handle to send reply to.
  *  \param buffer Received buffer.
  *  \param len Size of data in the buffer.
  *  \result 1 if data was processed locally, 0 if it should be sent to serial.
  */
-int checkNetworkRecvBuffer (char *buffer, int len)
+int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 {
 	char words[41][41];
 	int retn = 0, wordNum = -1, i = 0, j = 0, inType = 0;
 
-/*------------------------------------------------------------------* 
+/*------------------------------------------------------------------*
 	putLogMessage (LOG_INFO, "Network Rxed:[%s]", buffer);
  *------------------------------------------------------------------*/
 	while (i < len)
@@ -616,6 +617,7 @@ int checkNetworkRecvBuffer (char *buffer, int len)
 				sendPointServer (server, ident, direc);
 				retn = 1;
 			}
+			/* Reply point server state */
 			else if (words[0][0] == 'y' && words[0][1] == 0 && wordNum == 4)
 			{
 				int i;
@@ -626,6 +628,28 @@ int checkNetworkRecvBuffer (char *buffer, int len)
 						SendSocket (handleInfo[i].handle, buffer, len);
 					}
 				}
+				retn = 1;
+			}
+			/* Get socket status */
+			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 1)
+			{
+				char buffer[101];
+				int i, conCounts[5] = { 0, 0, 0, 0, 0 };
+
+				for (i = SERIAL_HANDLE; i < MAX_HANDLES; ++i)
+				{
+					if (handleInfo[i].handle != -1)
+					{
+						if (handleInfo[i].handleType >= SERIAL_HTYPE && handleInfo[i].handleType <= CONTRL_HTYPE)
+						{
+							++conCounts[handleInfo[i].handleType - 1];
+						}
+					}
+				}
+				sprintf (buffer, "<V %d %d %d %d %d %d>", handleInfo[handle].handle, 
+						conCounts[0], conCounts[1], conCounts[2], conCounts[3], conCounts[4]);
+				putLogMessage (LOG_INFO, "Status: %s", buffer);
+				SendSocket (handleInfo[handle].handle, buffer, strlen (buffer));
 				retn = 1;
 			}
 			inType = 0;
@@ -716,7 +740,7 @@ void receiveNetwork (int handle, char *buffer, int len)
 		if (buffer[j] == '>')
 		{
 			handleInfo[handle].rxedBuff[handleInfo[handle].rxedPosn] = 0;
-			if (!checkNetworkRecvBuffer (handleInfo[handle].rxedBuff, handleInfo[handle].rxedPosn))
+			if (!checkNetworkRecvBuffer (handle, handleInfo[handle].rxedBuff, handleInfo[handle].rxedPosn))
 			{
 				sendSerial (handleInfo[handle].rxedBuff, len);
 			}
@@ -955,7 +979,15 @@ int main (int argc, char *argv[])
 		if (trackCtrl.configPort > 0)
 		{
 			handleInfo[CONFIG_HANDLE].handle = ServerSocketSetup (trackCtrl.configPort);
-			handleInfo[SERIAL_HANDLE].handleType = CONFIG_HTYPE;
+			if (handleInfo[CONFIG_HANDLE].handle == -1)
+			{
+				putLogMessage (LOG_ERR, "Unable to listen on config port.");
+			}
+			else
+			{
+				handleInfo[CONFIG_HANDLE].handleType = CONFIG_HTYPE;
+				putLogMessage (LOG_INFO, "Listening on port: %d", trackCtrl.configPort);
+			}
 		}
 		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (trackCtrl.serverPort);
 		if (handleInfo[LISTEN_HANDLE].handle == -1)
@@ -964,7 +996,7 @@ int main (int argc, char *argv[])
 		}
 		else
 		{
-			handleInfo[SERIAL_HANDLE].handleType = LISTEN_HTYPE;
+			handleInfo[LISTEN_HANDLE].handleType = LISTEN_HTYPE;
 			putLogMessage (LOG_INFO, "Listening on port: %d", trackCtrl.serverPort);
 		}
 	}
@@ -1078,9 +1110,9 @@ int main (int argc, char *argv[])
 							}
 							else if (handleInfo[i].handleType == POINTC_HTYPE)
 							{
-								for (p = 0; p < trackCtrl.pServerCount; ++p)
+								if (trackCtrl.pointCtrl != NULL)
 								{
-									if (trackCtrl.pointCtrl != NULL)
+									for (p = 0; p < trackCtrl.pServerCount; ++p)
 									{
 										pointCtrlDef *point = &trackCtrl.pointCtrl[p];
 										if (point -> intHandle == i)
