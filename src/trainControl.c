@@ -1273,6 +1273,8 @@ static void activate (GtkApplication *app, gpointer userData)
 
 			for (i = 0; i < trackCtrl -> trainCount; ++i)
 			{
+				int j = 0;
+
 				sprintf (tempBuff, "%d", trackCtrl -> trainCtrl[i].trainNum);
 				trackCtrl -> trainCtrl[i].buttonNum = gtk_button_new_with_label (tempBuff);
 				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].buttonNum), "train", &trackCtrl -> trainCtrl[i]);
@@ -1287,13 +1289,17 @@ static void activate (GtkApplication *app, gpointer userData)
 				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonHalt, GTK_ALIGN_FILL);
 				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].buttonHalt, i, 1, 1, 1);
 
-				trackCtrl -> trainCtrl[i].scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 126, 0.5);
+				trackCtrl -> trainCtrl[i].scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 126, 1);
 				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].scaleSpeed), "train", &trackCtrl -> trainCtrl[i]);
 				g_signal_connect (trackCtrl -> trainCtrl[i].scaleSpeed, "value-changed", G_CALLBACK (moveTrain), trackCtrl);
 				gtk_widget_set_vexpand (trackCtrl -> trainCtrl[i].scaleSpeed, 1);
-				gtk_scale_set_value_pos (GTK_SCALE(trackCtrl -> trainCtrl[i].scaleSpeed), 0);
 				gtk_scale_set_value_pos (GTK_SCALE(trackCtrl -> trainCtrl[i].scaleSpeed), GTK_POS_TOP);
 				gtk_scale_set_digits (GTK_SCALE(trackCtrl -> trainCtrl[i].scaleSpeed), 0);
+				gtk_scale_set_has_origin (GTK_SCALE(trackCtrl -> trainCtrl[i].scaleSpeed), TRUE);
+				for (j = 0; j < 126; j += 20)
+				{
+					gtk_scale_add_mark (GTK_SCALE(trackCtrl -> trainCtrl[i].scaleSpeed), j, GTK_POS_LEFT, NULL);
+				}
 				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].scaleSpeed, GTK_ALIGN_CENTER);
 				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].scaleSpeed, i, 2, 1, 1);
 			    gettimeofday(&trackCtrl -> trainCtrl[i].lastChange, NULL);
