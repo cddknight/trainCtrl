@@ -84,12 +84,13 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				words[++wordNum][0] = 0;
 			}
 /*------------------------------------------------------------------*
+			int l = 0;
 			for (l = 0; l < wordNum; ++l)
 			{
 				printf ("[%s]", words[l]);
 			}
 			printf ("(%d)\n", wordNum);
- *------------------------------------------------------------------*/
+*------------------------------------------------------------------*/
 			/* Track power status */
 			if (words[0][0] == 'p' && words[0][1] == 0 && wordNum == 2)
 			{
@@ -278,6 +279,38 @@ int trainConnectSend (trackCtrlDef *trackCtrl, char *buffer, int len)
 	if (trackCtrl -> serverHandle != -1)
 	{
 		retn = SendSocket (trackCtrl -> serverHandle, buffer, len);
+	}
+	return retn;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  T R A I N  S E T  S P E E D                                                                                       *
+ *  ===========================                                                                                       *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Send the command to set the speed fo the train.
+ *  \param trackCtrl Pointer to track configuration.
+ *  \param train Pointer to the train.
+ *  \param speed Speed to set (-1 for STOP).
+ *  \result 1 if the command was sent.
+ */
+int trainSetSpeed (trackCtrlDef *trackCtrl, trainCtrlDef *train, int speed)
+{
+	int retn = 0;
+	char tempBuff[81];
+	sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, speed, train -> reverse);
+	if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
+	{
+		char speedStr[21] = "STOP";
+		if (speed >=0)
+		{
+			sprintf (speedStr, "%d", speed);
+		}
+		sprintf (tempBuff, "Set speed: %s for train %d", speedStr, train -> trainNum);
+		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
+		retn = 1;
 	}
 	return retn;
 }

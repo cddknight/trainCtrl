@@ -131,5 +131,6 @@ int parseMemoryXML (trackCtrlDef *trackCtrl, char *buffer);
 int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level);
 int startConnectThread (trackCtrlDef *trackCtrl);
 int trainConnectSend (trackCtrlDef *trackCtrl, char *buffer, int len);
+int trainSetSpeed (trackCtrlDef *trackCtrl, trainCtrlDef *train, int speed);
 void stopConnectThread (trackCtrlDef *trackCtrl);
 

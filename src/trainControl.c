@@ -137,14 +137,10 @@ static void stopTrain (GtkWidget *widget, gpointer data)
 
 	if (train -> curSpeed != 0)
 	{
-		char tempBuff[81];
-		sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, -1, train -> reverse);
-		if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
+		if (trainSetSpeed (trackCtrl, train, -1))
 		{
 			train -> curSpeed = train -> remoteCurSpeed = 0;
 			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
-			sprintf (tempBuff, "Set speed: STOP for train %d", train -> trainNum);
-			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
 		}
 		else
 		{
@@ -193,14 +189,10 @@ static void haltTrain (GtkWidget *widget, gpointer data)
 
 	if (train -> curSpeed != 0)
 	{
-		char tempBuff[81];
-		sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, 0, train -> reverse);
-		if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
+		if (trainSetSpeed (trackCtrl, train, 0))
 		{
 			train -> curSpeed = train -> remoteCurSpeed = 0;
 			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
-			sprintf (tempBuff, "Set speed: 0 for train %d", train -> trainNum);
-			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
 		}
 		else
 		{
@@ -277,9 +269,9 @@ static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
 				trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
 				if (train -> curSpeed > 0 && trackCtrl -> powerState == POWER_OFF)
 				{
+					trainSetSpeed (trackCtrl, &trackCtrl -> trainCtrl[i], -1);
 					trackCtrl -> trainCtrl[i].curSpeed = trackCtrl -> trainCtrl[i].remoteCurSpeed = 0;
 					gtk_range_set_value (GTK_RANGE (trackCtrl -> trainCtrl[i].scaleSpeed), 0.0);
-					sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, 0, train -> reverse);
 				}
 			}
 		}
@@ -317,16 +309,11 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 	value = gtk_range_get_value (GTK_RANGE (train -> scaleSpeed));
 	if (train -> curSpeed != (int)value)
 	{
-		char tempBuff[81];
 		int newValue = (int)value;
-
-		sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, newValue, train -> reverse);
-		if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
+		if (trainSetSpeed (trackCtrl, train, newValue))
 		{
 		    gettimeofday(&train -> lastChange, NULL);
 			train -> curSpeed = train -> remoteCurSpeed = newValue;
-			sprintf (tempBuff, "Set speed: %d for train %d", newValue, train -> trainNum);
-			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
 		}
 		else
 		{
@@ -349,7 +336,6 @@ static void moveTrain (GtkWidget *widget, gpointer data)
  */
 static void reverseTrain (GtkWidget *widget, gpointer data)
 {
-	char tempBuff[81];
 	int newState;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
@@ -357,9 +343,9 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
 	newState = (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (train -> checkDir)) == TRUE ? 1 : 0);
 	if (newState != train -> reverse)
 	{
+		char tempBuff[81];
 		train -> reverse = train -> remoteReverse = newState;
-		sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, 0, train -> reverse);
-		if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
+		if (trainSetSpeed (trackCtrl, train, 0))
 		{
 			train -> curSpeed = train -> remoteCurSpeed = 0;
 			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
@@ -1289,7 +1275,7 @@ static void activate (GtkApplication *app, gpointer userData)
 				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonHalt, GTK_ALIGN_FILL);
 				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].buttonHalt, i, 1, 1, 1);
 
-				trackCtrl -> trainCtrl[i].scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 126, 1);
+				trackCtrl -> trainCtrl[i].scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 126, 0.5);
 				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].scaleSpeed), "train", &trackCtrl -> trainCtrl[i]);
 				g_signal_connect (trackCtrl -> trainCtrl[i].scaleSpeed, "value-changed", G_CALLBACK (moveTrain), trackCtrl);
 				gtk_widget_set_vexpand (trackCtrl -> trainCtrl[i].scaleSpeed, 1);
