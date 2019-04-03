@@ -840,7 +840,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 	static char *controlLables[] =
 	{
-		"DCC Address", "CV Number", "Byte Value (0 - 255)", "Bit number (1 - 8)", "Bit Value (0 - 1)",
+		"DCC Address", "CV Number", "Byte Value (0 - 255)", "Bit number (0 - 7)", "Bit Value (0 - 1)",
 		"Read current value", "Last reply:", "-"
 	};
 	static char *hintLables[] =
@@ -848,11 +848,13 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		"Hints:",
 		"* If DCC address is zero then use programming track.",
 		"* Reads only work with train on the programming track.",
-		"* If bit number in the range 1 to 8 then set bit value.",
-		"* If the bit number is zero then set the byte value.",
+		"* If bit number in the range 0 to 7 then set bit value.",
+		"* If bit number is -1 then set the byte value.",
 		NULL
 	};
-	static double maxValues[] = { 10294.0, 1025.0, 256.0, 9.0, 2.0 };
+	static double defValues[] = { 0.0, 0.0, 0.0, -1.0, 0.0 };
+	static double minValues[] = { 0.0, 0.0, 0.0, -1.0, 0.0 };
+	static double maxValues[] = { 10294.0, 1025.0, 256.0, 8.0, 2.0 };
 
 	int i = 0;
 	GtkWidget *contentArea;
@@ -911,7 +913,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
 			gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
 
-			adjust[i] = gtk_adjustment_new (0.0, 0.0, maxValues[i], 1.0, 1.0, 1.0);
+			adjust[i] = gtk_adjustment_new (defValues[i], minValues[i], maxValues[i], 1.0, 1.0, 1.0);
 			spinner[i] = gtk_spin_button_new (adjust[i], 10, 0);
 			gtk_widget_set_halign (GTK_WIDGET (spinner[i]), GTK_ALIGN_FILL);
 			gtk_grid_attach (GTK_GRID(grid), spinner[i], 1, i, 1, 1);
@@ -953,17 +955,17 @@ static void programTrain (GtkWidget *widget, gpointer data)
 						sprintf (sendBuffer, "<R %d %d 1>", values[1], trackCtrl -> serverSession);
 						allOK = 1;
 					}
-					else if (values[3])
+					else if (values[3] >= 0)
 					{
 						/* Write bit value */
-						if (values[3] <= 8 && (values[4] == 0 || values[4] == 1))
+						if (values[3] <= 7 && (values[4] == 0 || values[4] == 1))
 						{
 							/* Write bit value */
 							sprintf (msgBuffer, "Write to CV#%d, bit %d, value %d on the programming track?",
 									values[1], values[3], values[4]);
 							if (programYesNo (trackCtrl, msgBuffer))
 							{
-								sprintf (sendBuffer, "<B %d %d %d %d 2>", values[1], values[3] - 1, values[4],
+								sprintf (sendBuffer, "<B %d %d %d %d 2>", values[1], values[3], values[4],
 										trackCtrl -> serverSession);
 							}
 							allOK = 1;
@@ -975,7 +977,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 						if (values[2] >= 0 && values[2] <= 255)
 						{
 							/* Write CV byte */
-							sprintf (msgBuffer, "Write to CV#%d, value %d on the programming track?",
+							sprintf (msgBuffer, "Write to CV#%d, byte value %d on the programming track?",
 									values[1], values[2]);
 							if (programYesNo (trackCtrl, msgBuffer))
 							{
@@ -989,17 +991,17 @@ static void programTrain (GtkWidget *widget, gpointer data)
 			/* Main track, need a CV# */
 			else if (values[1] > 0 && values[1] < 1025)
 			{
-				if (values[3])
+				if (values[3] >= 0)
 				{
 					/* Write bit value */
-					if (values[3] <= 8 && (values[4] == 0 || values[4] == 1))
+					if (values[3] <= 7 && (values[4] == 0 || values[4] == 1))
 					{
 						/* Write bit value */
 						sprintf (msgBuffer, "Write to address %d, CV#%d, bit %d, value %d on the main track?",
 								values[0], values[1], values[3], values[4]);
 						if (programYesNo (trackCtrl, msgBuffer))
 						{
-							sprintf (sendBuffer, "<b %d %d %d %d>", values[0], values[1], values[3] - 1, values[4]);
+							sprintf (sendBuffer, "<b %d %d %d %d>", values[0], values[1], values[3], values[4]);
 						}
 						allOK = 1;
 					}
@@ -1010,7 +1012,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 					if (values[2] >= 0 && values[2] <= 255)
 					{
 						/* Write CV byte */
-						sprintf (msgBuffer, "Write to address %d, CV number %d, value %d on the main track?",
+						sprintf (msgBuffer, "Write to address %d, CV number %d, byte value %d on the main track?",
 								values[0], values[1], values[2]);
 						if (programYesNo (trackCtrl, msgBuffer))
 						{
@@ -1385,7 +1387,7 @@ static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer 
 	gtk_show_about_dialog (GTK_WINDOW (NULL),
 			"program-name", "Train Control",
 			"version", g_strdup_printf ("Version: %s\nRunning against GTK+ %d.%d.%d",
-			 VERSION,
+				 VERSION,
 				 gtk_get_major_version (),
 				 gtk_get_minor_version (),
 				 gtk_get_micro_version ()),
