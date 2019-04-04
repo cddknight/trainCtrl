@@ -122,9 +122,10 @@ typedef struct _trackCtrl
 	GtkWidget *drawingArea;				// 12
 	GtkWidget *statusBar;				// 13
 	GtkWidget *funcSpinner;				// 14
-	GtkWidget *statusLabels[6];			// 20
+	GtkWidget *funcLabel;				// 15
+	GtkWidget *statusLabels[6];			// 21
 #else
-	void *xPointers[20];
+	void *xPointers[21];
 #endif
 }
 trackCtrlDef;
