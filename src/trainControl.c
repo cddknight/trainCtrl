@@ -151,8 +151,47 @@ static void stopTrain (GtkWidget *widget, gpointer data)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  T R A I N  I N F O                                                                                                *
- *  ==================                                                                                                *
+ *  S E N D  F U N C T I O N                                                                                          *
+ *  ========================                                                                                          *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Send button press so send to the train.
+ *  \param widget Not used.
+ *  \param data Pointer to the track.
+ *  \result None.
+ */
+static void sendFunction (GtkWidget *widget, gpointer data)
+{
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
+	int func = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(trackCtrl -> funcSpinner));
+
+	trainToggleFunction (trackCtrl, train, func);
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  C L O S E  F U N C T I O N S                                                                                      *
+ *  ============================                                                                                      *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Function window has bee closed so clean up.
+ *  \param widget Not used.
+ *  \param data Pointer to the track.
+ *  \result None.
+ */
+static void closeFunctions (GtkWidget *widget, gpointer data)
+{
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+	trackCtrl -> windowFunctions = NULL;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  T R A I N  F U N C T I O N S                                                                                      *
+ *  ============================                                                                                      *
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
@@ -161,11 +200,58 @@ static void stopTrain (GtkWidget *widget, gpointer data)
  *  \param data Track data.
  *  \result None.
  */
-static void trainInfo (GtkWidget *widget, gpointer data)
+static void trainFunctions (GtkWidget *widget, gpointer data)
 {
 	char tempBuff[181];
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
+
+	if (trackCtrl -> serverHandle == -1)
+	{
+		GtkWidget *errDialog = gtk_message_dialog_new (GTK_WINDOW (trackCtrl -> windowCtrl),
+				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+				"%s", notConnected);
+		gtk_dialog_run (GTK_DIALOG (errDialog));
+		gtk_widget_destroy (errDialog);
+		return;
+	}
+	if (trackCtrl -> windowFunctions == NULL)
+	{
+		GtkAdjustment *adjust;
+		GtkWidget *label, *grid, *vbox, *button;
+
+		trackCtrl -> windowFunctions = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowFunctions), "Functions");
+		g_signal_connect (G_OBJECT (trackCtrl -> windowFunctions), "destroy", G_CALLBACK (closeFunctions), trackCtrl);
+
+		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
+		gtk_container_add (GTK_CONTAINER (trackCtrl -> windowFunctions), vbox);
+
+		grid = gtk_grid_new();
+		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
+		gtk_widget_set_valign (grid, GTK_ALIGN_FILL);
+		gtk_grid_set_row_spacing (GTK_GRID (grid), 3);
+		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
+		gtk_box_pack_start (GTK_BOX(vbox), grid, TRUE, TRUE, 3);
+
+		label = gtk_label_new ("Function: ");
+		gtk_widget_set_halign (label, GTK_ALIGN_END);
+		gtk_grid_attach (GTK_GRID(grid), label, 0, 0, 1, 1);
+
+		adjust = gtk_adjustment_new (0, 0, 29, 1.0, 1.0, 1.0);
+		trackCtrl -> funcSpinner = gtk_spin_button_new (adjust, 4, 0);
+		gtk_widget_set_halign (GTK_WIDGET (trackCtrl -> funcSpinner), GTK_ALIGN_FILL);
+		gtk_grid_attach (GTK_GRID(grid), trackCtrl -> funcSpinner, 1, 0, 1, 1);
+
+		button = gtk_button_new_with_label ("Toggle");
+		g_object_set_data (G_OBJECT(button), "train", train);
+		g_signal_connect (button, "clicked", G_CALLBACK (sendFunction), trackCtrl);
+		gtk_widget_set_halign (button, GTK_ALIGN_FILL);
+		gtk_grid_attach (GTK_GRID(grid), button, 1, 1, 1, 1);
+
+		gtk_widget_show_all (trackCtrl -> windowFunctions);
+	}
 	snprintf (tempBuff, 180, "%d, %s, DCC %d", train -> trainNum, train -> trainDesc, train -> trainID);
 	gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
 }
@@ -232,6 +318,10 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 	if (trackCtrl -> buttonProgram != NULL)
 	{
 		gtk_widget_set_sensitive (trackCtrl -> buttonProgram, state);
+	}
+	if (trackCtrl -> buttonTrack != NULL)
+	{
+		gtk_widget_set_sensitive (trackCtrl -> buttonTrack, state);
 	}
 }
 
@@ -1170,6 +1260,7 @@ static void activate (GtkApplication *app, gpointer userData)
 	GMenu *menu;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)malloc (sizeof (trackCtrlDef));
 	memset (trackCtrl, 0, sizeof (trackCtrlDef));
+	trackCtrl -> serverHandle = -1;
 
 	g_action_map_add_action_entries (G_ACTION_MAP (app), appEntries, G_N_ELEMENTS (appEntries), app);
 	menu = g_menu_new ();
@@ -1217,7 +1308,7 @@ static void activate (GtkApplication *app, gpointer userData)
 			g_signal_connect (trackCtrl -> windowCtrl, "destroy", G_CALLBACK (windowDestroy), trackCtrl);
 			gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowCtrl), tempBuff);
 			gtk_window_set_icon_name (GTK_WINDOW (trackCtrl -> windowCtrl), "preferences-desktop");
-			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), 300, 600);
+			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), 600, 600);
 
 			vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
 			gtk_container_add (GTK_CONTAINER (trackCtrl -> windowCtrl), vbox);
@@ -1254,8 +1345,6 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonProgram);
 			gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 
-
-
 			grid = gtk_grid_new();
 			gtk_container_add (GTK_CONTAINER (vbox), grid);
 
@@ -1266,7 +1355,7 @@ static void activate (GtkApplication *app, gpointer userData)
 				sprintf (tempBuff, "%d", trackCtrl -> trainCtrl[i].trainNum);
 				trackCtrl -> trainCtrl[i].buttonNum = gtk_button_new_with_label (tempBuff);
 				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].buttonNum), "train", &trackCtrl -> trainCtrl[i]);
-				g_signal_connect (trackCtrl -> trainCtrl[i].buttonNum, "clicked", G_CALLBACK (trainInfo), trackCtrl);
+				g_signal_connect (trackCtrl -> trainCtrl[i].buttonNum, "clicked", G_CALLBACK (trainFunctions), trackCtrl);
 				gtk_widget_set_hexpand (trackCtrl -> trainCtrl[i].buttonNum, TRUE);
 				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonNum, GTK_ALIGN_FILL);
 				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].buttonNum, i, 0, 1, 1);

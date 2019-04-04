@@ -53,6 +53,7 @@ typedef struct _trainCtrl
 	int trainNum;
 	int curSpeed;
 	int reverse;
+	int functions;
 	char trainDesc[41];
 
 	struct timeval lastChange;
@@ -109,19 +110,21 @@ typedef struct _trackCtrl
 #ifdef __GTK_H__
 	GtkWidget *windowCtrl;				//  1
 	GtkWidget *windowTrack;				//  2
-	GtkWidget *dialogProgram;			//  3
-	GtkWidget *dialogStatus;			//  4
-	GtkWidget *labelPower;				//  5
-	GtkWidget *buttonPower;				//  6
-	GtkWidget *buttonTrack;				//  7
-	GtkWidget *buttonStatus;			//  8
-	GtkWidget *buttonProgram;			//  9
-	GtkWidget *labelProgram;			// 10
-	GtkWidget *drawingArea;				// 11
-	GtkWidget *statusBar;				// 12
-	GtkWidget *statusLabels[6];			// 18
+	GtkWidget *windowFunctions;			//  3
+	GtkWidget *dialogProgram;			//  4
+	GtkWidget *dialogStatus;			//  5
+	GtkWidget *labelPower;				//  6
+	GtkWidget *buttonPower;				//  7
+	GtkWidget *buttonTrack;				//  8
+	GtkWidget *buttonStatus;			//  9
+	GtkWidget *buttonProgram;			// 10
+	GtkWidget *labelProgram;			// 11
+	GtkWidget *drawingArea;				// 12
+	GtkWidget *statusBar;				// 13
+	GtkWidget *funcSpinner;				// 14
+	GtkWidget *statusLabels[6];			// 20
 #else
-	void *xPointers[18];
+	void *xPointers[20];
 #endif
 }
 trackCtrlDef;
@@ -132,5 +135,6 @@ int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level);
 int startConnectThread (trackCtrlDef *trackCtrl);
 int trainConnectSend (trackCtrlDef *trackCtrl, char *buffer, int len);
 int trainSetSpeed (trackCtrlDef *trackCtrl, trainCtrlDef *train, int speed);
+int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int function);
 void stopConnectThread (trackCtrlDef *trackCtrl);
 

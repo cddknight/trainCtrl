@@ -300,6 +300,7 @@ int trainSetSpeed (trackCtrlDef *trackCtrl, trainCtrlDef *train, int speed)
 {
 	int retn = 0;
 	char tempBuff[81];
+
 	sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, speed, train -> reverse);
 	if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
 	{
@@ -311,6 +312,74 @@ int trainSetSpeed (trackCtrlDef *trackCtrl, trainCtrlDef *train, int speed)
 		sprintf (tempBuff, "Set speed: %s for train %d", speedStr, train -> trainNum);
 		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
 		retn = 1;
+	}
+	return retn;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  T R A I N  T O G G L E  F U N C T I O N                                                                           *
+ *  =======================================                                                                           *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Toggle a train function on/off.
+ *  \param trackCtrl Track configuration.
+ *  \param train Train configuration.
+ *  \param function Function to set.
+ *  \result 1 if sent OK.
+ */
+int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int function)
+{
+	int retn = 0;
+	if (function >= 0 && function <= 28)
+	{
+		char tempBuff[81];
+		int byteOne = 0, byteTwo = -1;
+
+		train -> functions ^= (1 << function);
+		if (function < 5)
+		{
+			byteOne = (train -> functions & 0x1F) + 128;
+		}
+		else if (function < 9)
+		{
+			byteOne = ((train -> functions >> 5) & 0x0F) + 176;
+		}
+		else if (function < 13)
+		{
+			byteOne = ((train -> functions >> 9) & 0x0F) + 160;
+		}
+		else if (function < 13)
+		{
+			byteOne = ((train -> functions >> 9) & 0x0F) + 160;
+		}
+		else if (function < 21)
+		{
+			byteOne = 222;
+			byteTwo = (train -> functions >> 13) & 0xFF;
+		}
+		else
+		{
+			byteOne = 223;
+			byteTwo = (train -> functions >> 21) & 0xFF;
+		}
+		if (byteTwo == -1)
+		{
+			sprintf (tempBuff, "<f %d %d>", train -> trainID, byteOne);
+		}
+		else
+		{
+			sprintf (tempBuff, "<f %d %d %d>", train -> trainID, byteOne, byteTwo);
+		}
+		if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
+		{
+			sprintf (tempBuff, "Set function: %d to %s for train %d", function,
+					train -> functions & (1 << function) ? "on" : "off",
+					train -> trainNum);
+			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
+			retn = 1;
+		}
 	}
 	return retn;
 }
