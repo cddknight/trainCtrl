@@ -438,6 +438,12 @@ void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int byteOne, int
 				trackCtrl -> trainCtrl[t].functions &= 0xE01FFFFF;
 				trackCtrl -> trainCtrl[t].functions |= ((byteTwo & 0xFF) << 21);
 			}
+			if (trackCtrl -> windowFunctions != NULL)
+			{
+				char tempBuff[81];
+				sprintf (tempBuff, "[%08X]", trackCtrl -> trainCtrl[t].functions);
+				gtk_label_set_label (GTK_LABEL (trackCtrl -> funcLabel), tempBuff);
+			}
 			break;
 		}
 	}
