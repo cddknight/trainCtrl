@@ -118,6 +118,17 @@ long diffTimeToNow (struct timeval *start)
 	return diffTime (start, &now);
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  C H E C K  C O N N E C T E D                                                                                      *
+ *  ============================                                                                                      *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Check to see if we are connected to daemon.
+ *  \param trackCtrl Track configuration.
+ *  \result 1 if connected.
+ */
 int checkConnected (trackCtrlDef *trackCtrl)
 {
 	int retn = 1;
@@ -131,6 +142,7 @@ int checkConnected (trackCtrlDef *trackCtrl)
 		gtk_widget_destroy (errDialog);
 		retn = 0;
 	}
+	return retn;
 }
 
 /**********************************************************************************************************************
