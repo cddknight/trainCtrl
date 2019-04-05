@@ -118,6 +118,21 @@ long diffTimeToNow (struct timeval *start)
 	return diffTime (start, &now);
 }
 
+int checkConnected (trackCtrlDef *trackCtrl)
+{
+	int retn = 1;
+	if (trackCtrl -> serverHandle == -1)
+	{
+		GtkWidget *errDialog = gtk_message_dialog_new (GTK_WINDOW (trackCtrl -> windowCtrl),
+				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
+				"%s", notConnected);
+		gtk_dialog_run (GTK_DIALOG (errDialog));
+		gtk_widget_destroy (errDialog);
+		retn = 0;
+	}
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  S T O P  T R A I N                                                                                                *
@@ -209,18 +224,13 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
 
-	if (trackCtrl -> serverHandle == -1)
+	if (!checkConnected (trackCtrl))
 	{
-		GtkWidget *errDialog = gtk_message_dialog_new (GTK_WINDOW (trackCtrl -> windowCtrl),
-				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-				"%s", notConnected);
-		gtk_dialog_run (GTK_DIALOG (errDialog));
-		gtk_widget_destroy (errDialog);
 		return;
 	}
 	if (trackCtrl -> windowFunctions == NULL)
 	{
+		int row = 0;
 		char tempBuff[81];
 		GtkAdjustment *adjust;
 		GtkWidget *label, *grid, *vbox, *button;
@@ -239,29 +249,35 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
 		gtk_box_pack_start (GTK_BOX(vbox), grid, TRUE, TRUE, 3);
 
+		label = gtk_label_new ("Train: ");
+		gtk_widget_set_halign (label, GTK_ALIGN_END);
+		gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
+		sprintf (tempBuff, "%d", train -> trainNum);
+		label = gtk_label_new (tempBuff);
+		gtk_widget_set_halign (label, GTK_ALIGN_START);
+		gtk_grid_attach (GTK_GRID(grid), label, 1, row++, 1, 1);
+
 		label = gtk_label_new ("Current: ");
 		gtk_widget_set_halign (label, GTK_ALIGN_END);
-		gtk_grid_attach (GTK_GRID(grid), label, 0, 0, 1, 1);
-
+		gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
 		sprintf (tempBuff, "[%08X]", train -> functions);
 		trackCtrl -> funcLabel = gtk_label_new (tempBuff);
-		gtk_widget_set_halign (trackCtrl -> funcLabel, GTK_ALIGN_END);
-		gtk_grid_attach (GTK_GRID(grid), trackCtrl -> funcLabel, 1, 0, 1, 1);
+		gtk_widget_set_halign (trackCtrl -> funcLabel, GTK_ALIGN_START);
+		gtk_grid_attach (GTK_GRID(grid), trackCtrl -> funcLabel, 1, row++, 1, 1);
 
 		label = gtk_label_new ("Function: ");
 		gtk_widget_set_halign (label, GTK_ALIGN_END);
-		gtk_grid_attach (GTK_GRID(grid), label, 0, 1, 1, 1);
-
+		gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
 		adjust = gtk_adjustment_new (0, 0, 29, 1.0, 1.0, 1.0);
 		trackCtrl -> funcSpinner = gtk_spin_button_new (adjust, 4, 0);
 		gtk_widget_set_halign (GTK_WIDGET (trackCtrl -> funcSpinner), GTK_ALIGN_FILL);
-		gtk_grid_attach (GTK_GRID(grid), trackCtrl -> funcSpinner, 1, 1, 1, 1);
+		gtk_grid_attach (GTK_GRID(grid), trackCtrl -> funcSpinner, 1, row++, 1, 1);
 
 		button = gtk_button_new_with_label ("Toggle");
 		g_object_set_data (G_OBJECT(button), "train", train);
 		g_signal_connect (button, "clicked", G_CALLBACK (sendFunction), trackCtrl);
 		gtk_widget_set_halign (button, GTK_ALIGN_FILL);
-		gtk_grid_attach (GTK_GRID(grid), button, 1, 2, 1, 1);
+		gtk_grid_attach (GTK_GRID(grid), button, 1, row, 1, 1);
 
 		gtk_widget_show_all (trackCtrl -> windowFunctions);
 	}
@@ -721,14 +737,8 @@ static void closeTrack (GtkWidget *widget, gpointer data)
 static void displayTrack (GtkWidget *widget, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
-	if (trackCtrl -> serverHandle == -1)
+	if (!checkConnected (trackCtrl))
 	{
-		GtkWidget *errDialog = gtk_message_dialog_new (GTK_WINDOW (trackCtrl -> windowCtrl),
-				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-				"%s", notConnected);
-		gtk_dialog_run (GTK_DIALOG (errDialog));
-		gtk_widget_destroy (errDialog);
 		return;
 	}
 	if (trackCtrl -> windowTrack == NULL)
@@ -965,17 +975,10 @@ static void programTrain (GtkWidget *widget, gpointer data)
 	GtkAdjustment *adjust[5];
 	GtkWidget *label, *grid, *vbox, *checkButton;
 
-	if (trackCtrl -> serverHandle == -1)
+	if (!checkConnected (trackCtrl))
 	{
-		GtkWidget *errDialog = gtk_message_dialog_new (GTK_WINDOW (trackCtrl -> windowCtrl),
-				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
-				"%s", notConnected);
-		gtk_dialog_run (GTK_DIALOG (errDialog));
-		gtk_widget_destroy (errDialog);
 		return;
 	}
-
 	if (trackCtrl -> dialogProgram == NULL)
 	{
 		trackCtrl -> dialogProgram = gtk_dialog_new_with_buttons ("Program Train",
