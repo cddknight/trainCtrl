@@ -630,6 +630,19 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 				}
 				retn = 1;
 			}
+			/* Tell everyone about a function change */
+			else if (words[0][0] == 'f' && words[0][1] == 0 && (wordNum == 3 || wordNum == 4))
+			{
+				int i;
+				for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
+				{
+					if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
+					{
+						SendSocket (handleInfo[i].handle, buffer, len);
+					}
+				}
+				retn = 0;
+			}
 			/* Get socket status */
 			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 1)
 			{

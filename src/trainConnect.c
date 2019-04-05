@@ -131,6 +131,18 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 								words[3], words[4], binary);
 				}
 			}
+			/* Function update */
+			else if (words[0][0] == 'f' && words[0][1] == 0 && (wordNum == 3 || wordNum == 4))
+			{
+				int trainID = atoi(words[1]);
+				int byteOne = atoi(words[2]);
+				int byteTwo = -1;
+				if (wordNum == 4 && (byteOne == 222 || byteOne == 223))
+				{
+					byteTwo = atoi(words[3]);
+				}
+				trainUpdateFunction (trackCtrl, trainID, byteOne, byteTwo);
+			}
 			/* Current monitor */
 			else if (words[0][0] == 'a' && words[0][1] == 0 && wordNum == 2)
 			{
@@ -350,10 +362,6 @@ int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int funct
 		{
 			byteOne = ((train -> functions >> 9) & 0x0F) + 160;
 		}
-		else if (function < 13)
-		{
-			byteOne = ((train -> functions >> 9) & 0x0F) + 160;
-		}
 		else if (function < 21)
 		{
 			byteOne = 222;
@@ -382,6 +390,57 @@ int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int funct
 		}
 	}
 	return retn;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  T R A I N  U P D A T E  F U N C T I O N                                                                           *
+ *  =======================================                                                                           *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Update the fuctions register from remote update.
+ *  \param trackCtrl Track configuration.
+ *  \param trainID Which train cab number.
+ *  \param byteOne First set of values.
+ *  \param byteTwo Second set of values (optional).
+ *  \result None.
+ */
+void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int byteOne, int byteTwo)
+{
+	int t;
+	for (t = 0; t < trackCtrl -> trainCount; ++t)
+	{
+		if (trackCtrl -> trainCtrl[t].trainID == trainID)
+		{
+			if ((byteOne & 0xE0) == 128)
+			{
+				trackCtrl -> trainCtrl[t].functions &= 0xFFFFFFE0;
+				trackCtrl -> trainCtrl[t].functions |= (byteOne & 0x1F);
+			}
+			else if ((byteOne & 0xE0) == 176)
+			{
+				trackCtrl -> trainCtrl[t].functions &= 0xFFFFFE1F;
+				trackCtrl -> trainCtrl[t].functions |= ((byteOne & 0x0F) << 5);
+			}
+			else if ((byteOne & 0xE0) == 160)
+			{
+				trackCtrl -> trainCtrl[t].functions &= 0xFFFFE1FF;
+				trackCtrl -> trainCtrl[t].functions |= ((byteOne & 0x0F) << 9);
+			}
+			else if (byteOne == 222)
+			{
+				trackCtrl -> trainCtrl[t].functions &= 0xFFE01FFF;
+				trackCtrl -> trainCtrl[t].functions |= ((byteTwo & 0xFF) << 13);
+			}
+			else if (byteOne == 223)
+			{
+				trackCtrl -> trainCtrl[t].functions &= 0xE01FFFFF;
+				trackCtrl -> trainCtrl[t].functions |= ((byteTwo & 0xFF) << 21);
+			}
+			break;
+		}
+	}
 }
 
 /**********************************************************************************************************************

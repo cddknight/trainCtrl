@@ -137,5 +137,6 @@ int startConnectThread (trackCtrlDef *trackCtrl);
 int trainConnectSend (trackCtrlDef *trackCtrl, char *buffer, int len);
 int trainSetSpeed (trackCtrlDef *trackCtrl, trainCtrlDef *train, int speed);
 int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int function);
+void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int byteOne, int byteTwo);
 void stopConnectThread (trackCtrlDef *trackCtrl);
 
