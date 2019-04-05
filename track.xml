@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<track name="The Office Line" server="tinyfivew" port="30330" config="30331" device="/dev/ttyACM0">
+<track name="The Office Line" server="tinyfivew.theknight.home" port="30330" config="30331" device="/dev/ttyACM0">
   <trains count="6">
     <train num="4560" id="320" desc="Black GWR Class 5101 (2-6-2)"/>
     <train num="4569" id="340" desc="Green GWR Class 5101 (2-6-2)"/>
