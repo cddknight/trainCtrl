@@ -1331,12 +1331,22 @@ static void activate (GtkApplication *app, gpointer userData)
 	{
 		if (startConnectThread (trackCtrl))
 		{
+			int screenWidth = trackCtrl -> trainCount * 100;
+			if (screenWidth < 300)
+			{
+				screenWidth = 300;
+			}
+			if (screenWidth > 1900)
+			{
+				screenWidth = 1900;
+			}
+
 			sprintf (tempBuff, "Track Control - %s", trackCtrl -> trackName);
 			trackCtrl -> windowCtrl = gtk_application_window_new (app);
 			g_signal_connect (trackCtrl -> windowCtrl, "destroy", G_CALLBACK (windowDestroy), trackCtrl);
 			gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowCtrl), tempBuff);
 			gtk_window_set_icon_name (GTK_WINDOW (trackCtrl -> windowCtrl), "preferences-desktop");
-			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), 600, 600);
+			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), screenWidth, 600);
 
 			vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
 			gtk_container_add (GTK_CONTAINER (trackCtrl -> windowCtrl), vbox);
