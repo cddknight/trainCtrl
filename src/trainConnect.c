@@ -418,12 +418,12 @@ void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int byteOne, int
 				trackCtrl -> trainCtrl[t].functions &= 0xFFFFFFE0;
 				trackCtrl -> trainCtrl[t].functions |= (byteOne & 0x1F);
 			}
-			else if ((byteOne & 0xE0) == 176)
+			else if ((byteOne & 0xF0) == 176)
 			{
 				trackCtrl -> trainCtrl[t].functions &= 0xFFFFFE1F;
 				trackCtrl -> trainCtrl[t].functions |= ((byteOne & 0x0F) << 5);
 			}
-			else if ((byteOne & 0xE0) == 160)
+			else if ((byteOne & 0xF0) == 160)
 			{
 				trackCtrl -> trainCtrl[t].functions &= 0xFFFFE1FF;
 				trackCtrl -> trainCtrl[t].functions |= ((byteOne & 0x0F) << 9);
