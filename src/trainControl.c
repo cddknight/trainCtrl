@@ -200,6 +200,18 @@ static void sendFunction (GtkWidget *widget, gpointer data)
 	gtk_label_set_label (GTK_LABEL (trackCtrl -> funcLabel), tempBuff);
 }
 
+static void sendButtonFunc (GtkWidget *widget, gpointer data)
+{
+	char tempBuff[81];
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
+	long index = (long)g_object_get_data (G_OBJECT(widget), "index");
+
+	trainToggleFunction (trackCtrl, train, train -> trainFunc[index].funcID);
+	sprintf (tempBuff, "[%08X]", train -> functions);
+	gtk_label_set_label (GTK_LABEL (trackCtrl -> funcLabel), tempBuff);
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  C L O S E  F U N C T I O N S                                                                                      *
@@ -242,6 +254,7 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 	}
 	if (trackCtrl -> windowFunctions == NULL)
 	{
+		long i;
 		int row = 0;
 		char tempBuff[81];
 		GtkAdjustment *adjust;
@@ -269,6 +282,18 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 		gtk_widget_set_halign (label, GTK_ALIGN_START);
 		gtk_grid_attach (GTK_GRID(grid), label, 1, row++, 1, 1);
 
+printf ("Count: %d\n", train -> funcCount);
+		for (i = 0; i < train -> funcCount; ++i)
+		{
+printf ("Description: %s\n", train -> trainFunc[i].funcDesc);
+			button = gtk_button_new_with_label (train -> trainFunc[i].funcDesc);
+			g_object_set_data (G_OBJECT(button), "train", train);
+			g_object_set_data (G_OBJECT(button), "index", (void *)i);
+			g_signal_connect (button, "clicked", G_CALLBACK (sendButtonFunc), trackCtrl);
+			gtk_widget_set_halign (button, GTK_ALIGN_FILL);
+			gtk_grid_attach (GTK_GRID(grid), button, 0, row++, 2, 1);
+		}
+
 		label = gtk_label_new ("Current: ");
 		gtk_widget_set_halign (label, GTK_ALIGN_END);
 		gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
@@ -289,7 +314,7 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 		g_object_set_data (G_OBJECT(button), "train", train);
 		g_signal_connect (button, "clicked", G_CALLBACK (sendFunction), trackCtrl);
 		gtk_widget_set_halign (button, GTK_ALIGN_FILL);
-		gtk_grid_attach (GTK_GRID(grid), button, 1, row, 1, 1);
+		gtk_grid_attach (GTK_GRID(grid), button, 0, row, 2, 1);
 
 		gtk_widget_show_all (trackCtrl -> windowFunctions);
 	}
