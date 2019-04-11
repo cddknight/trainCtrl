@@ -62,6 +62,7 @@ typedef struct _trainCtrl
 	int reverse;
 	int functions;
 	int funcCount;
+	int funcCustom;
 	char trainDesc[41];
 
 	struct timeval lastChange;

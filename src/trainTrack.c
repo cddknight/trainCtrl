@@ -96,7 +96,6 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 						{
 							train -> trainFunc[loop].funcID = id;
 							strncpy (train -> trainFunc[loop].funcDesc, descStr, 40);
-printf ("Added Function[%d]: Desc: %s, ID: %d\n", loop, train -> trainFunc[loop].funcDesc, train -> trainFunc[loop].funcID);
 							++loop;
 						}
 					}
@@ -129,12 +128,22 @@ void processFunctions (trackCtrlDef *trackCtrl, xmlNode *inNode, trainCtrlDef *t
 		{
 			if (strcmp ((char *)curNode->name, "functions") == 0)
 			{
-				int count = -1;
-				xmlChar *countStr;
+				int count = -1, custom = 0;;
+				xmlChar *countStr, *customStr;
 				if ((countStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
 				{
 					sscanf ((char *)countStr, "%d", &count);
 					xmlFree(countStr);
+
+					if ((customStr = xmlGetProp(curNode, (const xmlChar*)"custom")) != NULL)
+					{
+						sscanf ((char *)customStr, "%d", &custom);
+						xmlFree(customStr);
+					}
+					if (custom != 0)
+					{
+						train -> funcCustom = 1;
+					}
 					if (count > 0)
 					{
 						if ((train -> trainFunc = (trainFuncDef *)malloc (count * sizeof (trainFuncDef))) == NULL)
