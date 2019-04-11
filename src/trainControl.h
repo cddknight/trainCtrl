@@ -46,6 +46,13 @@ typedef struct _trackLayout
 }
 trackLayoutDef;
 
+typedef struct _trainFunc
+{
+	int funcID;
+	char funcDesc[41];
+}
+trainFuncDef;
+
 typedef struct _trainCtrl
 {
 	int trainReg;
@@ -54,11 +61,13 @@ typedef struct _trainCtrl
 	int curSpeed;
 	int reverse;
 	int functions;
+	int funcCount;
 	char trainDesc[41];
 
 	struct timeval lastChange;
 	int remoteCurSpeed;
 	int remoteReverse;
+	trainFuncDef *trainFunc;
 
 #ifdef __GTK_H__
 	GtkWidget *buttonNum;

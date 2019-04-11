@@ -59,6 +59,99 @@ static const char *memoryXML =
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  P R O C E S S  F U N C T I O N                                                                                    *
+ *  ==============================                                                                                    *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Read in details of the functions.
+ *  \param trackCtrl Pointer to the track config.
+ *  \param inNode Current node.
+ *  \param count Number of functions to read.
+ *  \param train Pointer to the train.
+ *  \result None.
+ */
+void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, trainCtrlDef *train)
+{
+	int loop = 0;
+	xmlNode *curNode = NULL;
+
+	for (curNode = inNode; curNode; curNode = curNode->next)
+	{
+		if (curNode->type == XML_ELEMENT_NODE)
+		{
+			if (strcmp ((char *)curNode->name, "function") == 0)
+			{
+				xmlChar *idStr, *descStr;
+
+				if ((idStr = xmlGetProp(curNode, (const xmlChar*)"id")) != NULL)
+				{
+					if ((descStr = xmlGetProp(curNode, (const xmlChar*)"desc")) != NULL)
+					{
+						int id = -1;
+
+						sscanf ((char *)idStr, "%d", &id);
+
+						if (id != -1)
+						{
+							train -> trainFunc[loop].funcID = id;
+							strncpy (train -> trainFunc[loop].funcDesc, descStr, 40);
+printf ("Added Function[%d]: Desc: %s, ID: %d\n", loop, train -> trainFunc[loop].funcDesc, train -> trainFunc[loop].funcID);
+							++loop;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P R O C E S S  F U N C T I O N S                                                                                  *
+ *  ================================                                                                                  *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief See if a train has functions and alloc space if it does.
+ *  \param trackCtrl Pointer to the track config.
+ *  \param inNode Current node.
+ *  \param train Pointer to the train.
+ *  \result None.
+ */
+void processFunctions (trackCtrlDef *trackCtrl, xmlNode *inNode, trainCtrlDef *train)
+{
+	xmlNode *curNode = NULL;
+
+	for (curNode = inNode; curNode; curNode = curNode->next)
+	{
+		if (curNode->type == XML_ELEMENT_NODE)
+		{
+			if (strcmp ((char *)curNode->name, "functions") == 0)
+			{
+				int count = -1;
+				xmlChar *countStr;
+				if ((countStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
+				{
+					sscanf ((char *)countStr, "%d", &count);
+					xmlFree(countStr);
+					if (count > 0)
+					{
+						if ((train -> trainFunc = (trainFuncDef *)malloc (count * sizeof (trainFuncDef))) == NULL)
+						{
+							return;
+						}
+						train -> funcCount = count;
+						processFunction (trackCtrl, curNode -> children, count, train);
+					}
+				}
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  P R O C E S S  T R A I N S                                                                                        *
  *  ==========================                                                                                        *
  *                                                                                                                    *
@@ -106,6 +199,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 								trackCtrl -> trainCtrl[loop].trainID = id;
 								trackCtrl -> trainCtrl[loop].trainNum = num;
 								strncpy (trackCtrl -> trainCtrl[loop].trainDesc, (char *)descStr, 40);
+								processFunctions (trackCtrl, curNode -> children, &trackCtrl -> trainCtrl[loop]);
 								++loop;
 							}
 							xmlFree(descStr);
