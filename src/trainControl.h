@@ -112,7 +112,7 @@ typedef struct _trackCtrl
 	char remoteProgMsg[111];
 	int remotePowerState;
 	int remoteCurrent;
-	int serverStatus[6];
+	int serverStatus[7];
 
 	trainCtrlDef *trainCtrl;
 	pointCtrlDef *pointCtrl;
@@ -134,7 +134,7 @@ typedef struct _trackCtrl
 	GtkWidget *statusBar;				// 13
 	GtkWidget *funcSpinner;				// 14
 	GtkWidget *funcLabel;				// 15
-	GtkWidget *statusLabels[6];			// 21
+	GtkWidget *statusLabels[7];			// 21
 #else
 	void *xPointers[21];
 #endif

@@ -887,6 +887,7 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 		"Server:",
 		"Serial port:",
 		"Listen socket:",
+		"Listen point:",
 		"Configuration:",
 		"Point control:",
 		"Clients:",
@@ -916,7 +917,7 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
 		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 6);
 
-		for (i = 0; i < 6; ++i)
+		for (i = 0; i < 7; ++i)
 		{
 			label = gtk_label_new (statusLables[i]);
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
@@ -937,7 +938,7 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 				trackCtrl -> serverStatus[i - 1] = -1;
 			}
 		}
-		trackCtrl -> serverStatus[5] = 0;
+		trackCtrl -> serverStatus[6] = 0;
 
 		gtk_widget_show_all (trackCtrl -> dialogStatus);
 		do
@@ -1268,7 +1269,7 @@ gboolean clockTickCallback (gpointer data)
 	}
 	if (trackCtrl -> dialogStatus != NULL)
 	{
-		if (trackCtrl -> serverStatus[5] == 1)
+		if (trackCtrl -> serverStatus[6] == 1)
 		{
 			char tempBuff[81];
 
@@ -1280,11 +1281,13 @@ gboolean clockTickCallback (gpointer data)
 					trackCtrl -> serverStatus[1] > 0 ? "OK" : "Not listening");
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[3]), 
 					trackCtrl -> serverStatus[2] > 0 ? "OK" : "Not listening");
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[4]), 
+					trackCtrl -> serverStatus[4] > 0 ? "OK" : "Not listening");
 			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[3]);
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[4]), tempBuff);
 			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[4]);
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[5]), tempBuff);
-			trackCtrl -> serverStatus[5] = 0;
+			trackCtrl -> serverStatus[6] = 0;
 		}
 	}
 	return TRUE;

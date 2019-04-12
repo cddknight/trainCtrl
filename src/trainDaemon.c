@@ -708,7 +708,7 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 1)
 			{
 				char buffer[101];
-				int i, conCounts[5] = { 0, 0, 0, 0, 0 };
+				int i, conCounts[6] = { 0, 0, 0, 0, 0, 0 };
 
 				for (i = SERIAL_HANDLE; i < MAX_HANDLES; ++i)
 				{
@@ -720,8 +720,8 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 						}
 					}
 				}
-				sprintf (buffer, "<V %d %d %d %d %d %d>", handleInfo[handle].handle, 
-						conCounts[0], conCounts[1], conCounts[2], conCounts[3], conCounts[4]);
+				sprintf (buffer, "<V %d %d %d %d %d %d %d>", handleInfo[handle].handle, 
+						conCounts[0], conCounts[1], conCounts[2], conCounts[3], conCounts[4], conCounts[5]);
 				putLogMessage (LOG_INFO, "Status: %s", buffer);
 				SendSocket (handleInfo[handle].handle, buffer, strlen (buffer));
 				retn = 1;

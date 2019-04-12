@@ -166,17 +166,17 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				}
 			}
 			/* Our handle number on the server, unique to this client */
-			else if (words[0][0] == 'V' && words[0][1] == 0 && (wordNum == 2 || wordNum == 7))
+			else if (words[0][0] == 'V' && words[0][1] == 0 && (wordNum == 2 || wordNum == 8))
 			{
 				trackCtrl -> serverSession = atoi (words[1]);
-				if (wordNum == 7)
+				if (wordNum == 8)
 				{
 					int i;
-					for (i = 0; i < 5; ++i)
+					for (i = 0; i < 6; ++i)
 					{
 						trackCtrl -> serverStatus[i] = atoi (words[i + 2]);
 					}
-					trackCtrl -> serverStatus[5] = 1;
+					trackCtrl -> serverStatus[6] = 1;
 				}
 			}
 			/* Point change update */
