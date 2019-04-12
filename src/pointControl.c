@@ -146,7 +146,7 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 				int port = -1;
 				xmlChar *serverStr, *portStr, *countStr;
 
-				if ((portStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
+				if ((serverStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
 				{
 					strcpy (pointCtrl -> serverName, serverStr);
 					xmlFree (serverStr);

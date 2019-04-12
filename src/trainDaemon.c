@@ -742,6 +742,7 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 						}
 					}
 				}
+				retn = 1;
 			}
 			inType = 0;
 			wordNum = -1;
