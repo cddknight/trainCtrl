@@ -1282,11 +1282,11 @@ gboolean clockTickCallback (gpointer data)
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[3]), 
 					trackCtrl -> serverStatus[2] > 0 ? "OK" : "Not listening");
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[4]), 
-					trackCtrl -> serverStatus[4] > 0 ? "OK" : "Not listening");
-			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[3]);
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[4]), tempBuff);
+					trackCtrl -> serverStatus[3] > 0 ? "OK" : "Not listening");
 			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[4]);
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[5]), tempBuff);
+			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[5]);
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[6]), tempBuff);
 			trackCtrl -> serverStatus[6] = 0;
 		}
 	}
