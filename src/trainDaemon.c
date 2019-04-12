@@ -41,14 +41,16 @@
 #define MAX_HANDLES		25
 #define SERIAL_HANDLE	0
 #define LISTEN_HANDLE	1
-#define CONFIG_HANDLE	2
-#define FIRST_HANDLE	3
+#define POINTL_HANDLE	2
+#define CONFIG_HANDLE	3
+#define FIRST_HANDLE	4
 
 #define SERIAL_HTYPE	1
 #define LISTEN_HTYPE	2
-#define CONFIG_HTYPE	3
-#define POINTC_HTYPE	4
-#define CONTRL_HTYPE	5
+#define POINTL_HTYPE	3
+#define CONFIG_HTYPE	4
+#define POINTC_HTYPE	5
+#define CONTRL_HTYPE	6
 
 char *xmlBuffer;
 long xmlBufferSize;
@@ -724,6 +726,23 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 				SendSocket (handleInfo[handle].handle, buffer, strlen (buffer));
 				retn = 1;
 			}
+			else if (words[0][0] == 'P' && words[0][1] == 0 && wordNum == 2)
+			{
+				if (handleInfo[handle].handleType == POINTC_HTYPE)
+				{
+					int p;
+					for (p = 0; p < trackCtrl.pServerCount; ++p)
+					{
+						pointCtrlDef *point = &trackCtrl.pointCtrl[p];
+						if (point -> intHandle == handle)
+						{
+							point -> ident = atoi (words[1]);
+							setAllPointStates (point -> ident);
+							break;
+						}
+					}
+				}
+			}
 			inType = 0;
 			wordNum = -1;
 			j = 0;
@@ -882,69 +901,6 @@ void sendConfigFile (int newSocket)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  C H E C K  P O I N T  C O N N E C T                                                                               *
- *  ===================================                                                                               *
- *                                                                                                                    *
- **********************************************************************************************************************/
-/**
- *  \brief Check that the point servers are connected.
- *  \result None.
- */
-void checkPointConnect()
-{
-	int p, i;
-
-	for (p = 0; p < trackCtrl.pServerCount; ++p)
-	{
-		if (trackCtrl.pointCtrl != NULL)
-		{
-			pointCtrlDef *point = &trackCtrl.pointCtrl[p];
-			if (point -> intHandle == -1)
-			{
-				if (point -> retry > 0)
-				{
-					--point -> retry;
-				}
-				if (point -> retry == 0)
-				{
-					for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
-					{
-						if (handleInfo[i].handle == -1)
-						{
-							char addrBuffer[81];
-
-							if (!GetAddressFromName (point -> server, addrBuffer))
-							{
-								strcpy (addrBuffer, point -> server);
-							}
-							if ((handleInfo[i].handle = ConnectClientSocket (addrBuffer, point -> port)) != -1)
-							{
-								point -> intHandle = i;
-								handleInfo[i].handleType = POINTC_HTYPE;
-								strncpy (handleInfo[i].localName, addrBuffer, 40);
-								putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
-								setAllPointStates (point -> ident);
-								point -> retry = 0;
-							}
-							else
-							{
-								point -> retry = 30;
-							}
-							break;
-						}
-					}
-					if (i == MAX_HANDLES)
-					{
-						putLogMessage (LOG_ERR, "No free handles.");
-					}
-				}
-			}
-		}
-	}
-}
-
-/**********************************************************************************************************************
- *                                                                                                                    *
  *  S E N D  A L L  F U N C T I O N S                                                                                 *
  *  =================================                                                                                 *
  *                                                                                                                    *
@@ -1087,6 +1043,19 @@ int main (int argc, char *argv[])
 				putLogMessage (LOG_INFO, "Listening on port: %d", trackCtrl.configPort);
 			}
 		}
+		if (trackCtrl.pointPort > 0)
+		{
+			handleInfo[POINTL_HANDLE].handle = ServerSocketSetup (trackCtrl.pointPort);
+			if (handleInfo[POINTL_HANDLE].handle == -1)
+			{
+				putLogMessage (LOG_ERR, "Unable to listen on point port.");
+			}
+			else
+			{
+				handleInfo[POINTL_HANDLE].handleType = POINTL_HTYPE;
+				putLogMessage (LOG_INFO, "Listening on port: %d", trackCtrl.pointPort);
+			}
+		}
 		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (trackCtrl.serverPort);
 		if (handleInfo[LISTEN_HANDLE].handle == -1)
 		{
@@ -1162,6 +1131,40 @@ int main (int argc, char *argv[])
 					}
 				}
 			}
+			if (FD_ISSET(handleInfo[POINTL_HANDLE].handle, &readfds))
+			{
+				int newSocket = ServerSocketAccept (handleInfo[POINTL_HANDLE].handle, inAddress);
+				if (newSocket != -1)
+				{
+					int done = 0;
+					for (i = FIRST_HANDLE; i < MAX_HANDLES && !done; ++i)
+					{
+						if (handleInfo[i].handle == -1)
+						{
+							if (trackCtrl.pointCtrl != NULL)
+							{
+								int p;
+								for (p = 0; p < trackCtrl.pServerCount && !done; ++p)
+								{
+									if (trackCtrl.pointCtrl[p].intHandle == -1)
+									{
+										trackCtrl.pointCtrl[p].intHandle = i;
+										handleInfo[i].handle = newSocket;
+										handleInfo[i].handleType = POINTC_HTYPE;
+										strncpy (handleInfo[i].localName, inAddress, 40);
+										putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
+										done = 1;
+									}
+								}
+							}
+						}
+					}
+					if (!done)
+					{
+						CloseSocket (&newSocket);
+					}
+				}
+			}
 			if (FD_ISSET(handleInfo[CONFIG_HANDLE].handle, &readfds))
 			{
 				int newSocket = ServerSocketAccept (handleInfo[CONFIG_HANDLE].handle, inAddress);
@@ -1209,16 +1212,13 @@ int main (int argc, char *argv[])
 							}
 							else if (handleInfo[i].handleType == POINTC_HTYPE)
 							{
-								if (trackCtrl.pointCtrl != NULL)
+								for (p = 0; p < trackCtrl.pServerCount; ++p)
 								{
-									for (p = 0; p < trackCtrl.pServerCount; ++p)
+									pointCtrlDef *point = &trackCtrl.pointCtrl[p];
+									if (point -> intHandle == i)
 									{
-										pointCtrlDef *point = &trackCtrl.pointCtrl[p];
-										if (point -> intHandle == i)
-										{
-											point -> intHandle = -1;
-											break;
-										}
+										point -> intHandle = -1;
+										break;
 									}
 								}
 							}
@@ -1232,7 +1232,6 @@ int main (int argc, char *argv[])
 			sendSerial ("<c>", 3);
 			curRead = time (NULL) + 2;
 		}
-		checkPointConnect();
 	}
 	/**********************************************************************************************************************
 	 * Killed so tidy up.                                                                                                 *

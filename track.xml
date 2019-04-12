@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<track name="The Office Line" server="tinyfivew.theknight.home" port="30330" config="30331" device="/dev/ttyACM0">
+<track name="The Office Line" server="tinyfivew.theknight.home" port="30330" point="30331" config="30332" device="/dev/ttyACM0">
+  <pointServers count="2"/>
   <trains count="6">
     <train num="4560" id="320" desc="Black GWR Class 5101 (2-6-2)">
       <functions count="1" custom="0">
@@ -17,10 +18,6 @@
     <train num="47451" id="310" desc="Fowler Class 3F 'Jinty' (0-6-0)" />
     <train num="68035" id="300" desc="Austerity Saddle Tank J94 (0-6-0)" />
   </trains>
-  <pointServers count="2">
-    <pointServer server="tinyfivew" port="30332" ident="1"/>
-    <pointServer server="tinysixw" port="30333" ident="2"/>
-  </pointServers>
   <cells rows="13" cols="16" size="42" pCount="18">
     <cellRow row="0">
       <cell col="2" layout="4"/>

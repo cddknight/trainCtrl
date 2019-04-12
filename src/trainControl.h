@@ -100,6 +100,7 @@ typedef struct _trackCtrl
 	int serverHandle;
 	int serverSession;
 	int serverPort;
+	int pointPort;
 	int configPort;
 	int connectRunning;
 	int shownCurrent;

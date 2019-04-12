@@ -38,9 +38,6 @@
 //#include "trainControl.h"
 #include "pointControl.h"
 
-#define MAX_HANDLES		5
-#define LISTEN_HANDLE	0
-#define FIRST_HANDLE	1
 
 char xmlConfigFile[81]	=	"points.xml";
 char pidFileName[81]	=	"/var/run/pointDaemon.pid";
@@ -51,17 +48,8 @@ int	 goDaemon			=	0;
 int	 inDaemonise		=	0;
 int	 running			=	1;
 int	 serverIdent		=	1;
+int  serverHandle		=	-1;
 pointCtrlDef pointCtrl;
-
-typedef struct _handleInfo
-{
-	int handle;
-	char localName[81];
-	char remoteName[81];
-}
-HANDLEINFO;
-
-HANDLEINFO handleInfo[MAX_HANDLES];
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -282,8 +270,7 @@ int main (int argc, char *argv[])
 {
 	fd_set readfds;
 	struct timeval timeout;
-	char inAddress[21] = "";
-	int i, c, connectedCount = 0;
+	int i, c;
 
 	while ((c = getopt(argc, argv, "c:s:dLID")) != -1)
 	{
@@ -322,11 +309,6 @@ int main (int argc, char *argv[])
 	pointCtrl.server = serverIdent;
 	loadConfigFile ();
 
-	for (i = 0; i < MAX_HANDLES; ++i)
-	{
-		handleInfo[i].handle = -1;
-	}
-
 	/**********************************************************************************************************************
 	 * Daemonize if needed, all port will close.                                                                          *
 	 **********************************************************************************************************************/
@@ -338,95 +320,67 @@ int main (int argc, char *argv[])
 	/**********************************************************************************************************************
 	 * Setup the I2C servo control interface.                                                                             *
 	 **********************************************************************************************************************/
-	if (pointControlSetup (&pointCtrl))
-	{
-		/**********************************************************************************************************************
-		 * Setup listening network ports.                                                                                     *
-		 **********************************************************************************************************************/
-		handleInfo[LISTEN_HANDLE].handle = ServerSocketSetup (pointCtrl.serverPort);
-		if (handleInfo[LISTEN_HANDLE].handle == -1)
-		{
-			putLogMessage (LOG_ERR, "P:Unable to listen on network port.");
-		}
-		else
-		{
-			putLogMessage (LOG_INFO, "P:Listening on port: %d", pointCtrl.serverPort);
-		}
-	}
-	else
+	if (!pointControlSetup (&pointCtrl))
 	{
 		putLogMessage (LOG_ERR, "P:Unable to servo control interface.");
+		running = 0;
 	}
 
 	/**********************************************************************************************************************
 	 * Loop on select, getting and sending work.                                                                          *
 	 **********************************************************************************************************************/
-	while (handleInfo[LISTEN_HANDLE].handle != -1 && running)
+	while (running)
 	{
-		int selRetn;
-		timeout.tv_sec = 2;
-		timeout.tv_usec = 0;
-
-		FD_ZERO(&readfds);
-		for (i = 0; i < MAX_HANDLES; ++i)
+		if (serverHandle == -1)
 		{
-			if (handleInfo[i].handle != -1)
+			serverHandle = ConnectClientSocket (pointCtrl.serverName, pointCtrl.serverPort);
+			if (serverHandle != -1)
 			{
-				FD_SET (handleInfo[i].handle, &readfds);
+				char tempBuff[21];
+				sprintf (tempBuff, "<P %d>", pointCtrl.server);
+				SendSocket (serverHandle, tempBuff, strlen (tempBuff));
 			}
-		}
-		selRetn = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
-		if (selRetn == -1)
-		{
-			putLogMessage (LOG_ERR, "P:Select error: %s[%d]", strerror (errno), errno);
-			CloseSocket (&handleInfo[0].handle);
-		}
-		if (selRetn > 0)
-		{
-			if (FD_ISSET(handleInfo[LISTEN_HANDLE].handle, &readfds))
+			else
 			{
-				int newSocket = ServerSocketAccept (handleInfo[LISTEN_HANDLE].handle, inAddress);
-				if (newSocket != -1)
+				int loop = 10;
+				while (running && --loop)
 				{
-					for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
-					{
-						if (handleInfo[i].handle == -1)
-						{
-							handleInfo[i].handle = newSocket;
-							strncpy (handleInfo[i].localName, inAddress, 40);
-							putLogMessage (LOG_INFO, "P:Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
-							++connectedCount;
-							break;
-						}
-					}
-					if (i == MAX_HANDLES)
-					{
-						putLogMessage (LOG_ERR, "P:No free handles.");
-						CloseSocket (&newSocket);
-					}
+					sleep (1);
 				}
 			}
-			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
-			{
-				if (handleInfo[i].handle != -1)
-				{
-					if (FD_ISSET(handleInfo[i].handle, &readfds))
-					{
-						int readBytes;
-						char buffer[10241];
+		}
+		if (serverHandle != -1 && running)
+		{
+			int selRetn;
+			timeout.tv_sec = 2;
+			timeout.tv_usec = 0;
 
-						if ((readBytes = RecvSocket (handleInfo[i].handle, buffer, 10240)) > 0)
-						{
-							buffer[readBytes] = 0;
-							putLogMessage (LOG_INFO, "P:Socket rxed: %s(%d)", buffer, handleInfo[i].handle);
-							checkRecvBuffer (&pointCtrl, handleInfo[i].handle, buffer, readBytes);
-						}
-						else if (readBytes == 0)
-						{
-							putLogMessage (LOG_INFO, "P:Socket closed: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
-							CloseSocket (&handleInfo[i].handle);
-							--connectedCount;
-						}
+			FD_ZERO(&readfds);
+			FD_SET (serverHandle, &readfds);
+			selRetn = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
+			if (selRetn == -1)
+			{
+				putLogMessage (LOG_ERR, "P:Select error: %s[%d]", strerror (errno), errno);
+				CloseSocket (&serverHandle);
+				running = 0;
+			}
+			if (selRetn > 0)
+			{
+				if (FD_ISSET(serverHandle, &readfds))
+				{
+					int readBytes;
+					char buffer[10241];
+
+					if ((readBytes = RecvSocket (serverHandle, buffer, 10240)) > 0)
+					{
+						buffer[readBytes] = 0;
+						putLogMessage (LOG_INFO, "P:Socket rxed: %s(%d)", buffer, serverHandle);
+						checkRecvBuffer (&pointCtrl, serverHandle, buffer, readBytes);
+					}
+					else if (readBytes == 0)
+					{
+						putLogMessage (LOG_INFO, "P:Socket closed: (%d)", serverHandle);
+						CloseSocket (&serverHandle);
 					}
 				}
 			}

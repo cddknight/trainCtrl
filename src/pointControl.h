@@ -36,6 +36,7 @@ typedef struct _pointCtrl
 	int server;
 	int serverPort;
 	int pointCount;
+	char serverName[81];
 	pointStateDef *pointStates;
 }
 pointCtrlDef;

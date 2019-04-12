@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<points>
-  <server ident="1" port="30332" count="11">
+<pointControl server="littleone.theknight.home" port="30331">
+  <pointDaemon ident="1" count="11">
     <point ident="1" channel="0" default="290" turnout="320"/>
     <point ident="2" channel="1" default="290" turnout="320"/>
     <point ident="3" channel="2" default="290" turnout="320"/>
@@ -12,8 +12,8 @@
     <point ident="9" channel="8" default="290" turnout="320"/>
     <point ident="10" channel="9" default="290" turnout="320"/>
     <point ident="11" channel="10" default="290" turnout="320"/>
-  </server>
-  <server ident="2" port="30333" count="11">
+  </pointDaemon>
+  <pointDaemon ident="2" count="11">
     <point ident="12" channel="0" default="285" turnout="250"/>
     <point ident="13" channel="1" default="290" turnout="320"/>
     <point ident="14" channel="2" default="290" turnout="320"/>
@@ -25,6 +25,6 @@
     <point ident="20" channel="8" default="290" turnout="320"/>
     <point ident="21" channel="9" default="290" turnout="320"/>
     <point ident="22" channel="10" default="290" turnout="320"/>
-  </server>
-</points>
+  </pointDaemon>
+</pointControl>
 
