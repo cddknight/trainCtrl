@@ -280,15 +280,65 @@ void stopAllTrains ()
 	int t;
 	char tempBuff[81];
 
-	for (t = 0; t < trackCtrl.trainCount; ++t)
+	if (trackCtrl.trainCtrl != NULL)
 	{
-		if (trackCtrl.trainCtrl != NULL)
+		for (t = 0; t < trackCtrl.trainCount; ++t)
 		{
 			trainCtrlDef *train = &trackCtrl.trainCtrl[t];
 			sprintf (tempBuff, "<t %d %d %d %d>", train -> trainReg, train -> trainID, -1, 0);
 			sendSerial (tempBuff, strlen (tempBuff));
 		}
 		usleep (100000);
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  T R A I N  U P D  F U N C T I O N                                                                                 *
+ *  =================================                                                                                 *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Update the function value.
+ *  \param trainID Train to update.
+ *  \param byteOne First byte.
+ *  \param byteTwo Second byte (dependant on first).
+ *  \result None.
+ */
+void trainUpdFunction (int trainID, int byteOne, int byteTwo)
+{
+	int t;
+	for (t = 0; t < trackCtrl.trainCount; ++t)
+	{
+		if (trackCtrl.trainCtrl[t].trainID == trainID)
+		{
+			if ((byteOne & 0xE0) == 128)
+			{
+				trackCtrl.trainCtrl[t].functions &= 0xFFFFFFE0;
+				trackCtrl.trainCtrl[t].functions |= (byteOne & 0x1F);
+			}
+			else if ((byteOne & 0xF0) == 176)
+			{
+				trackCtrl.trainCtrl[t].functions &= 0xFFFFFE1F;
+				trackCtrl.trainCtrl[t].functions |= ((byteOne & 0x0F) << 5);
+			}
+			else if ((byteOne & 0xF0) == 160)
+			{
+				trackCtrl.trainCtrl[t].functions &= 0xFFFFE1FF;
+				trackCtrl.trainCtrl[t].functions |= ((byteOne & 0x0F) << 9);
+			}
+			else if (byteOne == 222)
+			{
+				trackCtrl.trainCtrl[t].functions &= 0xFFE01FFF;
+				trackCtrl.trainCtrl[t].functions |= ((byteTwo & 0xFF) << 13);
+			}
+			else if (byteOne == 223)
+			{
+				trackCtrl.trainCtrl[t].functions &= 0xE01FFFFF;
+				trackCtrl.trainCtrl[t].functions |= ((byteTwo & 0xFF) << 21);
+			}
+			break;
+		}
 	}
 }
 
@@ -630,10 +680,19 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 				}
 				retn = 1;
 			}
-			/* Tell everyone about a function change */
+			/* Record and tell everyone about a function change */
 			else if (words[0][0] == 'f' && words[0][1] == 0 && (wordNum == 3 || wordNum == 4))
 			{
 				int i;
+				int trainID = atoi (words[1]);
+				int byteOne = atoi (words[2]);
+				int byteTwo = 0;
+
+				if (wordNum == 4)
+				{
+					byteTwo = atoi (words[3]);
+				}
+				trainUpdFunction (trainID, byteOne, byteTwo);
 				for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
 				{
 					if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
@@ -886,6 +945,32 @@ void checkPointConnect()
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  S E N D  A L L  F U N C T I O N S                                                                                 *
+ *  =================================                                                                                 *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Send out the state of the functions.
+ *  \param handle Where to send it, connecting client.
+ *  \result None.
+ */
+void sendAllFunctions (int handle)
+{
+	int t;
+	char tempBuff[81];
+	if (trackCtrl.trainCtrl != NULL)
+	{
+		for (t = 0; t < trackCtrl.trainCount; ++t)
+		{
+			trainCtrlDef *train = &trackCtrl.trainCtrl[t];
+			sprintf (tempBuff, "<F %d %d>", train -> trainID, train -> functions);
+			SendSocket (handle, tempBuff, strlen (tempBuff));
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  H E L P  T H E M                                                                                                  *
  *  ================                                                                                                  *
  *                                                                                                                    *
@@ -1065,6 +1150,7 @@ int main (int argc, char *argv[])
 							SendSocket (handleInfo[i].handle, outBuffer, strlen (outBuffer));
 							sendSerial ("<s>", 3);
 							getAllPointStates ();
+							sendAllFunctions (handleInfo[i].handle);
 							++connectedCount;
 							break;
 						}

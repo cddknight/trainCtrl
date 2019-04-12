@@ -143,6 +143,20 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				}
 				trainUpdateFunction (trackCtrl, trainID, byteOne, byteTwo);
 			}
+			/* Initial function update */
+			else if (words[0][0] == 'F' && words[0][1] == 0 && wordNum == 3)
+			{
+				int t;
+				int trainID = atoi(words[1]);
+				for (t = 0; t < trackCtrl -> trainCount; ++t)
+				{
+					if (trackCtrl -> trainCtrl[t].trainID == trainID)
+					{
+						trackCtrl -> trainCtrl[t].functions = atoi(words[2]);
+						break;
+					}
+				}
+			}
 			/* Current monitor */
 			else if (words[0][0] == 'a' && words[0][1] == 0 && wordNum == 2)
 			{

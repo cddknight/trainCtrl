@@ -2,12 +2,16 @@
 <track name="The Office Line" server="tinyfivew.theknight.home" port="30330" config="30331" device="/dev/ttyACM0">
   <trains count="6">
     <train num="4560" id="320" desc="Black GWR Class 5101 (2-6-2)">
-      <functions count="2" custom="1">
-		<function desc="Front Light" id="1"/>
-		<function desc="Rear Light" id="2"/>
+      <functions count="1" custom="0">
+		<function desc="Front/Rear Lights" id="0"/>
       </functions>
 	</train>
-    <train num="4569" id="340" desc="Green GWR Class 5101 (2-6-2)" />
+    <train num="4569" id="340" desc="Green GWR Class 5101 (2-6-2)">
+      <functions count="2" custom="0">
+		<function desc="Front/Rear Lights" id="0"/>
+		<function desc="Fire Glow" id="1"/>
+      </functions>
+	</train>
     <train num="4666" id="330" desc="GWR Class 5700 Pannier (0-6-0)" />
     <train num="5601" id="350" desc="Green GWR Class 5600 (0-6-2)" />
     <train num="47451" id="310" desc="Fowler Class 3F 'Jinty' (0-6-0)" />
