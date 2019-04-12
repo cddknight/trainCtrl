@@ -333,6 +333,7 @@ int main (int argc, char *argv[])
 	{
 		if (serverHandle == -1)
 		{
+			putLogMessage (LOG_INFO, "P:Connect to: %s:%d", pointCtrl.serverName, pointCtrl.serverPort);
 			serverHandle = ConnectClientSocket (pointCtrl.serverName, pointCtrl.serverPort);
 			if (serverHandle != -1)
 			{

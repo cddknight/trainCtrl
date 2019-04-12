@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<pointControl server="littleone.theknight.home" port="30331">
+<pointControl server="192.168.30.136" port="30331">
   <pointDaemon ident="1" count="11">
     <point ident="1" channel="0" default="290" turnout="320"/>
     <point ident="2" channel="1" default="290" turnout="320"/>
