@@ -38,7 +38,6 @@
 //#include "trainControl.h"
 #include "pointControl.h"
 
-
 char xmlConfigFile[81]	=	"points.xml";
 char pidFileName[81]	=	"/var/run/pointDaemon.pid";
 int	 logOutput			=	0;
@@ -48,7 +47,7 @@ int	 goDaemon			=	0;
 int	 inDaemonise		=	0;
 int	 running			=	1;
 int	 serverIdent		=	1;
-int  serverHandle		=	-1;
+int	 serverHandle		=	-1;
 pointCtrlDef pointCtrl;
 
 /**********************************************************************************************************************

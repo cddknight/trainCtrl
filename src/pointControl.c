@@ -49,7 +49,7 @@
 #define MAX_PWM 4096
 #define HERTZ 50
 
-int servoFD = -1; 
+int servoFD = -1;
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -183,7 +183,6 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 	}
 }
 
-
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  P A R S E  M E M O R Y  X M L                                                                                     *
@@ -249,15 +248,15 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 			if (pointCtrl -> pointStates[i].ident == point)
 			{
 				char tempBuff[81];
-				
+
 #ifdef HAVE_WIRINGPI_H
-				putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",  
-						PIN_BASE + pointCtrl -> pointStates[i].channel, state ? 
-						pointCtrl -> pointStates[i].turnoutPos : 
+				putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
+						PIN_BASE + pointCtrl -> pointStates[i].channel, state ?
+						pointCtrl -> pointStates[i].turnoutPos :
 						pointCtrl -> pointStates[i].defaultPos);
 
-				pwmWrite(PIN_BASE + pointCtrl -> pointStates[i].channel, state ? 
-						pointCtrl -> pointStates[i].turnoutPos : 
+				pwmWrite(PIN_BASE + pointCtrl -> pointStates[i].channel, state ?
+						pointCtrl -> pointStates[i].turnoutPos :
 						pointCtrl -> pointStates[i].defaultPos);
 				delay(150);
 #endif
@@ -289,8 +288,8 @@ void updateAllPoints (pointCtrlDef *pointCtrl, int handle)
 
 	for (i = 0; i < pointCtrl -> pointCount; ++i)
 	{
-		sprintf (tempBuff, "<y %d %d %d>", pointCtrl -> server, 
-				pointCtrl -> pointStates[i].ident, 
+		sprintf (tempBuff, "<y %d %d %d>", pointCtrl -> server,
+				pointCtrl -> pointStates[i].ident,
 				pointCtrl -> pointStates[i].state);
 		SendSocket (handle, tempBuff, strlen (tempBuff));
 	}

@@ -83,7 +83,7 @@ int main (int argc, char *argv[])
 			cv17 = (trainID >> 8) + 0xC0;
 			cv18 = trainID & 0xFF;
 			cv29 |= 32;
-			
+
 			printf ("CV 17: %3d (0x%02X)\nCV 18: %3d (0x%02X)\nCV 29: %3d (0x%02X)\n",
 					cv17, cv17, cv18, cv18, cv29, cv29);
 		}

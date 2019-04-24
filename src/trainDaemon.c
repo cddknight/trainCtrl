@@ -406,7 +406,7 @@ void setAllPointStates (int pSvrIdent)
 			{
 				char tempBuff[80];
 				int i, cells = trackCtrl.trackLayout -> trackRows * trackCtrl.trackLayout -> trackCols;
-	
+
 				for (i = 0; i < cells; ++i)
 				{
 					trackCellDef *cell = &trackCtrl.trackLayout -> trackCells[i];
@@ -414,7 +414,7 @@ void setAllPointStates (int pSvrIdent)
 					{
 						if (cell -> server == pSvrIdent)
 						{
-							sprintf (tempBuff, "<Y %d %d %d>", pSvrIdent, cell -> ident, 
+							sprintf (tempBuff, "<Y %d %d %d>", pSvrIdent, cell -> ident,
 									cell -> pointState == cell -> pointDefault ? 0 : 1);
 							SendSocket (handleInfo[pointSever -> intHandle].handle, tempBuff, strlen (tempBuff));
 						}
@@ -493,7 +493,7 @@ void sendPointServer (int pSvrIdent, int ident, int direc)
 					{
 						char tempBuff[81];
 						sprintf (tempBuff, "<Y %d %d %d>", pSvrIdent, ident, direc);
-						SendSocket (handleInfo[pointCtrl -> intHandle].handle, 
+						SendSocket (handleInfo[pointCtrl -> intHandle].handle,
 								tempBuff, strlen (tempBuff));
 						savePointState (pSvrIdent, ident, direc);
 					}
@@ -720,7 +720,7 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 						}
 					}
 				}
-				sprintf (buffer, "<V %d %d %d %d %d %d %d>", handleInfo[handle].handle, 
+				sprintf (buffer, "<V %d %d %d %d %d %d %d>", handleInfo[handle].handle,
 						conCounts[0], conCounts[1], conCounts[2], conCounts[3], conCounts[4], conCounts[5]);
 				putLogMessage (LOG_INFO, "Status: %s", buffer);
 				SendSocket (handleInfo[handle].handle, buffer, strlen (buffer));

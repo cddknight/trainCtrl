@@ -85,7 +85,7 @@ long diffTime (struct timeval *start, struct timeval *end)
 	inStart -> tv_usec /= 1000;
 	inEnd -> tv_usec /= 1000;
 
-	if (inStart -> tv_sec > inEnd -> tv_sec || 
+	if (inStart -> tv_sec > inEnd -> tv_sec ||
 			(inStart -> tv_sec == inEnd -> tv_sec && inStart -> tv_usec > inEnd -> tv_usec))
 	{
 		inStart = &inEndStore;
@@ -96,7 +96,7 @@ long diffTime (struct timeval *start, struct timeval *end)
 		inEnd -> tv_usec += 1000;
 		inEnd -> tv_sec -= 1;
 	}
-	return (inEnd -> tv_usec - inStart -> tv_usec) + 
+	return (inEnd -> tv_usec - inStart -> tv_usec) +
 			((inEnd -> tv_sec - inStart -> tv_sec) * 1000);
 }
 
@@ -113,8 +113,8 @@ long diffTime (struct timeval *start, struct timeval *end)
  */
 long diffTimeToNow (struct timeval *start)
 {
-    struct timeval now;
-    gettimeofday(&now, NULL);
+	struct timeval now;
+	gettimeofday(&now, NULL);
 	return diffTime (start, &now);
 }
 
@@ -484,7 +484,7 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 		int newValue = (int)value;
 		if (trainSetSpeed (trackCtrl, train, newValue))
 		{
-		    gettimeofday(&train -> lastChange, NULL);
+			gettimeofday(&train -> lastChange, NULL);
 			train -> curSpeed = train -> remoteCurSpeed = newValue;
 		}
 		else
@@ -710,7 +710,7 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 					unsigned short newState = cell -> point;
 
 					newState &= ~(cell -> pointState);
-					sprintf (tempBuff, "<Y %d %d %d>", cell -> server, cell -> ident, 
+					sprintf (tempBuff, "<Y %d %d %d>", cell -> server, cell -> ident,
 							cell -> pointDefault == newState ? 0 : 1);
 					if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
 					{
@@ -740,7 +740,7 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 												/* We are breaking the link, so set other point away from link */
 												newLinkState = newCell -> point & ~newCell -> link;
 											}
-											sprintf (tempBuff, "<Y %d %d %d>", newCell -> server, newCell -> ident, 
+											sprintf (tempBuff, "<Y %d %d %d>", newCell -> server, newCell -> ident,
 													newCell -> pointDefault == newLinkState ? 0 : 1);
 											trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff));
 										}
@@ -819,7 +819,6 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 	}
 }
 
-
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  U P D A T E  P O I N T  P O S N                                                                                   *
@@ -837,7 +836,7 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
 {
 	int i, cells = trackCtrl -> trackLayout -> trackRows * trackCtrl -> trackLayout -> trackCols;
-	
+
 	for (i = 0; i < cells; ++i)
 	{
 		trackCellDef *cell = &trackCtrl -> trackLayout -> trackCells[i];
@@ -925,7 +924,7 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 
 			if (i == 0)
 			{
-				trackCtrl -> statusLabels[i] = gtk_label_new (trackCtrl -> serverHandle == -1 
+				trackCtrl -> statusLabels[i] = gtk_label_new (trackCtrl -> serverHandle == -1
 						? "Not connected" : "Connected");
 				gtk_widget_set_halign (trackCtrl -> statusLabels[i], GTK_ALIGN_START);
 				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> statusLabels[i], 1, i, 1, 1);
@@ -946,11 +945,11 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 			int sendRes = trainConnectSend (trackCtrl, "<V>", 3);
 
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[0]),
-					sendRes == 3 ?  "Connected" :  "Not connected");
+					sendRes == 3 ?	"Connected" :  "Not connected");
 
 			for (i = 1; i < 6; ++i)
 			{
-				gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[i]), 
+				gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[i]),
 						 sendRes == 3 ? "Pending" : "Unknown");
 			}
 		}
@@ -1273,15 +1272,15 @@ gboolean clockTickCallback (gpointer data)
 		{
 			char tempBuff[81];
 
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[0]), 
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[0]),
 					trackCtrl -> serverHandle == -1 ? "Not connected" : "Connected");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[1]), 
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[1]),
 					trackCtrl -> serverStatus[0] > 0 ? "OK" : "Not connected");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[2]), 
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[2]),
 					trackCtrl -> serverStatus[1] > 0 ? "OK" : "Not listening");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[3]), 
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[3]),
 					trackCtrl -> serverStatus[2] > 0 ? "OK" : "Not listening");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[4]), 
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[4]),
 					trackCtrl -> serverStatus[3] > 0 ? "OK" : "Not listening");
 			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[4]);
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[5]), tempBuff);
@@ -1461,7 +1460,7 @@ static void activate (GtkApplication *app, gpointer userData)
 				}
 				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].scaleSpeed, GTK_ALIGN_CENTER);
 				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].scaleSpeed, i, 2, 1, 1);
-			    gettimeofday(&trackCtrl -> trainCtrl[i].lastChange, NULL);
+				gettimeofday(&trackCtrl -> trainCtrl[i].lastChange, NULL);
 
 				trackCtrl -> trainCtrl[i].checkDir = gtk_check_button_new_with_label ("Reverse");
 				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].checkDir), "train", &trackCtrl -> trainCtrl[i]);
