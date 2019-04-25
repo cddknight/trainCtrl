@@ -41,14 +41,12 @@
 
 #define PIN_ALL 16
 
-
 // Declare
 static void myPwmWrite(struct wiringPiNodeStruct *node, int pin, int value);
 static void myOnOffWrite(struct wiringPiNodeStruct *node, int pin, int value);
 static int myOffRead(struct wiringPiNodeStruct *node, int pin);
 static int myOnRead(struct wiringPiNodeStruct *node, int pin);
 int baseReg(int pin);
-
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -82,11 +80,10 @@ int pca9685Setup(const int pinBase, const int i2cAddress, float freq)
 	int autoInc = settings | 0x20;
 
 	wiringPiI2CWriteReg8(fd, PCA9685_MODE1, autoInc);
-	
+
 	// Set frequency of PWM signals. Also ends sleep mode and starts PWM output.
 	if (freq > 0)
 		pca9685PWMFreq(fd, freq);
-	
 
 	node->fd			= fd;
 	node->pwmWrite		= myPwmWrite;
@@ -122,7 +119,7 @@ void pca9685PWMFreq(int fd, float freq)
 	// Get settings and calc bytes for the different states.
 	int settings = wiringPiI2CReadReg8(fd, PCA9685_MODE1) & 0x7F;	// Set restart bit to 0
 	int sleep	= settings | 0x10;									// Set sleep bit to 1
-	int wake 	= settings & 0xEF;									// Set sleep bit to 0
+	int wake	= settings & 0xEF;									// Set sleep bit to 0
 	int restart = wake | 0x80;										// Set restart bit to 1
 
 	// Go to sleep, set prescale and wake up again.
@@ -194,7 +191,7 @@ void pca9685PWMRead(int fd, int pin, int *on, int *off)
 	int reg = baseReg(pin);
 
 	if (on)
-		*on  = wiringPiI2CReadReg16(fd, reg);
+		*on	 = wiringPiI2CReadReg16(fd, reg);
 	if (off)
 		*off = wiringPiI2CReadReg16(fd, reg + 2);
 }
@@ -267,9 +264,6 @@ int baseReg(int pin)
 	return (pin >= PIN_ALL ? LEDALL_ON_L : LED0_ON_L + 4 * pin);
 }
 
-
-
-
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  M Y  P W M  W R I T E                                                                                             *
@@ -285,7 +279,7 @@ int baseReg(int pin)
  */
 static void myPwmWrite(struct wiringPiNodeStruct *node, int pin, int value)
 {
-	int fd   = node->fd;
+	int fd	 = node->fd;
 	int ipin = pin - node->pinBase;
 
 	if (value >= 4096)
@@ -311,7 +305,7 @@ static void myPwmWrite(struct wiringPiNodeStruct *node, int pin, int value)
  */
 static void myOnOffWrite(struct wiringPiNodeStruct *node, int pin, int value)
 {
-	int fd   = node->fd;
+	int fd	 = node->fd;
 	int ipin = pin - node->pinBase;
 
 	if (value)
@@ -334,7 +328,7 @@ static void myOnOffWrite(struct wiringPiNodeStruct *node, int pin, int value)
  */
 static int myOffRead(struct wiringPiNodeStruct *node, int pin)
 {
-	int fd   = node->fd;
+	int fd	 = node->fd;
 	int ipin = pin - node->pinBase;
 
 	int off;
@@ -357,7 +351,7 @@ static int myOffRead(struct wiringPiNodeStruct *node, int pin)
  */
 static int myOnRead(struct wiringPiNodeStruct *node, int pin)
 {
-	int fd   = node->fd;
+	int fd	 = node->fd;
 	int ipin = pin - node->pinBase;
 
 	int on;
@@ -367,7 +361,4 @@ static int myOnRead(struct wiringPiNodeStruct *node, int pin)
 }
 
 #endif
-
-
-
 

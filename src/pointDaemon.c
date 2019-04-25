@@ -269,7 +269,7 @@ int main (int argc, char *argv[])
 {
 	fd_set readfds;
 	struct timeval timeout;
-	int i, c;
+	int c;
 
 	while ((c = getopt(argc, argv, "c:s:dLID")) != -1)
 	{

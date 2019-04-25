@@ -144,11 +144,11 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 			if (level == 0 && strcmp ((char *)curNode->name, "pointControl") == 0)
 			{
 				int port = -1;
-				xmlChar *serverStr, *portStr, *countStr;
+				xmlChar *serverStr, *portStr;
 
 				if ((serverStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
 				{
-					strcpy (pointCtrl -> serverName, serverStr);
+					strcpy (pointCtrl -> serverName, (char *)serverStr);
 					xmlFree (serverStr);
 				}
 				if ((portStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)

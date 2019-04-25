@@ -23,8 +23,7 @@
  * You can view the contents of the licence at <http://www.gnu.org/licenses/>.
  **************************************************************************
  */
- 
- 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -54,8 +53,6 @@ extern int pca9685Setup(const int pinBase, const int i2cAddress/* = 0x40*/, floa
 //		To get PWM: mask with 0xFFF
 //		To get full-on bit: mask with 0x1000
 //		Note: ALL_LED pin will always return 0
-
-
 
 // Advanced controls
 // You can use the file descriptor returned from the setup function to access the following features directly on each connected pca9685

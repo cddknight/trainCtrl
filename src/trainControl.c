@@ -632,7 +632,7 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 					cairo_save (cr);
 					cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
 					gdk_cairo_set_source_rgba (cr, lineType ? &iaFillCol : &inactCol);
-					cairo_set_line_width (cr, lineType ? lineWidths[1] : lineWidths[0]);
+					cairo_set_line_width (cr, lineWidths[lineType]);
 					cairo_move_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
 					cairo_line_to (cr, xPos[2], yPos[2]);
 					cairo_stroke (cr);
@@ -646,7 +646,7 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 					cairo_save (cr);
 					cairo_set_line_join (cr, CAIRO_LINE_JOIN_ROUND);
 					gdk_cairo_set_source_rgba (cr, lineType ? &trFillCol : &trackCol);
-					cairo_set_line_width (cr, lineType ? lineWidths[1] : lineWidths[0]);
+					cairo_set_line_width (cr, lineWidths[lineType]);
 					cairo_move_to (cr, xPos[0], yPos[0]);
 					cairo_line_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
 					if (posMask & 2)

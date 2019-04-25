@@ -95,7 +95,7 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 						if (id != -1)
 						{
 							train -> trainFunc[loop].funcID = id;
-							strncpy (train -> trainFunc[loop].funcDesc, descStr, 40);
+							strncpy (train -> trainFunc[loop].funcDesc, (char *)descStr, 40);
 							++loop;
 						}
 					}
