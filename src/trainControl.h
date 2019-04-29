@@ -72,12 +72,11 @@ typedef struct _trainCtrl
 
 #ifdef __GTK_H__
 	GtkWidget *buttonNum;
-	GtkWidget *buttonStop;
 	GtkWidget *buttonHalt;
 	GtkWidget *scaleSpeed;
 	GtkWidget *checkDir;
 #else
-	void *xPointers[5];
+	void *xPointers[4];
 #endif
 }
 trainCtrlDef;
@@ -112,7 +111,7 @@ typedef struct _trackCtrl
 	char remoteProgMsg[111];
 	int remotePowerState;
 	int remoteCurrent;
-	int serverStatus[7];
+	int connectionStatus[7];
 
 	trainCtrlDef *trainCtrl;
 	pointCtrlDef *pointCtrl;
@@ -123,20 +122,21 @@ typedef struct _trackCtrl
 	GtkWidget *windowTrack;				//  2
 	GtkWidget *windowFunctions;			//  3
 	GtkWidget *dialogProgram;			//  4
-	GtkWidget *dialogStatus;			//  5
+	GtkWidget *connectionDialog;		//  5
 	GtkWidget *labelPower;				//  6
 	GtkWidget *buttonPower;				//  7
 	GtkWidget *buttonTrack;				//  8
-	GtkWidget *buttonStatus;			//  9
+	GtkWidget *buttonConnection;		//  9
 	GtkWidget *buttonProgram;			// 10
 	GtkWidget *labelProgram;			// 11
 	GtkWidget *drawingArea;				// 12
 	GtkWidget *statusBar;				// 13
 	GtkWidget *funcSpinner;				// 14
 	GtkWidget *funcLabel;				// 15
-	GtkWidget *statusLabels[7];			// 21
+	GtkWidget *buttonStopAll;			// 16
+	GtkWidget *connectionLabels[7];		// 22
 #else
-	void *xPointers[21];
+	void *xPointers[22];
 #endif
 }
 trackCtrlDef;

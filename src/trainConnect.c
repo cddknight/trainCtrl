@@ -174,9 +174,9 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 					int i;
 					for (i = 0; i < 6; ++i)
 					{
-						trackCtrl -> serverStatus[i] = atoi (words[i + 2]);
+						trackCtrl -> connectionStatus[i] = atoi (words[i + 2]);
 					}
-					trackCtrl -> serverStatus[6] = 1;
+					trackCtrl -> connectionStatus[6] = 1;
 				}
 			}
 			/* Point change update */

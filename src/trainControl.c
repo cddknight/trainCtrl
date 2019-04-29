@@ -386,16 +386,18 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 	gboolean state = (trackCtrl -> powerState == POWER_ON ? TRUE : FALSE);
 	for (i = 0; i < trackCtrl -> trainCount; ++i)
 	{
-		if (trackCtrl -> trainCtrl[i].buttonNum != NULL)
-			gtk_widget_set_sensitive (trackCtrl -> trainCtrl[i].buttonNum, state);
-		if (trackCtrl -> trainCtrl[i].buttonHalt != NULL)
-			gtk_widget_set_sensitive (trackCtrl -> trainCtrl[i].buttonHalt, state);
-		if (trackCtrl -> trainCtrl[i].scaleSpeed != NULL)
-			gtk_widget_set_sensitive (trackCtrl -> trainCtrl[i].scaleSpeed, state);
-		if (trackCtrl -> trainCtrl[i].checkDir != NULL)
-			gtk_widget_set_sensitive (trackCtrl -> trainCtrl[i].checkDir, state);
-		if (trackCtrl -> trainCtrl[i].buttonStop != NULL)
-			gtk_widget_set_sensitive (trackCtrl -> trainCtrl[i].buttonStop, state);
+		trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
+		if (train != NULL)
+		{
+			if (train -> buttonNum != NULL)
+				gtk_widget_set_sensitive (train -> buttonNum, state);
+			if (train -> buttonHalt != NULL)
+				gtk_widget_set_sensitive (train -> buttonHalt, state);
+			if (train -> scaleSpeed != NULL)
+				gtk_widget_set_sensitive (train -> scaleSpeed, state);
+			if (train -> checkDir != NULL)
+				gtk_widget_set_sensitive (train -> checkDir, state);
+		}
 	}
 	if (trackCtrl -> buttonProgram != NULL)
 	{
@@ -404,6 +406,10 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 	if (trackCtrl -> buttonTrack != NULL)
 	{
 		gtk_widget_set_sensitive (trackCtrl -> buttonTrack, state);
+	}
+	if (trackCtrl -> buttonStopAll != NULL)
+	{
+		gtk_widget_set_sensitive (trackCtrl -> buttonStopAll, state);
 	}
 }
 
@@ -441,9 +447,9 @@ static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
 				trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
 				if (train -> curSpeed > 0 && trackCtrl -> powerState == POWER_OFF)
 				{
-					trainSetSpeed (trackCtrl, &trackCtrl -> trainCtrl[i], -1);
-					trackCtrl -> trainCtrl[i].curSpeed = trackCtrl -> trainCtrl[i].remoteCurSpeed = 0;
-					gtk_range_set_value (GTK_RANGE (trackCtrl -> trainCtrl[i].scaleSpeed), 0.0);
+					trainSetSpeed (trackCtrl, train, -1);
+					train -> curSpeed = train -> remoteCurSpeed = 0;
+					gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
 				}
 			}
 		}
@@ -864,8 +870,8 @@ void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  C O N N E C T  S T A T U S                                                                                        *
- *  ==========================                                                                                        *
+ *  C O N N E C T I O N  S T A T U S                                                                                  *
+ *  ================================                                                                                  *
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
@@ -874,14 +880,14 @@ void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
  *  \param data Pointer to track control.
  *  \result None.
  */
-static void connectStatus (GtkWidget *widget, gpointer data)
+static void connectionStatus (GtkWidget *widget, gpointer data)
 {
 	int i = 0;
 	GtkWidget *contentArea;
 	GtkWidget *label, *grid, *vbox;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
-	static char *statusLables[] =
+	static char *connectionText[] =
 	{
 		"Server:",
 		"Serial port:",
@@ -893,16 +899,16 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 		NULL
 	};
 
-	if (trackCtrl -> dialogStatus == NULL)
+	if (trackCtrl -> connectionDialog == NULL)
 	{
-		trackCtrl -> dialogStatus = gtk_dialog_new_with_buttons ("Server Status",
+		trackCtrl -> connectionDialog = gtk_dialog_new_with_buttons ("Connection Status",
 				GTK_WINDOW (trackCtrl -> windowCtrl),
 				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
 				"Update", GTK_RESPONSE_APPLY,
 				"Close", GTK_RESPONSE_CLOSE,
 				NULL);
 
-		contentArea = gtk_dialog_get_content_area (GTK_DIALOG (trackCtrl -> dialogStatus));
+		contentArea = gtk_dialog_get_content_area (GTK_DIALOG (trackCtrl -> connectionDialog));
 
 		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
@@ -918,45 +924,45 @@ static void connectStatus (GtkWidget *widget, gpointer data)
 
 		for (i = 0; i < 7; ++i)
 		{
-			label = gtk_label_new (statusLables[i]);
+			label = gtk_label_new (connectionText[i]);
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
 			gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
 
 			if (i == 0)
 			{
-				trackCtrl -> statusLabels[i] = gtk_label_new (trackCtrl -> serverHandle == -1
+				trackCtrl -> connectionLabels[i] = gtk_label_new (trackCtrl -> serverHandle == -1
 						? "Not connected" : "Connected");
-				gtk_widget_set_halign (trackCtrl -> statusLabels[i], GTK_ALIGN_START);
-				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> statusLabels[i], 1, i, 1, 1);
+				gtk_widget_set_halign (trackCtrl -> connectionLabels[i], GTK_ALIGN_START);
+				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> connectionLabels[i], 1, i, 1, 1);
 			}
 			else
 			{
-				trackCtrl -> statusLabels[i] = gtk_label_new ("Unknown");
-				gtk_widget_set_halign (trackCtrl -> statusLabels[i], GTK_ALIGN_START);
-				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> statusLabels[i], 1, i, 1, 1);
-				trackCtrl -> serverStatus[i - 1] = -1;
+				trackCtrl -> connectionLabels[i] = gtk_label_new ("Unknown");
+				gtk_widget_set_halign (trackCtrl -> connectionLabels[i], GTK_ALIGN_START);
+				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> connectionLabels[i], 1, i, 1, 1);
+				trackCtrl -> connectionStatus[i - 1] = -1;
 			}
 		}
-		trackCtrl -> serverStatus[6] = 0;
+		trackCtrl -> connectionStatus[6] = 0;
 
-		gtk_widget_show_all (trackCtrl -> dialogStatus);
+		gtk_widget_show_all (trackCtrl -> connectionDialog);
 		do
 		{
 			int sendRes = trainConnectSend (trackCtrl, "<V>", 3);
 
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[0]),
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[0]),
 					sendRes == 3 ?	"Connected" :  "Not connected");
 
 			for (i = 1; i < 6; ++i)
 			{
-				gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[i]),
+				gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[i]),
 						 sendRes == 3 ? "Pending" : "Unknown");
 			}
 		}
-		while (gtk_dialog_run (GTK_DIALOG (trackCtrl -> dialogStatus)) == GTK_RESPONSE_APPLY);
+		while (gtk_dialog_run (GTK_DIALOG (trackCtrl -> connectionDialog)) == GTK_RESPONSE_APPLY);
 
-		gtk_widget_destroy (trackCtrl -> dialogStatus);
-		trackCtrl -> dialogStatus = NULL;
+		gtk_widget_destroy (trackCtrl -> connectionDialog);
+		trackCtrl -> connectionDialog = NULL;
 	}
 }
 
@@ -986,6 +992,35 @@ static int programYesNo (trackCtrlDef *trackCtrl, char *question)
 	}
 	gtk_widget_destroy (dialog);
 	return retn;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  S T O P  A L L  T R A I N S                                                                                       *
+ *  ===========================                                                                                       *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Quickly stop all the running trains.
+ *  \param widget Not used.
+ *  \param data Pointer to the track configuration.
+ *  \result None.
+ */
+static void stopAllTrains (GtkWidget *widget, gpointer data)
+{
+	int i;
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+
+	for (i = 0; i < trackCtrl -> trainCount; ++i)
+	{
+		trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
+		if (train -> curSpeed > 0)
+		{
+			trainSetSpeed (trackCtrl, train, -1);
+			train -> curSpeed = train -> remoteCurSpeed = 0;
+			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
+		}
+	}
 }
 
 /**********************************************************************************************************************
@@ -1266,27 +1301,27 @@ gboolean clockTickCallback (gpointer data)
 			}
 		}
 	}
-	if (trackCtrl -> dialogStatus != NULL)
+	if (trackCtrl -> connectionDialog != NULL)
 	{
-		if (trackCtrl -> serverStatus[6] == 1)
+		if (trackCtrl -> connectionStatus[6] == 1)
 		{
 			char tempBuff[81];
 
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[0]),
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[0]),
 					trackCtrl -> serverHandle == -1 ? "Not connected" : "Connected");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[1]),
-					trackCtrl -> serverStatus[0] > 0 ? "OK" : "Not connected");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[2]),
-					trackCtrl -> serverStatus[1] > 0 ? "OK" : "Not listening");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[3]),
-					trackCtrl -> serverStatus[2] > 0 ? "OK" : "Not listening");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[4]),
-					trackCtrl -> serverStatus[3] > 0 ? "OK" : "Not listening");
-			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[4]);
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[5]), tempBuff);
-			sprintf (tempBuff, "%d Connected", trackCtrl -> serverStatus[5]);
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> statusLabels[6]), tempBuff);
-			trackCtrl -> serverStatus[6] = 0;
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[1]),
+					trackCtrl -> connectionStatus[0] > 0 ? "OK" : "Not connected");
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[2]),
+					trackCtrl -> connectionStatus[1] > 0 ? "OK" : "Not listening");
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[3]),
+					trackCtrl -> connectionStatus[2] > 0 ? "OK" : "Not listening");
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[4]),
+					trackCtrl -> connectionStatus[3] > 0 ? "OK" : "Not listening");
+			sprintf (tempBuff, "%d Connected", trackCtrl -> connectionStatus[4]);
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[5]), tempBuff);
+			sprintf (tempBuff, "%d Connected", trackCtrl -> connectionStatus[5]);
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[6]), tempBuff);
+			trackCtrl -> connectionStatus[6] = 0;
 		}
 	}
 	return TRUE;
@@ -1410,21 +1445,26 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_widget_set_halign (hbox, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (vbox), hbox);
 
-			trackCtrl -> buttonTrack = gtk_button_new_with_label ("Track View");
-			g_signal_connect (trackCtrl -> buttonTrack, "clicked", G_CALLBACK (displayTrack), trackCtrl);
-			gtk_widget_set_halign (trackCtrl -> buttonTrack, GTK_ALIGN_CENTER);
-			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonTrack);
+			trackCtrl -> buttonConnection = gtk_button_new_with_mnemonic ("_Status");
+			g_signal_connect (trackCtrl -> buttonConnection, "clicked", G_CALLBACK (connectionStatus), trackCtrl);
+			gtk_widget_set_halign (trackCtrl -> buttonConnection, GTK_ALIGN_CENTER);
+			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonConnection);
 
-			trackCtrl -> buttonStatus = gtk_button_new_with_label ("Status");
-			g_signal_connect (trackCtrl -> buttonStatus, "clicked", G_CALLBACK (connectStatus), trackCtrl);
-			gtk_widget_set_halign (trackCtrl -> buttonStatus, GTK_ALIGN_CENTER);
-			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonStatus);
-
-			trackCtrl -> buttonProgram = gtk_button_new_with_label ("Program");
+			trackCtrl -> buttonProgram = gtk_button_new_with_mnemonic ("_Program");
 			g_signal_connect (trackCtrl -> buttonProgram, "clicked", G_CALLBACK (programTrain), trackCtrl);
 			gtk_widget_set_halign (trackCtrl -> buttonProgram, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonProgram);
 			gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
+
+			trackCtrl -> buttonTrack = gtk_button_new_with_mnemonic ("_Track View");
+			g_signal_connect (trackCtrl -> buttonTrack, "clicked", G_CALLBACK (displayTrack), trackCtrl);
+			gtk_widget_set_halign (trackCtrl -> buttonTrack, GTK_ALIGN_CENTER);
+			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonTrack);
+
+			trackCtrl -> buttonStopAll = gtk_button_new_with_mnemonic ("Stop _All");
+			g_signal_connect (trackCtrl -> buttonStopAll, "clicked", G_CALLBACK (stopAllTrains), trackCtrl);
+			gtk_widget_set_halign (trackCtrl -> buttonStopAll, GTK_ALIGN_CENTER);
+			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonStopAll);
 
 			grid = gtk_grid_new();
 			gtk_container_add (GTK_CONTAINER (vbox), grid);
@@ -1432,48 +1472,46 @@ static void activate (GtkApplication *app, gpointer userData)
 			for (i = 0; i < trackCtrl -> trainCount; ++i)
 			{
 				int j = 0;
+				trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
 
-				sprintf (tempBuff, "%d", trackCtrl -> trainCtrl[i].trainNum);
-				trackCtrl -> trainCtrl[i].buttonNum = gtk_button_new_with_label (tempBuff);
-				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].buttonNum), "train", &trackCtrl -> trainCtrl[i]);
-				g_signal_connect (trackCtrl -> trainCtrl[i].buttonNum, "clicked", G_CALLBACK (trainFunctions), trackCtrl);
-				gtk_widget_set_hexpand (trackCtrl -> trainCtrl[i].buttonNum, TRUE);
-				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonNum, GTK_ALIGN_FILL);
-				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].buttonNum, i, 0, 1, 1);
-
-				trackCtrl -> trainCtrl[i].buttonHalt = gtk_button_new_with_label ("Halt");
-				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].buttonHalt), "train", &trackCtrl -> trainCtrl[i]);
-				g_signal_connect (trackCtrl -> trainCtrl[i].buttonHalt, "clicked", G_CALLBACK (haltTrain), trackCtrl);
-				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonHalt, GTK_ALIGN_FILL);
-				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].buttonHalt, i, 1, 1, 1);
-
-				trackCtrl -> trainCtrl[i].scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 126, 0.5);
-				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].scaleSpeed), "train", &trackCtrl -> trainCtrl[i]);
-				g_signal_connect (trackCtrl -> trainCtrl[i].scaleSpeed, "value-changed", G_CALLBACK (moveTrain), trackCtrl);
-				gtk_widget_set_vexpand (trackCtrl -> trainCtrl[i].scaleSpeed, 1);
-				gtk_scale_set_value_pos (GTK_SCALE(trackCtrl -> trainCtrl[i].scaleSpeed), GTK_POS_TOP);
-				gtk_scale_set_digits (GTK_SCALE(trackCtrl -> trainCtrl[i].scaleSpeed), 0);
-				gtk_scale_set_has_origin (GTK_SCALE(trackCtrl -> trainCtrl[i].scaleSpeed), TRUE);
-				for (j = 0; j < 126; j += 20)
+				if (train != NULL)
 				{
-					gtk_scale_add_mark (GTK_SCALE(trackCtrl -> trainCtrl[i].scaleSpeed), j, GTK_POS_LEFT, NULL);
+					int r = 0;
+					sprintf (tempBuff, "%d", train -> trainNum);
+					train -> buttonNum = gtk_button_new_with_label (tempBuff);
+					g_object_set_data (G_OBJECT(train -> buttonNum), "train", train);
+					g_signal_connect (train -> buttonNum, "clicked", G_CALLBACK (trainFunctions), trackCtrl);
+					gtk_widget_set_hexpand (train -> buttonNum, TRUE);
+					gtk_widget_set_halign (train -> buttonNum, GTK_ALIGN_FILL);
+					gtk_grid_attach(GTK_GRID(grid), train -> buttonNum, i, r++, 1, 1);
+
+					train -> buttonHalt = gtk_button_new_with_label ("Halt");
+					g_object_set_data (G_OBJECT(train -> buttonHalt), "train", train);
+					g_signal_connect (train -> buttonHalt, "clicked", G_CALLBACK (haltTrain), trackCtrl);
+					gtk_widget_set_halign (train -> buttonHalt, GTK_ALIGN_FILL);
+					gtk_grid_attach(GTK_GRID(grid), train -> buttonHalt, i, r++, 1, 1);
+
+					train -> scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 126, 0.5);
+					g_object_set_data (G_OBJECT(train -> scaleSpeed), "train", train);
+					g_signal_connect (train -> scaleSpeed, "value-changed", G_CALLBACK (moveTrain), trackCtrl);
+					gtk_widget_set_vexpand (train -> scaleSpeed, 1);
+					gtk_scale_set_value_pos (GTK_SCALE(train -> scaleSpeed), GTK_POS_TOP);
+					gtk_scale_set_digits (GTK_SCALE(train -> scaleSpeed), 0);
+					gtk_scale_set_has_origin (GTK_SCALE(train -> scaleSpeed), TRUE);
+					for (j = 0; j < 126; j += 20)
+					{
+						gtk_scale_add_mark (GTK_SCALE(train -> scaleSpeed), j, GTK_POS_LEFT, NULL);
+					}
+					gtk_widget_set_halign (train -> scaleSpeed, GTK_ALIGN_CENTER);
+					gtk_grid_attach(GTK_GRID(grid), train -> scaleSpeed, i, r++, 1, 1);
+					gettimeofday(&train -> lastChange, NULL);
+
+					train -> checkDir = gtk_check_button_new_with_label ("Reverse");
+					g_object_set_data (G_OBJECT(train -> checkDir), "train", train);
+					g_signal_connect (train -> checkDir, "clicked", G_CALLBACK (reverseTrain), trackCtrl);
+					gtk_widget_set_halign (train -> checkDir, GTK_ALIGN_CENTER);
+					gtk_grid_attach(GTK_GRID(grid), train -> checkDir, i, r++, 1, 1);
 				}
-				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].scaleSpeed, GTK_ALIGN_CENTER);
-				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].scaleSpeed, i, 2, 1, 1);
-				gettimeofday(&trackCtrl -> trainCtrl[i].lastChange, NULL);
-
-				trackCtrl -> trainCtrl[i].checkDir = gtk_check_button_new_with_label ("Reverse");
-				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].checkDir), "train", &trackCtrl -> trainCtrl[i]);
-				g_signal_connect (trackCtrl -> trainCtrl[i].checkDir, "clicked", G_CALLBACK (reverseTrain), trackCtrl);
-				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].checkDir, GTK_ALIGN_CENTER);
-				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].checkDir, i, 3, 1, 1);
-
-				trackCtrl -> trainCtrl[i].buttonStop = gtk_button_new_with_label ("STOP");
-				g_object_set_data (G_OBJECT(trackCtrl -> trainCtrl[i].buttonStop), "train", &trackCtrl -> trainCtrl[i]);
-				g_signal_connect (trackCtrl -> trainCtrl[i].buttonStop, "clicked", G_CALLBACK (stopTrain), trackCtrl);
-				gtk_widget_set_halign (trackCtrl -> trainCtrl[i].buttonStop, GTK_ALIGN_FILL);
-				gtk_grid_attach(GTK_GRID(grid), trackCtrl -> trainCtrl[i].buttonStop, i, 4, 1, 1);
-
 			}
 			checkPowerOn (trackCtrl);
 

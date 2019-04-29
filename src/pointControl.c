@@ -403,7 +403,7 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
  **********************************************************************************************************************/
 /**
  *  \brief Set up the I2C interface for controlling the servos.
- *  \param pointCtrl .
+ *  \param pointCtrl Point configuration.
  *  \result 1 if all went OK.
  */
 int pointControlSetup (pointCtrlDef *pointCtrl)
