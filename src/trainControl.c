@@ -1371,7 +1371,7 @@ static void activate (GtkApplication *app, gpointer userData)
 	g_action_map_add_action_entries (G_ACTION_MAP (app), appEntries, G_N_ELEMENTS (appEntries), app);
 	menu = g_menu_new ();
 //	g_menu_append (menu, "Preferences", "app.preferences");
-	g_menu_append (menu, "About", "app.about");
+	g_menu_append (menu, "About Train Control", "app.about");
 	g_menu_append (menu, "Quit", "app.quit");
 	gtk_application_set_app_menu (GTK_APPLICATION (app), G_MENU_MODEL (menu));
 	g_object_unref (menu);
@@ -1423,7 +1423,12 @@ static void activate (GtkApplication *app, gpointer userData)
 			trackCtrl -> windowCtrl = gtk_application_window_new (app);
 			g_signal_connect (trackCtrl -> windowCtrl, "destroy", G_CALLBACK (windowDestroy), trackCtrl);
 			gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowCtrl), tempBuff);
-			gtk_window_set_icon_name (GTK_WINDOW (trackCtrl -> windowCtrl), "preferences-desktop");
+			if (!gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowCtrl),
+					"/usr/share/pixmaps/traincontrol.svg",
+					NULL))
+			{
+				gtk_window_set_icon_name (GTK_WINDOW (trackCtrl -> windowCtrl), "preferences-desktop");
+			}
 			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), screenWidth, 600);
 
 			vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
