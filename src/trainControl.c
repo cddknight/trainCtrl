@@ -403,10 +403,6 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 	{
 		gtk_widget_set_sensitive (trackCtrl -> buttonProgram, state);
 	}
-	if (trackCtrl -> buttonTrack != NULL)
-	{
-		gtk_widget_set_sensitive (trackCtrl -> buttonTrack, state);
-	}
 	if (trackCtrl -> buttonStopAll != NULL)
 	{
 		gtk_widget_set_sensitive (trackCtrl -> buttonStopAll, state);
@@ -1455,16 +1451,16 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_widget_set_halign (trackCtrl -> buttonConnection, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonConnection);
 
+			trackCtrl -> buttonTrack = gtk_button_new_with_mnemonic ("_Track View");
+			g_signal_connect (trackCtrl -> buttonTrack, "clicked", G_CALLBACK (displayTrack), trackCtrl);
+			gtk_widget_set_halign (trackCtrl -> buttonTrack, GTK_ALIGN_CENTER);
+			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonTrack);
+
 			trackCtrl -> buttonProgram = gtk_button_new_with_mnemonic ("_Program");
 			g_signal_connect (trackCtrl -> buttonProgram, "clicked", G_CALLBACK (programTrain), trackCtrl);
 			gtk_widget_set_halign (trackCtrl -> buttonProgram, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonProgram);
 			gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
-
-			trackCtrl -> buttonTrack = gtk_button_new_with_mnemonic ("_Track View");
-			g_signal_connect (trackCtrl -> buttonTrack, "clicked", G_CALLBACK (displayTrack), trackCtrl);
-			gtk_widget_set_halign (trackCtrl -> buttonTrack, GTK_ALIGN_CENTER);
-			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonTrack);
 
 			trackCtrl -> buttonStopAll = gtk_button_new_with_mnemonic ("Stop _All");
 			g_signal_connect (trackCtrl -> buttonStopAll, "clicked", G_CALLBACK (stopAllTrains), trackCtrl);
