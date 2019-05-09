@@ -26,6 +26,42 @@
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  H E L P  T H E M                                                                                                  *
+ *  ================                                                                                                  *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Output the help message.
+ *  \result None.
+ */
+void helpThem ()
+{
+	printf ("traincalc [-rsdac] <train cab>\n");
+	printf ("    -r . . . Reverse directions.\n");
+	printf ("    -s . . . 28/128 Speed steps.\n");
+	printf ("    -d . . . DC operation.\n");
+	printf ("    -a . . . Railcom.\n");
+	printf ("    -c . . . Complex speed curve.\n");
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  S H O W  S E P                                                                                                    *
+ *  ==============                                                                                                    *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Show the separator.
+ *  \param id ID being processed.
+ *  \result None.
+ */
+void showSep (int id)
+{
+	printf ("------------- %04d -------------\n", id);
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  M A I N                                                                                                           *
  *  =======                                                                                                           *
  *                                                                                                                    *
@@ -38,7 +74,7 @@
  */
 int main (int argc, char *argv[])
 {
-	int i, trainID = 3, cv29 = 0;
+	int i, trainID = 3, cv29 = 0, done = 0;
 
 	while ((i = getopt(argc, argv, "rsdac")) != -1)
 	{
@@ -60,18 +96,14 @@ int main (int argc, char *argv[])
 			cv29 |= 16;
 			break;
 		case '?':
-			printf ("traincalc [-rsdac] <train cab>\n");
-			printf ("    -r . . . Reverse directions.\n");
-			printf ("    -s . . . 28/128 Speed steps.\n");
-			printf ("    -d . . . DC operation.\n");
-			printf ("    -a . . . Railcom.\n");
-			printf ("    -c . . . Complex speed curve.\n");
+			helpThem();
 			exit (1);
 		}
 	}
 	for (; optind < argc; ++optind)
 	{
 		trainID = atoi (argv[optind]);
+		showSep (trainID);
 		if (trainID > 0 && trainID < 100)
 		{
 			printf ("CV  1: %3d (0x%02X)\nCV 29: %3d (0x%02X)\n", trainID, trainID, cv29, cv29);
@@ -89,8 +121,17 @@ int main (int argc, char *argv[])
 		}
 		else
 		{
-			printf ("%d is not a recomened address\n", trainID);
+			printf ("%d is not a recommended address\n", trainID);
 		}
+		++done;
+	}
+	if (done == 0)
+	{
+		helpThem();
+	}
+	else
+	{
+		printf ("--------------------------------\n");
 	}
 	return 0;
 }
