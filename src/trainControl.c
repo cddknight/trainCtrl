@@ -156,7 +156,7 @@ int checkConnected (trackCtrlDef *trackCtrl)
  *  \param widget Which button was pressed.
  *  \param data Which train to stop.
  *  \result None.
- */
+ *
 static void stopTrain (GtkWidget *widget, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
@@ -174,7 +174,7 @@ static void stopTrain (GtkWidget *widget, gpointer data)
 			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
 		}
 	}
-}
+} */
 
 /**********************************************************************************************************************
  *                                                                                                                    *
