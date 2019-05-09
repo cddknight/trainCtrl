@@ -32,7 +32,7 @@ install -p -m 755 traindaemon $RPM_BUILD_ROOT%{_bindir}/traindaemon
 install -p -m 755 pointdaemon $RPM_BUILD_ROOT%{_bindir}/pointdaemon
 install -p -m 644 @PACKAGE_NAME@.svg $RPM_BUILD_ROOT%{_datadir}/pixmaps/@PACKAGE_NAME@.svg
 install -m 644 trackrc.xml $RPM_BUILD_ROOT%{_sysconfdir}/train/trackrc.xml
-install -m 644 trackrc.xml $RPM_BUILD_ROOT%{_sysconfdir}/train/track.xml
+install -m 644 track.xml $RPM_BUILD_ROOT%{_sysconfdir}/train/track.xml
 desktop-file-install --vendor="" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications @PACKAGE_NAME@.desktop
 
 %clean
