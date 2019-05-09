@@ -321,7 +321,7 @@ int main (int argc, char *argv[])
 	 **********************************************************************************************************************/
 	if (!pointControlSetup (&pointCtrl))
 	{
-		putLogMessage (LOG_ERR, "P:Unable to servo control interface.");
+		putLogMessage (LOG_ERR, "P:Unable to open servo control interface.");
 		running = 0;
 	}
 
