@@ -885,13 +885,13 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 
 	static char *connectionText[] =
 	{
-		"Server:",
-		"Serial port:",
-		"Listen socket:",
-		"Listen point:",
-		"Configuration:",
-		"Point control:",
-		"Clients:",
+		"Server Connected:",
+		"Serial Connected:",
+		"Client Listen:",
+		"Point Control Listen:",
+		"Configuration Listen:",
+		"Points Connected:",
+		"Clients Connected:",
 		NULL
 	};
 
@@ -939,6 +939,8 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 				trackCtrl -> connectionStatus[i - 1] = -1;
 			}
 		}
+		gtk_box_pack_start (GTK_BOX(vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 3);
+
 		trackCtrl -> connectionStatus[6] = 0;
 
 		gtk_widget_show_all (trackCtrl -> connectionDialog);
@@ -1304,7 +1306,7 @@ gboolean clockTickCallback (gpointer data)
 			char tempBuff[81];
 
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[0]),
-					trackCtrl -> serverHandle == -1 ? "Not connected" : "Connected");
+					trackCtrl -> serverHandle == -1 ? "Not connected" : "OK");
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[1]),
 					trackCtrl -> connectionStatus[0] > 0 ? "OK" : "Not connected");
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[2]),
@@ -1313,9 +1315,9 @@ gboolean clockTickCallback (gpointer data)
 					trackCtrl -> connectionStatus[2] > 0 ? "OK" : "Not listening");
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[4]),
 					trackCtrl -> connectionStatus[3] > 0 ? "OK" : "Not listening");
-			sprintf (tempBuff, "%d Connected", trackCtrl -> connectionStatus[4]);
+			sprintf (tempBuff, "%d", trackCtrl -> connectionStatus[4]);
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[5]), tempBuff);
-			sprintf (tempBuff, "%d Connected", trackCtrl -> connectionStatus[5]);
+			sprintf (tempBuff, "%d", trackCtrl -> connectionStatus[5]);
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[6]), tempBuff);
 			trackCtrl -> connectionStatus[6] = 0;
 		}
