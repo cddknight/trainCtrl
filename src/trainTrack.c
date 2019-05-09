@@ -35,7 +35,7 @@ static const char *tmpConfig = "/tmp/trainconfig.xml";
 static const char *memoryXML =
 "<track name=\"Simple Track\" server=\"127.0.0.1\" port=\"30330\" device=\"/dev/ttyACM0\">"\
 "<trains count=\"1\">"\
-"<train num=\"1234\" id=\"3\" desc=\"Train\"/>"\
+"<train num=\"1234\" ident=\"3\" desc=\"Train\"/>"\
 "</trains>"\
 "<cells rows=\"4\" cols=\"4\" size=\"50\">"\
 "<cellRow row=\"0\">"\
@@ -84,7 +84,7 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 			{
 				xmlChar *idStr, *descStr;
 
-				if ((idStr = xmlGetProp(curNode, (const xmlChar*)"id")) != NULL)
+				if ((idStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{
 					if ((descStr = xmlGetProp(curNode, (const xmlChar*)"desc")) != NULL)
 					{
@@ -193,7 +193,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 			{
 				if ((numStr = xmlGetProp(curNode, (const xmlChar*)"num")) != NULL)
 				{
-					if ((idStr = xmlGetProp(curNode, (const xmlChar*)"id")) != NULL)
+					if ((idStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 					{
 						if ((descStr = xmlGetProp(curNode, (const xmlChar*)"desc")) != NULL)
 						{

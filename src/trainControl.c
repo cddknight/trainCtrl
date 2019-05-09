@@ -1385,14 +1385,14 @@ static void activate (GtkApplication *app, gpointer userData)
 
 		home = getenv ("HOME");
 		strncpy (configPath, home, 1024);
-		strncat (configPath, "/.traincontrolrc.xml", 1024 - strlen (configPath));
+		strncat (configPath, "/.trackrc.xml", 1024 - strlen (configPath));
 		if (stat (configPath, &statBuff) == 0)
 		{
 			parseRetn = parseTrackXML (trackCtrl, configPath, 0);
 		}
 		else
 		{
-			strcpy (configPath, "/etc/traincontrolrc.xml");
+			strcpy (configPath, "/etc/train/trackrc.xml");
 			if (stat (configPath, &statBuff) == 0)
 			{
 				parseRetn = parseTrackXML (trackCtrl, configPath, 0);

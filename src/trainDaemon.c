@@ -54,7 +54,7 @@
 
 char *xmlBuffer;
 long xmlBufferSize;
-char xmlConfigFile[81]	=	"track.xml";
+char xmlConfigFile[81]	=	"/etc/train/track.xml";
 char pidFileName[81]	=	"/var/run/trainDaemon.pid";
 int	 logOutput			=	0;
 int	 infoOutput			=	0;
