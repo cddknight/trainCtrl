@@ -13,6 +13,6 @@ Icondir = $(datadir)/pixmaps
 Icon_DATA = traincontrol.svg
 Applicationsdir = $(datadir)/applications
 Applications_DATA = traincontrol.desktop
-Configdir = /etc
+Configdir = /etc/train
 Config_DATA = trackrc.xml track.xml
 
