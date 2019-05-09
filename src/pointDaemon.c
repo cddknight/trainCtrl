@@ -38,7 +38,7 @@
 //#include "trainControl.h"
 #include "pointControl.h"
 
-char xmlConfigFile[81]	=	"points.xml";
+char xmlConfigFile[81]	=	"/etc/train/points.xml";
 char pidFileName[81]	=	"/var/run/pointDaemon.pid";
 int	 logOutput			=	0;
 int	 infoOutput			=	0;

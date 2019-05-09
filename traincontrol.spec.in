@@ -33,6 +33,7 @@ install -p -m 755 pointdaemon $RPM_BUILD_ROOT%{_bindir}/pointdaemon
 install -p -m 644 @PACKAGE_NAME@.svg $RPM_BUILD_ROOT%{_datadir}/pixmaps/@PACKAGE_NAME@.svg
 install -m 644 trackrc.xml $RPM_BUILD_ROOT%{_sysconfdir}/train/trackrc.xml
 install -m 644 track.xml $RPM_BUILD_ROOT%{_sysconfdir}/train/track.xml
+install -m 644 points.xml $RPM_BUILD_ROOT%{_sysconfdir}/train/points.xml
 desktop-file-install --vendor="" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications @PACKAGE_NAME@.desktop
 
 %clean
@@ -48,6 +49,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/applications/@PACKAGE_NAME@.desktop
 %config(noreplace) %{_sysconfdir}/train/trackrc.xml
 %config(noreplace) %{_sysconfdir}/train/track.xml
+%config(noreplace) %{_sysconfdir}/train/points.xml
 
 %changelog
 * Thu May 9 2019 Chris Knight <chris@theknight.co.uk> 1.1-1%{?dist}

@@ -1,4 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+	pointControl
+		server - Address of the master track daemon.
+		port - Port number of the listener on the server.
+		pointDaemon
+			ident - Server identity for the daemon.
+			count - The number of points controlled.
+			point
+				ident - Identity of the point.
+				channel - The channel number on the controller.
+				default - The default (straight ahead) position.
+				turnout - The turnout position.
+-->
 <pointControl server="192.168.30.136" port="30331">
   <pointDaemon ident="1" count="11">
     <point ident="1" channel="0" default="290" turnout="320"/>
