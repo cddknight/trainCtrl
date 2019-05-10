@@ -7,7 +7,7 @@ URL: https://www.theknight.co.uk
 Group: Applications/Productivity
 Source: https://www.theknight.co.uk/releases/%{name}-%{version}.tar.bz2
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-BuildRequires: pkgconfig desktop-file-utils 
+BuildRequires: pkgconfig desktop-file-utils gcc libxml2-devel gtk3-devel
 
 %description
 Control DCC trains and layout.
@@ -16,7 +16,11 @@ Control DCC trains and layout.
 %setup -q
 
 %build
-%configure
+%if 0%{?mageia}
+%configure2_5x
+%else
+%configure 
+%endif
 make CDEBUGFLAGS="$RPM_OPT_FLAGS" CXXDEBUGFLAGS="$RPM_OPT_FLAGS"
 
 %install

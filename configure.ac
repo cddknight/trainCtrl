@@ -26,7 +26,7 @@ AC_CHECK_HEADERS([ctype.h math.h stdio.h stdlib.h string.h time.h wiringPi.h])
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_STRUCT_TM
-REVISION=1
+REVISION=4
 LIBDIR=${libexecdir}
 AC_SUBST([REVISION])
 AC_SUBST([LIBDIR])
