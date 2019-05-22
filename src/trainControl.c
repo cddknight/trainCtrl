@@ -1273,30 +1273,30 @@ gboolean clockTickCallback (gpointer data)
 			train -> reverse = train -> remoteReverse;
 			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), train -> reverse);
 		}
-		if (trackCtrl -> remoteProgMsg[0] != 0)
+	}
+	if (trackCtrl -> remoteProgMsg[0] != 0)
+	{
+		if (trackCtrl -> labelProgram != NULL)
 		{
-			if (trackCtrl -> labelProgram != NULL)
-			{
-				gtk_label_set_label (GTK_LABEL (trackCtrl -> labelProgram), trackCtrl -> remoteProgMsg);
-				trackCtrl -> remoteProgMsg[0] = 0;
-			}
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> labelProgram), trackCtrl -> remoteProgMsg);
+			trackCtrl -> remoteProgMsg[0] = 0;
 		}
-		if (trackCtrl -> remoteCurrent != trackCtrl -> shownCurrent)
+	}
+	if (trackCtrl -> remoteCurrent != trackCtrl -> shownCurrent)
+	{
+		if (trackCtrl -> labelPower != NULL)
 		{
-			if (trackCtrl -> labelPower != NULL)
+			char tempBuff[81];
+			if (trackCtrl -> powerState == POWER_ON && trackCtrl -> remoteCurrent >= 0)
 			{
-				char tempBuff[81];
-				if (trackCtrl -> powerState == POWER_ON && trackCtrl -> remoteCurrent >= 0)
-				{
-					sprintf (tempBuff, "Power [%d%%]", (trackCtrl -> remoteCurrent * 100) / 1024);
-				}
-				else
-				{
-					strcpy (tempBuff, "Power");
-				}
-				gtk_label_set_label (GTK_LABEL (trackCtrl -> labelPower), tempBuff);
-				trackCtrl -> shownCurrent = trackCtrl -> remoteCurrent;
+				sprintf (tempBuff, "Power [%0.1f%%]", ((float)trackCtrl -> remoteCurrent * 100.0) / 1024.0);
 			}
+			else
+			{
+				strcpy (tempBuff, "Power");
+			}
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> labelPower), tempBuff);
+			trackCtrl -> shownCurrent = trackCtrl -> remoteCurrent;
 		}
 	}
 	if (trackCtrl -> connectionDialog != NULL)
@@ -1448,12 +1448,12 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_widget_set_halign (hbox, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (vbox), hbox);
 
-			trackCtrl -> buttonConnection = gtk_button_new_with_mnemonic ("_Status");
+			trackCtrl -> buttonConnection = gtk_button_new_with_mnemonic ("S_tatus");
 			g_signal_connect (trackCtrl -> buttonConnection, "clicked", G_CALLBACK (connectionStatus), trackCtrl);
 			gtk_widget_set_halign (trackCtrl -> buttonConnection, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonConnection);
 
-			trackCtrl -> buttonTrack = gtk_button_new_with_mnemonic ("_Track View");
+			trackCtrl -> buttonTrack = gtk_button_new_with_mnemonic ("Track _View");
 			g_signal_connect (trackCtrl -> buttonTrack, "clicked", G_CALLBACK (displayTrack), trackCtrl);
 			gtk_widget_set_halign (trackCtrl -> buttonTrack, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonTrack);
@@ -1464,7 +1464,7 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonProgram);
 			gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 
-			trackCtrl -> buttonStopAll = gtk_button_new_with_mnemonic ("Stop _All");
+			trackCtrl -> buttonStopAll = gtk_button_new_with_mnemonic ("_STOP!");
 			g_signal_connect (trackCtrl -> buttonStopAll, "clicked", G_CALLBACK (stopAllTrains), trackCtrl);
 			gtk_widget_set_halign (trackCtrl -> buttonStopAll, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonStopAll);
