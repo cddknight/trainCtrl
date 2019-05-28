@@ -92,17 +92,20 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 
 						sscanf ((char *)idStr, "%d", &id);
 
-						if (id != -1)
+						if (id != -1 && loop < count)
 						{
 							train -> trainFunc[loop].funcID = id;
 							strncpy (train -> trainFunc[loop].funcDesc, (char *)descStr, 40);
 							++loop;
 						}
+						xmlFree(descStr);
 					}
+					xmlFree(idStr);
 				}
 			}
 		}
 	}
+	train -> funcCount = count;
 }
 
 /**********************************************************************************************************************
@@ -150,7 +153,6 @@ void processFunctions (trackCtrlDef *trackCtrl, xmlNode *inNode, trainCtrlDef *t
 						{
 							return;
 						}
-						train -> funcCount = count;
 						processFunction (trackCtrl, curNode -> children, count, train);
 					}
 				}
