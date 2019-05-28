@@ -147,45 +147,14 @@ int checkConnected (trackCtrlDef *trackCtrl)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  S T O P  T R A I N                                                                                                *
- *  ==================                                                                                                *
+ *  S E N D  F U N C T I O N                                                                                          *
+ *  ========================                                                                                          *
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
  *  \brief Send an emergency stop command.
  *  \param widget Which button was pressed.
  *  \param data Which train to stop.
- *  \result None.
- *
-static void stopTrain (GtkWidget *widget, gpointer data)
-{
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
-	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
-
-	if (train -> curSpeed != 0)
-	{
-		if (trainSetSpeed (trackCtrl, train, -1))
-		{
-			train -> curSpeed = train -> remoteCurSpeed = 0;
-			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
-		}
-		else
-		{
-			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
-		}
-	}
-} */
-
-/**********************************************************************************************************************
- *                                                                                                                    *
- *  S E N D  F U N C T I O N                                                                                          *
- *  ========================                                                                                          *
- *                                                                                                                    *
- **********************************************************************************************************************/
-/**
- *  \brief Send button press so send to the train.
- *  \param widget Not used.
- *  \param data Pointer to the track.
  *  \result None.
  */
 static void sendFunction (GtkWidget *widget, gpointer data)
