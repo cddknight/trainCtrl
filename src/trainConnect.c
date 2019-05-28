@@ -364,9 +364,15 @@ int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int funct
 		int byteOne = 0, byteTwo = -1;
 
 		train -> functions ^= (1 << function);
-		if (function < 5)
+		/* Function 0 is on bit 4 and function 1 is on bit 0. */
+		if (function == 0)
 		{
-			byteOne = (train -> functions & 0x1F) + 128;
+			byteOne = ((train -> functions >> 1) & 0x0F) + 128;
+			byteOne |= (train -> functions & 0x01) << 4;
+		}
+		else if (function < 5)
+		{
+			byteOne = ((train -> functions >> 1) & 0x0F) + 128;
 		}
 		else if (function < 9)
 		{
@@ -429,8 +435,10 @@ void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int byteOne, int
 		{
 			if ((byteOne & 0xE0) == 128)
 			{
+				/* Function 0 is on bit 4 and function 1 is on bit 0. */
 				trackCtrl -> trainCtrl[t].functions &= 0xFFFFFFE0;
-				trackCtrl -> trainCtrl[t].functions |= (byteOne & 0x1F);
+				trackCtrl -> trainCtrl[t].functions |= ((byteOne & 0x0F) << 1);
+				trackCtrl -> trainCtrl[t].functions |= ((byteOne >> 4) & 0x01);
 			}
 			else if ((byteOne & 0xF0) == 176)
 			{
