@@ -59,7 +59,11 @@
     <train num="4666" ident="330" desc="GWR Class 5700 Pannier (0-6-0PT)" />
     <train num="5601" ident="350" desc="Green GWR Class 5600 (0-6-2T)" />
     <train num="42355" ident="360" desc="Fowler Class 4P (2-6-4T)" />
-    <train num="47451" ident="310" desc="Fowler Class 3F 'Jinty' (0-6-0T)" />
+    <train num="47451" ident="310" desc="Fowler Class 3F 'Jinty' (0-6-0T)">
+      <functions count="1" custom="0">
+		<function desc="Rear Light" ident="4"/>
+      </functions>
+	</train>
     <train num="68035" ident="300" desc="Austerity Saddle Tank J94 (0-6-0ST)" />
   </trains>
   <pointServers count="2"/>
