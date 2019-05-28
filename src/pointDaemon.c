@@ -269,6 +269,7 @@ int main (int argc, char *argv[])
 {
 	fd_set readfds;
 	struct timeval timeout;
+	time_t lastCheck = 0;
 	int c;
 
 	while ((c = getopt(argc, argv, "c:s:dLID")) != -1)
@@ -339,6 +340,7 @@ int main (int argc, char *argv[])
 				char tempBuff[21];
 				sprintf (tempBuff, "<P %d>", pointCtrl.server);
 				SendSocket (serverHandle, tempBuff, strlen (tempBuff));
+				lastCheck = time (NULL);
 			}
 			else
 			{
@@ -360,11 +362,11 @@ int main (int argc, char *argv[])
 			selRetn = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
 			if (selRetn == -1)
 			{
-				putLogMessage (LOG_ERR, "P:Select error: %s[%d]", strerror (errno), errno);
+				putLogMessage (LOG_ERR, "P:Error: %s[%d]", strerror (errno), errno);
 				CloseSocket (&serverHandle);
 				running = 0;
 			}
-			if (selRetn > 0)
+			else if (selRetn > 0)
 			{
 				if (FD_ISSET(serverHandle, &readfds))
 				{
@@ -376,12 +378,24 @@ int main (int argc, char *argv[])
 						buffer[readBytes] = 0;
 						putLogMessage (LOG_INFO, "P:Socket rxed: %s(%d)", buffer, serverHandle);
 						checkRecvBuffer (&pointCtrl, serverHandle, buffer, readBytes);
+						lastCheck = time (NULL);
 					}
 					else if (readBytes == 0)
 					{
-						putLogMessage (LOG_INFO, "P:Socket closed: (%d)", serverHandle);
+						putLogMessage (LOG_INFO, "P:Socket closed(%d)", serverHandle);
 						CloseSocket (&serverHandle);
 					}
+				}
+			}
+			else if (selRetn == 0)
+			{
+				if (time (NULL) - lastCheck > 60)
+				{
+					char tempBuff[21];
+					putLogMessage (LOG_INFO, "P:Socket lifesign(%d)", serverHandle);
+					sprintf (tempBuff, "<P %d>", pointCtrl.server);
+					SendSocket (serverHandle, tempBuff, strlen (tempBuff));
+					lastCheck += 60;
 				}
 			}
 		}
