@@ -76,6 +76,13 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 	int loop = 0;
 	xmlNode *curNode = NULL;
 
+	if ((train -> trainFunc = (trainFuncDef *)malloc (count * sizeof (trainFuncDef))) == NULL)
+	{
+		return;
+	}
+
+	memset (train -> trainFunc, 0, count * sizeof (trainFuncDef));
+
 	for (curNode = inNode; curNode; curNode = curNode->next)
 	{
 		if (curNode->type == XML_ELEMENT_NODE)
@@ -105,7 +112,7 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 			}
 		}
 	}
-	train -> funcCount = count;
+	train -> funcCount = loop;
 }
 
 /**********************************************************************************************************************
@@ -149,10 +156,6 @@ void processFunctions (trackCtrlDef *trackCtrl, xmlNode *inNode, trainCtrlDef *t
 					}
 					if (count > 0)
 					{
-						if ((train -> trainFunc = (trainFuncDef *)malloc (count * sizeof (trainFuncDef))) == NULL)
-						{
-							return;
-						}
 						processFunction (trackCtrl, curNode -> children, count, train);
 					}
 				}
@@ -204,7 +207,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 							sscanf ((char *)numStr, "%d", &num);
 							sscanf ((char *)idStr, "%d", &id);
 
-							if (num != -1 && id != -1)
+							if (num != -1 && id != -1 && loop < count)
 							{
 								trackCtrl -> trainCtrl[loop].trainReg = loop + 1;
 								trackCtrl -> trainCtrl[loop].trainID = id;
