@@ -284,6 +284,7 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 				"/usr/share/pixmaps/traincontrol.svg", NULL);
 
 		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
+		gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
 		gtk_container_add (GTK_CONTAINER (trackCtrl -> windowFunctions), vbox);
 
 		grid = gtk_grid_new();
@@ -813,6 +814,9 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 
 		trackCtrl -> windowTrack = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowTrack), "Track Control");
+/*		gtk_window_set_transient_for (GTK_WINDOW (trackCtrl -> windowFunctions), GTK_WINDOW (trackCtrl -> windowCtrl)); */
+		gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowTrack), 
+				"/usr/share/pixmaps/traincontrol.svg", NULL);
 		gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowTrack), width, height);
 
 		trackCtrl -> drawingArea = gtk_drawing_area_new ();
@@ -915,6 +919,7 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 		contentArea = gtk_dialog_get_content_area (GTK_DIALOG (trackCtrl -> connectionDialog));
 
 		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+		gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
 		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
 		gtk_widget_set_valign (vbox, GTK_ALIGN_FILL);
 		gtk_box_pack_start (GTK_BOX (contentArea), vbox, TRUE, TRUE, 0);
@@ -1085,6 +1090,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		contentArea = gtk_dialog_get_content_area (GTK_DIALOG (trackCtrl -> dialogProgram));
 
 		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+		gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
 		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
 		gtk_widget_set_valign (vbox, GTK_ALIGN_FILL);
 		gtk_box_pack_start (GTK_BOX (contentArea), vbox, TRUE, TRUE, 0);
@@ -1453,6 +1459,7 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), screenWidth, 600);
 
 			vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
+			gtk_container_set_border_width (GTK_CONTAINER(vbox), 5);
 			gtk_container_add (GTK_CONTAINER (trackCtrl -> windowCtrl), vbox);
 
 			hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
