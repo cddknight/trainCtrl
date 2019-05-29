@@ -261,6 +261,10 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 	{
 		return;
 	}
+	if (trackCtrl -> windowFunctions != NULL)
+	{
+		gtk_widget_destroy (trackCtrl -> windowFunctions);
+	}
 	if (trackCtrl -> windowFunctions == NULL && (train -> funcCount || train -> funcCustom))
 	{
 		long i;
@@ -272,6 +276,12 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 		trackCtrl -> windowFunctions = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowFunctions), "Functions");
 		g_signal_connect (G_OBJECT (trackCtrl -> windowFunctions), "destroy", G_CALLBACK (closeFunctions), trackCtrl);
+
+		sprintf (tempBuff, "Functions for %d", train -> trainNum);
+		gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowFunctions), tempBuff);
+		gtk_window_set_transient_for (GTK_WINDOW (trackCtrl -> windowFunctions), GTK_WINDOW (trackCtrl -> windowCtrl));
+		gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowFunctions), 
+				"/usr/share/pixmaps/traincontrol.svg", NULL);
 
 		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
 		gtk_container_add (GTK_CONTAINER (trackCtrl -> windowFunctions), vbox);
