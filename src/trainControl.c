@@ -229,10 +229,7 @@ static void closeFunctions (GtkWidget *widget, gpointer data)
 		trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
 		for (j = 0; j < train -> funcCount; ++j)
 		{
-			if (train -> trainFunc[j].funcSwitch != NULL)
-			{
-				train -> trainFunc[j].funcSwitch = NULL;
-			}
+			train -> trainFunc[j].funcSwitch = NULL;
 		}
 	}
 	trackCtrl -> windowFunctions = NULL;
@@ -321,6 +318,7 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 			g_object_set_data (G_OBJECT(button), "track", trackCtrl);
 			g_object_set_data (G_OBJECT(button), "train", train);
 			g_object_set_data (G_OBJECT(button), "index", (void *)i);
+			gtk_widget_set_halign (button, GTK_ALIGN_START);
 			g_signal_connect (button, "notify::active", G_CALLBACK (sendButtonFunc), trackCtrl);
 			gtk_grid_attach (GTK_GRID(grid), button, 1, row++, 1, 1);
 		}
