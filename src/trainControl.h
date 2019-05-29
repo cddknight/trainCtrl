@@ -50,6 +50,11 @@ typedef struct _trainFunc
 {
 	int funcID;
 	char funcDesc[41];
+#ifdef __GTK_H__
+	GtkWidget *funcSwitch;
+#else
+	void *xPointer;
+#endif
 }
 trainFuncDef;
 

@@ -368,11 +368,12 @@ int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int funct
 		if (function == 0)
 		{
 			byteOne = ((train -> functions >> 1) & 0x0F) + 128;
-			byteOne |= (train -> functions & 0x01) << 4;
+			byteOne |= ((train -> functions & 0x01) << 4);
 		}
 		else if (function < 5)
 		{
 			byteOne = ((train -> functions >> 1) & 0x0F) + 128;
+			byteOne |= ((train -> functions & 0x01) << 4);
 		}
 		else if (function < 9)
 		{
