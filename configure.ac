@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 #
 AC_PREREQ(2.59)
-AC_INIT(traincontrol, 1.1, chris@theknight.co.uk)
+AC_INIT(traincontrol, 1.2, chris@theknight.co.uk)
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/trainControl.c])
 AC_CONFIG_HEADER([config.h])
@@ -26,7 +26,7 @@ AC_CHECK_HEADERS([ctype.h math.h stdio.h stdlib.h string.h time.h wiringPi.h])
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_STRUCT_TM
-REVISION=4
+REVISION=1
 LIBDIR=${libexecdir}
 AC_SUBST([REVISION])
 AC_SUBST([LIBDIR])
