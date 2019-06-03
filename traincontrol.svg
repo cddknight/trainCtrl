@@ -26,10 +26,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.35"
-     inkscape:cx="-677.99775"
+     inkscape:cx="-689.42632"
      inkscape:cy="537.14286"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer3"
+     inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1920"
      inkscape:window-height="1136"
@@ -57,10 +57,10 @@
     <rect
        id="rect3717"
        width="136.82738"
-       height="205.61908"
+       height="192.7679"
        x="87.690468"
-       y="30.148806"
-       style="fill:#1a1a1a;stroke-width:0.25847852" />
+       y="42.999996"
+       style="fill:#1a1a1a;stroke-width:0.25027075" />
     <rect
        style="fill:#333333;stroke-width:0.26458332"
        id="rect3725"
@@ -95,6 +95,14 @@
        height="7.5595236"
        x="139.85118"
        y="8.9821377" />
+    <rect
+       style="fill:#1a1a1a;stroke-width:3.29093981;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect1516"
+       width="136.82738"
+       height="44.601189"
+       x="87.690475"
+       y="22.589279"
+       ry="22.300594" />
   </g>
   <g
      inkscape:groupmode="layer"
@@ -118,14 +126,14 @@
     <circle
        style="fill:#808000;stroke-width:0.26458332"
        id="path3735"
-       cx="111.50298"
-       cy="54.717258"
+       cx="115.28274"
+       cy="53.205353"
        r="15.497024" />
     <circle
        style="fill:#808000;stroke-width:0.26458332"
        id="path3735-3"
-       cx="201.83928"
-       cy="53.583328"
+       cx="198.81548"
+       cy="52.827377"
        r="15.497025" />
     <rect
        style="fill:#808000;stroke-width:0.26458332"
@@ -171,14 +179,14 @@
     <circle
        style="fill:#333333;stroke-width:0.26458332"
        id="path3805"
-       cx="111.50298"
-       cy="54.717262"
+       cx="115.28274"
+       cy="53.20536"
        r="10.961308" />
     <circle
        style="fill:#333333;stroke-width:0.26458332"
        id="path3805-5"
-       cx="201.83928"
-       cy="53.583336"
+       cx="198.81546"
+       cy="52.827381"
        r="10.961308" />
     <circle
        id="path3713"
