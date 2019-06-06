@@ -280,16 +280,18 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 		gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowFunctions), 
 				"/usr/share/pixmaps/traincontrol.svg", NULL);
 
-		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
+		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 		gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
+		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
+		gtk_widget_set_valign (vbox, GTK_ALIGN_FILL);
 		gtk_container_add (GTK_CONTAINER (trackCtrl -> windowFunctions), vbox);
 
 		grid = gtk_grid_new();
 		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
 		gtk_widget_set_valign (grid, GTK_ALIGN_FILL);
-		gtk_grid_set_row_spacing (GTK_GRID (grid), 3);
+		gtk_grid_set_row_spacing (GTK_GRID (grid), 5);
 		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
-		gtk_box_pack_start (GTK_BOX(vbox), grid, TRUE, TRUE, 3);
+		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 0);
 
 		label = gtk_label_new ("Train: ");
 		gtk_widget_set_halign (label, GTK_ALIGN_END);
@@ -925,9 +927,9 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 		grid = gtk_grid_new();
 		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
 		gtk_widget_set_valign (grid, GTK_ALIGN_FILL);
-		gtk_grid_set_row_spacing (GTK_GRID (grid), 3);
+		gtk_grid_set_row_spacing (GTK_GRID (grid), 5);
 		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
-		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 6);
+		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 0);
 
 		for (i = 0; i < 7; ++i)
 		{
@@ -950,7 +952,7 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 				trackCtrl -> connectionStatus[i - 1] = -1;
 			}
 		}
-		gtk_box_pack_start (GTK_BOX(vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 3);
+//		gtk_box_pack_start (GTK_BOX(vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 0);
 
 		trackCtrl -> connectionStatus[6] = 0;
 
@@ -1087,12 +1089,33 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 		contentArea = gtk_dialog_get_content_area (GTK_DIALOG (trackCtrl -> dialogProgram));
 
+
 		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 		gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
 		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
 		gtk_widget_set_valign (vbox, GTK_ALIGN_FILL);
 		gtk_box_pack_start (GTK_BOX (contentArea), vbox, TRUE, TRUE, 0);
 
+		grid = gtk_grid_new();
+		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
+		gtk_widget_set_valign (grid, GTK_ALIGN_FILL);
+		gtk_grid_set_row_spacing (GTK_GRID (grid), 5);
+		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
+		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 0);
+
+
+
+
+
+
+
+
+/*		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+		gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
+		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
+		gtk_widget_set_valign (vbox, GTK_ALIGN_FILL);
+		gtk_box_pack_start (GTK_BOX (contentArea), vbox, TRUE, TRUE, 0);
+*/
 		while (hintLables[i] != NULL)
 		{
 			label = gtk_label_new (hintLables[i]);
@@ -1104,13 +1127,13 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 		gtk_box_pack_start (GTK_BOX(vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 3);
 
-		grid = gtk_grid_new();
+/*		grid = gtk_grid_new();
 		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
 		gtk_widget_set_valign (grid, GTK_ALIGN_FILL);
 		gtk_grid_set_row_spacing (GTK_GRID (grid), 3);
 		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
 		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 3);
-
+*/
 		for (i = 0; i < 5; ++i)
 		{
 			label = gtk_label_new (controlLables[i]);
@@ -1490,12 +1513,13 @@ static void activate (GtkApplication *app, gpointer userData)
 			g_signal_connect (trackCtrl -> buttonProgram, "clicked", G_CALLBACK (programTrain), trackCtrl);
 			gtk_widget_set_halign (trackCtrl -> buttonProgram, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonProgram);
-			gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 
 			trackCtrl -> buttonStopAll = gtk_button_new_with_mnemonic ("_STOP!");
 			g_signal_connect (trackCtrl -> buttonStopAll, "clicked", G_CALLBACK (stopAllTrains), trackCtrl);
 			gtk_widget_set_halign (trackCtrl -> buttonStopAll, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonStopAll);
+
+			gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 
 			grid = gtk_grid_new();
 			gtk_container_add (GTK_CONTAINER (vbox), grid);
