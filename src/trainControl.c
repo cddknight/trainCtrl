@@ -1052,7 +1052,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 	static char *controlLables[] =
 	{
-		"DCC Address", "CV Number", "Byte Value (0 - 255)", "Bit number (0 - 7)", "Bit Value (0 - 1)",
+		"DCC Address", "CV Number (1 - 1024)", "Byte Value (0 - 255)", "Bit number (0 - 7)", "Bit Value (0 - 1)",
 		"Read current value", "Last reply:", "-"
 	};
 	static char *hintLables[] =
@@ -1064,8 +1064,8 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		"* If bit number is -1 then set the byte value.",
 		NULL
 	};
-	static double defValues[] = { 0.0, 0.0, 0.0, -1.0, 0.0 };
-	static double minValues[] = { 0.0, 0.0, 0.0, -1.0, 0.0 };
+	static double defValues[] = { 0.0, 1.0, 0.0, -1.0, 0.0 };
+	static double minValues[] = { 0.0, 1.0, 0.0, -1.0, 0.0 };
 	static double maxValues[] = { 10294.0, 1025.0, 256.0, 8.0, 2.0 };
 
 	int i = 0;
@@ -1103,19 +1103,6 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
 		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 0);
 
-
-
-
-
-
-
-
-/*		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-		gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
-		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
-		gtk_widget_set_valign (vbox, GTK_ALIGN_FILL);
-		gtk_box_pack_start (GTK_BOX (contentArea), vbox, TRUE, TRUE, 0);
-*/
 		while (hintLables[i] != NULL)
 		{
 			label = gtk_label_new (hintLables[i]);
@@ -1127,13 +1114,6 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 		gtk_box_pack_start (GTK_BOX(vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 3);
 
-/*		grid = gtk_grid_new();
-		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
-		gtk_widget_set_valign (grid, GTK_ALIGN_FILL);
-		gtk_grid_set_row_spacing (GTK_GRID (grid), 3);
-		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
-		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 3);
-*/
 		for (i = 0; i < 5; ++i)
 		{
 			label = gtk_label_new (controlLables[i]);
