@@ -29,10 +29,10 @@
   <pointDaemon ident="2" count="11">
     <point ident="12" channel="0" default="285" turnout="250"/>
     <point ident="13" channel="1" default="290" turnout="320"/>
-    <point ident="14" channel="2" default="290" turnout="320"/>
+    <point ident="14" channel="2" default="310" turnout="270"/>
     <point ident="15" channel="3" default="290" turnout="320"/>
-    <point ident="16" channel="4" default="290" turnout="320"/>
-    <point ident="17" channel="5" default="290" turnout="320"/>
+    <point ident="16" channel="4" default="305" turnout="275"/>
+    <point ident="17" channel="5" default="280" turnout="237"/>
     <point ident="18" channel="6" default="290" turnout="320"/>
     <point ident="19" channel="7" default="290" turnout="320"/>
     <point ident="20" channel="8" default="290" turnout="320"/>
