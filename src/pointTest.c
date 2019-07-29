@@ -61,13 +61,17 @@ gboolean clockTickCallback (gpointer data)
 		double curVal = gtk_range_get_value (GTK_RANGE (pointTest -> scaleServo));
 		if (curVal != pointTest -> currentValue)
 		{
-			printf ("Change to: %f\n", curVal);
 			pointTest -> currentValue = curVal;
 #ifdef HAVE_WIRINGPI_H
-			pwmWrite (PIN_BASE + 15, curVal);
+			if (servoFD != -1)
+			{
+				pwmWrite (PIN_BASE + 15, curVal);
+				printf ("Updated to: %f\n", curVal);
+			}
 #endif
 		}
 	}
+	return TRUE;
 }
 
 /**********************************************************************************************************************
@@ -131,7 +135,7 @@ static void activate (GtkApplication *app, gpointer userData)
 		gtk_container_add (GTK_CONTAINER (vbox), pointTest -> scaleServo);
 
 		gtk_widget_show_all (pointTest -> windowCtrl);
-		g_timeout_add (250, clockTickCallback, pointTest);
+		g_timeout_add (100, clockTickCallback, pointTest);
 	}
 }
 
@@ -188,7 +192,6 @@ int main (int argc, char **argv)
 	GtkApplication *app;
 
 #ifdef HAVE_WIRINGPI_H
-	printf ("Setting up wiring PI\n");
 	wiringPiSetup();
 
 	if ((servoFD = pca9685Setup(PIN_BASE, 0x40, HERTZ)) < 0)
