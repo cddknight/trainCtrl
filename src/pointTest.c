@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <stdlib.h>
+#include "config.h"
 #ifdef HAVE_WIRINGPI_H
 #include <wiringPi.h>
 #include "pca9685.h"
@@ -187,6 +188,7 @@ int main (int argc, char **argv)
 	GtkApplication *app;
 
 #ifdef HAVE_WIRINGPI_H
+	printf ("Setting up wiring PI\n");
 	wiringPiSetup();
 
 	if ((servoFD = pca9685Setup(PIN_BASE, 0x40, HERTZ)) < 0)
