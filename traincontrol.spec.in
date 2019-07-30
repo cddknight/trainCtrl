@@ -34,6 +34,7 @@ install -p -m 755 @PACKAGE_NAME@ $RPM_BUILD_ROOT%{_bindir}/
 install -p -m 755 traincalc $RPM_BUILD_ROOT%{_bindir}/traincalc
 install -p -m 755 traindaemon $RPM_BUILD_ROOT%{_bindir}/traindaemon
 install -p -m 755 pointdaemon $RPM_BUILD_ROOT%{_bindir}/pointdaemon
+install -p -m 755 pointtest $RPM_BUILD_ROOT%{_bindir}/pointtest
 install -p -m 644 @PACKAGE_NAME@.svg $RPM_BUILD_ROOT%{_datadir}/pixmaps/@PACKAGE_NAME@.svg
 install -m 644 trackrc.xml $RPM_BUILD_ROOT%{_sysconfdir}/train/trackrc.xml
 install -m 644 track.xml $RPM_BUILD_ROOT%{_sysconfdir}/train/track.xml
@@ -49,6 +50,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/traincalc
 %{_bindir}/traindaemon
 %{_bindir}/pointdaemon
+%{_bindir}/pointtest
 %{_datadir}/pixmaps/@PACKAGE_NAME@.svg
 %{_datadir}/applications/@PACKAGE_NAME@.desktop
 %config(noreplace) %{_sysconfdir}/train/trackrc.xml

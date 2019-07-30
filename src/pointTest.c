@@ -1,3 +1,25 @@
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P O I N T  T E S T . C                                                                                            *
+ *  ======================                                                                                            *
+ *                                                                                                                    *
+ *  This is free software; you can redistribute it and/or modify it under the terms of the GNU General Public         *
+ *  License version 2 as published by the Free Software Foundation.  Note that I am not granting permission to        *
+ *  redistribute or modify this under the terms of any later version of the General Public License.                   *
+ *                                                                                                                    *
+ *  This is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied        *
+ *  warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more     *
+ *  details.                                                                                                          *
+ *                                                                                                                    *
+ *  You should have received a copy of the GNU General Public License along with this program (in the file            *
+ *  "COPYING"); if not, write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111,   *
+ *  USA.                                                                                                              *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \file
+ *  \brief Move a servo to find end points for the point config.
+ */
 #include <gtk/gtk.h>
 #include <sys/time.h>
 #include <sys/stat.h>
@@ -14,10 +36,11 @@
 #define HERTZ 50
 
 int servoFD = -1;
+int channel = 15;
 
 typedef struct 
 {
-	GtkWidget *windowCtrl;				//  1
+	GtkWidget *windowCtrl;
 	GtkWidget *labelServo;
 	GtkWidget *scaleServo;
 	double currentValue;
@@ -53,6 +76,17 @@ static void windowDestroy (GtkWidget *window, gpointer userData)
 {
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  C L O C K  T I C K  C A L L B A C K                                                                               *
+ *  ===================================                                                                               *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Called by the timer to check the current value.
+ *  \param data Pointer to the point config.
+ *  \result True keep the timer running.
+ */
 gboolean clockTickCallback (gpointer data)
 {
 	pointTestDef *pointTest = (pointTestDef *)data;
@@ -65,7 +99,7 @@ gboolean clockTickCallback (gpointer data)
 #ifdef HAVE_WIRINGPI_H
 			if (servoFD != -1)
 			{
-				pwmWrite (PIN_BASE + 15, curVal);
+				pwmWrite (PIN_BASE + channel, curVal);
 				printf ("Updated to: %f\n", curVal);
 			}
 #endif
@@ -89,6 +123,7 @@ gboolean clockTickCallback (gpointer data)
 static void activate (GtkApplication *app, gpointer userData)
 {
 	int j;
+	char buff[41];
 	GtkWidget *grid;
 	GtkWidget *vbox, *hbox;
 	GMenu *menu;
@@ -107,8 +142,7 @@ static void activate (GtkApplication *app, gpointer userData)
 		g_signal_connect (pointTest -> windowCtrl, "destroy", G_CALLBACK (windowDestroy), pointTest);
 		gtk_window_set_title (GTK_WINDOW (pointTest -> windowCtrl), "Point Test");
 		if (!gtk_window_set_icon_from_file (GTK_WINDOW (pointTest -> windowCtrl),
-				"/usr/share/pixmaps/traincontrol.svg",
-				NULL))
+				"/usr/share/pixmaps/traincontrol.svg", NULL))
 		{
 			gtk_window_set_icon_name (GTK_WINDOW (pointTest -> windowCtrl), "preferences-desktop");
 		}
@@ -118,15 +152,16 @@ static void activate (GtkApplication *app, gpointer userData)
 		gtk_container_set_border_width (GTK_CONTAINER(vbox), 5);
 		gtk_container_add (GTK_CONTAINER (pointTest -> windowCtrl), vbox);
 
-		pointTest -> labelServo = gtk_label_new ("Servo");
+		sprintf (buff, "Servo[%d]", channel);
+		pointTest -> labelServo = gtk_label_new (buff);
 		gtk_container_add (GTK_CONTAINER (vbox), pointTest -> labelServo);
 
-		pointTest -> scaleServo = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 499, 1);
+		pointTest -> scaleServo = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 500, 1);
 		gtk_widget_set_vexpand (pointTest -> scaleServo, 1);
 		gtk_scale_set_value_pos (GTK_SCALE(pointTest -> scaleServo), GTK_POS_TOP);
 		gtk_scale_set_digits (GTK_SCALE(pointTest -> scaleServo), 0);
 		gtk_scale_set_has_origin (GTK_SCALE(pointTest -> scaleServo), TRUE);
-		for (j = 1; j < 500; j += 100)
+		for (j = 0; j <= 500; j += 125)
 		{
 			gtk_scale_add_mark (GTK_SCALE(pointTest -> scaleServo), j, GTK_POS_LEFT, NULL);
 		}
@@ -199,7 +234,7 @@ int main (int argc, char **argv)
 		return 0;
 	}
 	pca9685PWMReset (servoFD);
-	pwmWrite (PIN_BASE + 15, 250);
+	pwmWrite (PIN_BASE + channel, 250);
 #endif
 
 	app = gtk_application_new ("Point.Test", G_APPLICATION_HANDLES_OPEN); // G_APPLICATION_FLAGS_NONE);
