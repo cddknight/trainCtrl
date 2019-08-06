@@ -89,7 +89,7 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 		{
 			if (strcmp ((char *)curNode->name, "function") == 0)
 			{
-				xmlChar *idStr, *descStr;
+				xmlChar *idStr, *descStr, *slowStr;
 
 				if ((idStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{
@@ -180,7 +180,7 @@ void processFunctions (trackCtrlDef *trackCtrl, xmlNode *inNode, trainCtrlDef *t
 void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 {
 	int loop = 0;
-	xmlChar *numStr, *idStr, *descStr;
+	xmlChar *numStr, *idStr, *descStr, *slowStr;
 	xmlNode *curNode = NULL;
 
 	if ((trackCtrl -> trainCtrl = (trainCtrlDef *)malloc (count * sizeof (trainCtrlDef))) == NULL)
@@ -202,7 +202,13 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 					{
 						if ((descStr = xmlGetProp(curNode, (const xmlChar*)"desc")) != NULL)
 						{
-							int num = -1, id = -1;
+							int num = -1, id = -1, slow = 10;
+
+							if ((slowStr = xmlGetProp(curNode, (const xmlChar*)"slow")) != NULL)
+							{
+								sscanf ((char *)slowStr, "%d", &slow);
+								xmlFree(slowStr);
+							}
 
 							sscanf ((char *)numStr, "%d", &num);
 							sscanf ((char *)idStr, "%d", &id);
@@ -212,6 +218,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 								trackCtrl -> trainCtrl[loop].trainReg = loop + 1;
 								trackCtrl -> trainCtrl[loop].trainID = id;
 								trackCtrl -> trainCtrl[loop].trainNum = num;
+								trackCtrl -> trainCtrl[loop].slowSpeed = slow;
 								strncpy (trackCtrl -> trainCtrl[loop].trainDesc, (char *)descStr, 40);
 								processFunctions (trackCtrl, curNode -> children, &trackCtrl -> trainCtrl[loop]);
 								++loop;

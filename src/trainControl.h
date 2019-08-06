@@ -65,6 +65,7 @@ typedef struct _trainCtrl
 	int trainNum;
 	int curSpeed;
 	int reverse;
+	int slowSpeed;
 	int functions;
 	int funcCount;
 	int funcCustom;
@@ -78,6 +79,7 @@ typedef struct _trainCtrl
 #ifdef __GTK_H__
 	GtkWidget *buttonNum;
 	GtkWidget *buttonHalt;
+	GtkWidget *buttonSlow;
 	GtkWidget *scaleSpeed;
 	GtkWidget *checkDir;
 #else

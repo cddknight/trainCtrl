@@ -378,6 +378,26 @@ static void haltTrain (GtkWidget *widget, gpointer data)
 	}
 }
 
+static void slowTrain (GtkWidget *widget, gpointer data)
+{
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
+
+	if (train -> curSpeed != train -> slowSpeed)
+	{
+		if (trainSetSpeed (trackCtrl, train, train -> slowSpeed))
+		{
+			train -> curSpeed = train -> remoteCurSpeed = train -> slowSpeed;
+			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), train -> slowSpeed);
+		}
+		else
+		{
+			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
+		}
+	}
+}
+
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  C H E C K  P O W E R  O N                                                                                         *
@@ -402,6 +422,8 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 				gtk_widget_set_sensitive (train -> buttonNum, state);
 			if (train -> buttonHalt != NULL)
 				gtk_widget_set_sensitive (train -> buttonHalt, state);
+			if (train -> buttonSlow != NULL)
+				gtk_widget_set_sensitive (train -> buttonSlow, state);
 			if (train -> scaleSpeed != NULL)
 				gtk_widget_set_sensitive (train -> scaleSpeed, state);
 			if (train -> checkDir != NULL)
@@ -1525,6 +1547,12 @@ static void activate (GtkApplication *app, gpointer userData)
 					g_signal_connect (train -> buttonHalt, "clicked", G_CALLBACK (haltTrain), trackCtrl);
 					gtk_widget_set_halign (train -> buttonHalt, GTK_ALIGN_FILL);
 					gtk_grid_attach(GTK_GRID(grid), train -> buttonHalt, i, r++, 1, 1);
+
+					train -> buttonSlow = gtk_button_new_with_label ("Slow");
+					g_object_set_data (G_OBJECT(train -> buttonSlow), "train", train);
+					g_signal_connect (train -> buttonSlow, "clicked", G_CALLBACK (slowTrain), trackCtrl);
+					gtk_widget_set_halign (train -> buttonSlow, GTK_ALIGN_FILL);
+					gtk_grid_attach(GTK_GRID(grid), train -> buttonSlow, i, r++, 1, 1);
 
 					train -> scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 126, 0.5);
 					g_object_set_data (G_OBJECT(train -> scaleSpeed), "train", train);
