@@ -8,6 +8,7 @@
 		point - The port number to listen for point controllers on.
 		config - The point number to listen for config requests (also used by a client).
 		device - The serial device connected to the DCC++.
+		flags - Control various functions.
 
 	(If this is a client you only need server and config and no other configuration.)
 
@@ -44,7 +45,7 @@
 				ident - The identity of the point (optional).
 
 -->
-<track name="The Office Line" server="tinyseven.theknight.home" port="30330" point="30331" config="30332" device="/dev/ttyACM0">
+<track name="The Office Line" server="tinyseven.theknight.home" port="30330" point="30331" config="30332" device="/dev/ttyACM0" flags="1">
   <trains count="7">
     <train num="4560" ident="320" slow="8" desc="Black GWR Class 5101 (2-6-2T)">
       <functions count="2" custom="1">

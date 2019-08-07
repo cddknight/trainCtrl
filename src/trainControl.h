@@ -21,9 +21,10 @@
  *  \brief Header file for train control.
  */
 
-#define POWER_SRT	-1
-#define POWER_OFF	0
-#define POWER_ON	1
+#define POWER_SRT			-1
+#define POWER_OFF			0
+#define POWER_ON			1
+#define TRACK_FLAG_SLOW		1
 
 typedef struct _trackCell
 {
@@ -110,6 +111,7 @@ typedef struct _trackCtrl
 	int configPort;
 	int connectRunning;
 	int shownCurrent;
+	int flags;
 	char server[81];
 	char trackName[81];
 	char serialDevice[81];

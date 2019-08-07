@@ -405,7 +405,7 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 		{
 			if (level == 0 && strcmp ((char *)curNode->name, "track") == 0)
 			{
-				xmlChar *nameStr, *serverStr, *portStr, *cfgPointStr, *cfgPortStr, *serialStr;
+				xmlChar *nameStr, *serverStr, *portStr, *cfgPointStr, *cfgPortStr, *serialStr, *flagStr;
 				if ((nameStr = xmlGetProp(curNode, (const xmlChar*)"name")) != NULL)
 				{
 					strncpy (trackCtrl -> trackName, (char *)nameStr, 80);
@@ -435,6 +435,11 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 				{
 					strncpy (trackCtrl -> serialDevice, (char *)serialStr, 80);
 					xmlFree (serialStr);
+				}
+				if ((flagStr = xmlGetProp(curNode, (const xmlChar*)"flags")) != NULL)
+				{
+					sscanf ((char *)flagStr, "%d", &trackCtrl -> flags);
+					xmlFree (flagStr);
 				}
 				parseTree (trackCtrl, curNode -> children, 1);
 			}

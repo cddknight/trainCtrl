@@ -1548,12 +1548,14 @@ static void activate (GtkApplication *app, gpointer userData)
 					gtk_widget_set_halign (train -> buttonHalt, GTK_ALIGN_FILL);
 					gtk_grid_attach(GTK_GRID(grid), train -> buttonHalt, i, r++, 1, 1);
 
-					train -> buttonSlow = gtk_button_new_with_label ("Slow");
-					g_object_set_data (G_OBJECT(train -> buttonSlow), "train", train);
-					g_signal_connect (train -> buttonSlow, "clicked", G_CALLBACK (slowTrain), trackCtrl);
-					gtk_widget_set_halign (train -> buttonSlow, GTK_ALIGN_FILL);
-					gtk_grid_attach(GTK_GRID(grid), train -> buttonSlow, i, r++, 1, 1);
-
+					if (trackCtrl -> flags & TRACK_FLAG_SLOW)
+					{
+						train -> buttonSlow = gtk_button_new_with_label ("Slow");
+						g_object_set_data (G_OBJECT(train -> buttonSlow), "train", train);
+						g_signal_connect (train -> buttonSlow, "clicked", G_CALLBACK (slowTrain), trackCtrl);
+						gtk_widget_set_halign (train -> buttonSlow, GTK_ALIGN_FILL);
+						gtk_grid_attach(GTK_GRID(grid), train -> buttonSlow, i, r++, 1, 1);
+					}
 					train -> scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 126, 0.5);
 					g_object_set_data (G_OBJECT(train -> scaleSpeed), "train", train);
 					g_signal_connect (train -> scaleSpeed, "value-changed", G_CALLBACK (moveTrain), trackCtrl);
