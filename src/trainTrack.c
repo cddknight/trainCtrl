@@ -89,7 +89,7 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 		{
 			if (strcmp ((char *)curNode->name, "function") == 0)
 			{
-				xmlChar *idStr, *descStr, *slowStr;
+				xmlChar *idStr, *descStr;
 
 				if ((idStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{

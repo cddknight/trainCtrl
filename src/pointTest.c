@@ -124,8 +124,7 @@ static void activate (GtkApplication *app, gpointer userData)
 {
 	int j;
 	char buff[41];
-	GtkWidget *grid;
-	GtkWidget *vbox, *hbox;
+	GtkWidget *vbox;
 	GMenu *menu;
 	pointTestDef *pointTest;
 
@@ -223,7 +222,7 @@ quitCallback (GSimpleAction *action, GVariant *parameter, gpointer data)
  */
 int main (int argc, char **argv)
 {
-	int status = 1, i;
+	int status = 1;
 	GtkApplication *app;
 
 #ifdef HAVE_WIRINGPI_H
