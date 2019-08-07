@@ -378,6 +378,18 @@ static void haltTrain (GtkWidget *widget, gpointer data)
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  S L O W  T R A I N                                                                                                *
+ *  ==================                                                                                                *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Set the speed of the train to it's slow speed.
+ *  \param widget Calling widget.
+ *  \param data Passed data, pointer to track config.
+ *  \result None.
+ */
 static void slowTrain (GtkWidget *widget, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
