@@ -1546,6 +1546,8 @@ static void activate (GtkApplication *app, gpointer userData)
 				if (train != NULL)
 				{
 					int r = 0;
+					GtkAdjustment *adjust = gtk_adjustment_new (0, 0, 126, 1.0, 5.0, 0.0);
+
 					sprintf (tempBuff, "%d", train -> trainNum);
 					train -> buttonNum = gtk_button_new_with_label (tempBuff);
 					g_object_set_data (G_OBJECT(train -> buttonNum), "train", train);
@@ -1568,7 +1570,14 @@ static void activate (GtkApplication *app, gpointer userData)
 						gtk_widget_set_halign (train -> buttonSlow, GTK_ALIGN_FILL);
 						gtk_grid_attach(GTK_GRID(grid), train -> buttonSlow, i, r++, 1, 1);
 					}
-					train -> scaleSpeed = gtk_scale_new_with_range (GTK_ORIENTATION_VERTICAL, 0, 126, 0.5);
+
+					train -> checkDir = gtk_check_button_new_with_label ("Reverse");
+					g_object_set_data (G_OBJECT(train -> checkDir), "train", train);
+					g_signal_connect (train -> checkDir, "clicked", G_CALLBACK (reverseTrain), trackCtrl);
+					gtk_widget_set_halign (train -> checkDir, GTK_ALIGN_CENTER);
+					gtk_grid_attach(GTK_GRID(grid), train -> checkDir, i, r++, 1, 1);
+
+					train -> scaleSpeed = gtk_scale_new (GTK_ORIENTATION_VERTICAL, adjust);
 					g_object_set_data (G_OBJECT(train -> scaleSpeed), "train", train);
 					g_signal_connect (train -> scaleSpeed, "value-changed", G_CALLBACK (moveTrain), trackCtrl);
 					gtk_widget_set_vexpand (train -> scaleSpeed, 1);
@@ -1582,12 +1591,6 @@ static void activate (GtkApplication *app, gpointer userData)
 					gtk_widget_set_halign (train -> scaleSpeed, GTK_ALIGN_CENTER);
 					gtk_grid_attach(GTK_GRID(grid), train -> scaleSpeed, i, r++, 1, 1);
 					gettimeofday(&train -> lastChange, NULL);
-
-					train -> checkDir = gtk_check_button_new_with_label ("Reverse");
-					g_object_set_data (G_OBJECT(train -> checkDir), "train", train);
-					g_signal_connect (train -> checkDir, "clicked", G_CALLBACK (reverseTrain), trackCtrl);
-					gtk_widget_set_halign (train -> checkDir, GTK_ALIGN_CENTER);
-					gtk_grid_attach(GTK_GRID(grid), train -> checkDir, i, r++, 1, 1);
 				}
 			}
 			checkPowerOn (trackCtrl);
