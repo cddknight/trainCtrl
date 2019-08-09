@@ -270,7 +270,6 @@ int main (int argc, char *argv[])
 	fd_set readfds;
 	struct timeval timeout;
 	time_t lastCheck = 0;
-	char addrBuffer[81] = "127.0.0.1";
 	int c;
 
 	while ((c = getopt(argc, argv, "c:s:dLID")) != -1)
@@ -309,10 +308,6 @@ int main (int argc, char *argv[])
 
 	pointCtrl.server = serverIdent;
 	loadConfigFile ();
-	if (!GetAddressFromName (pointCtrl.serverName, addrBuffer))
-	{
-		strcpy (addrBuffer, pointCtrl.serverName);
-	}
 
 	/**********************************************************************************************************************
 	 * Daemonize if needed, all port will close.                                                                          *
@@ -339,7 +334,7 @@ int main (int argc, char *argv[])
 		if (serverHandle == -1)
 		{
 			putLogMessage (LOG_INFO, "P:Connect to: %s:%d", pointCtrl.serverName, pointCtrl.serverPort);
-			serverHandle = ConnectClientSocket (addrBuffer, pointCtrl.serverPort, NULL);
+			serverHandle = ConnectClientSocket (pointCtrl.serverName, pointCtrl.serverPort, NULL);
 			if (serverHandle != -1)
 			{
 				char tempBuff[21];
