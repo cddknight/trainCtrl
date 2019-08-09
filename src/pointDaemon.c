@@ -339,7 +339,7 @@ int main (int argc, char *argv[])
 		if (serverHandle == -1)
 		{
 			putLogMessage (LOG_INFO, "P:Connect to: %s:%d", pointCtrl.serverName, pointCtrl.serverPort);
-			serverHandle = ConnectClientSocket (addrBuffer, pointCtrl.serverPort);
+			serverHandle = ConnectClientSocket (addrBuffer, pointCtrl.serverPort, NULL);
 			if (serverHandle != -1)
 			{
 				char tempBuff[21];

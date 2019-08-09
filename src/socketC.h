@@ -27,11 +27,12 @@ int ServerSocketSetup (int port);
 int ServerSocketFile (char *fileName);
 int ServerSocketAccept (int socket, char *address);
 int ConnectSocketFile (char *fileName);
-int ConnectClientSocket (char *host, int port);
+int ConnectClientSocket (char *host, int port, char *address);
 int SendSocket (int socket, char *buffer, int size);
 int RecvSocket (int socket, char *buffer, int size);
 int CloseSocket (int *socket);
 int SocketValid (int socket);
+void setNonBlocking(int socket, int set);
 int GetAddressFromName (char *name, char *address);
 
 #endif

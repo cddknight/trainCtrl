@@ -239,7 +239,7 @@ void *trainConnectThread (void *arg)
 	{
 		if (trackCtrl -> serverHandle == -1)
 		{
-			trackCtrl -> serverHandle = ConnectClientSocket (addrBuffer, trackCtrl -> serverPort);
+			trackCtrl -> serverHandle = ConnectClientSocket (addrBuffer, trackCtrl -> serverPort, NULL);
 			if (trackCtrl -> serverHandle == -1)
 			{
 				sleep (5);

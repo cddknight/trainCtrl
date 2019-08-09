@@ -47,8 +47,8 @@ const int MAXCONNECTIONS = 5;
  */
 int ServerSocketSetup (int port)
 {
-	struct sockaddr_in mAddress;
-	int on = 1, mSocket = socket (AF_INET, SOCK_STREAM, 0);
+	struct sockaddr_in6 mAddress;
+	int on = 1, mSocket = socket (AF_INET6, SOCK_STREAM, 0);
 
 	if (!SocketValid (mSocket))
 		return -1;
@@ -59,10 +59,10 @@ int ServerSocketSetup (int port)
 		return -1;
 	}
 
-	memset (&mAddress, 0, sizeof (mAddress));
-	mAddress.sin_family = AF_INET;
-	mAddress.sin_addr.s_addr = INADDR_ANY;
-	mAddress.sin_port = htons (port);
+	memset (&mAddress, 0, sizeof(mAddress));
+    mAddress.sin6_family = AF_INET6;
+	mAddress.sin6_addr   = in6addr_any;
+	mAddress.sin6_port   = htons(port);
 
 	if (bind (mSocket, (struct sockaddr *) &mAddress, sizeof (mAddress)) == -1)
 	{
@@ -130,10 +130,9 @@ int ServerSocketFile (char *fileName)
  */
 int ServerSocketAccept (int socket, char *address)
 {
-	struct sockaddr_in mAddress;
 	struct timeval timeout;
 	fd_set fdset;
-	int addr_length = sizeof (mAddress), clientSocket = -1;
+	int clientSocket = -1;
 
 	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
@@ -149,14 +148,18 @@ int ServerSocketAccept (int socket, char *address)
 		return -1;
 	}
 
-	clientSocket = accept (socket, (struct sockaddr *) &mAddress, (socklen_t *) &addr_length);
-	if (clientSocket != -1 && address)
+	clientSocket = accept (socket, NULL, NULL);
+	if (clientSocket != -1)
 	{
-		sprintf (address, "%d.%d.%d.%d",
-				mAddress.sin_addr.s_addr & 0xFF,
-				mAddress.sin_addr.s_addr >> 8  & 0xFF,
-				mAddress.sin_addr.s_addr >> 16 & 0xFF,
-				mAddress.sin_addr.s_addr >> 24 & 0xFF);
+		struct sockaddr_in6 clientaddr;
+		int addrlen=sizeof(clientaddr);		
+		char str[INET6_ADDRSTRLEN];
+
+		getpeername (clientSocket, (struct sockaddr *)&clientaddr, &addrlen);
+		if (inet_ntop (AF_INET6, &clientaddr.sin6_addr, str, sizeof(str))) 
+		{
+			strcpy (address, str);
+        }
 	}
 	return clientSocket;
 }
@@ -205,37 +208,107 @@ int ConnectSocketFile (char *fileName)
  *  \param port Host port to connect to.
  *  \result Handle of socket or -1 if failed.
  */
-int ConnectClientSocket (char *host, int port)
+int ConnectClientSocket (char *host, int port, char *retnAddr)
 {
-	struct sockaddr_in mAddress;
-	int on = 1, mSocket = socket (AF_INET, SOCK_STREAM, 0);
+	struct addrinfo *result;
+	struct addrinfo *res;
+	struct addrinfo addrInfoHint;
+	int on = 1, error, connected = 0;
+	int mSocket = socket (AF_INET, SOCK_STREAM, 0);
 
-	if (!SocketValid (mSocket))
+	if (SocketValid (mSocket))
 	{
-		return -1;
-	}
+		if (setsockopt (mSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof (on)) == 0)
+		{
+			/* only get all stream addresses */
+			memset (&addrInfoHint, 0, sizeof (addrInfoHint));
+			addrInfoHint.ai_flags = AI_ALL | AI_CANONNAME | AI_ADDRCONFIG;
+			addrInfoHint.ai_socktype = SOCK_STREAM;
 
-	if (setsockopt (mSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof (on)) == -1)
-	{
-		close (mSocket);
-		return -1;
-	}
+			/* resolve the domain name into a list of addresses */
+			if ((error = getaddrinfo (host, NULL, &addrInfoHint, &result)) == 0)
+			{
+				/* loop over all returned results and do inverse lookup */
+				for (res = result; res != NULL && !connected; res = res->ai_next)
+				{
+					switch (res->ai_family)
+					{
+					case AF_INET:
+						{
+							struct sockaddr_in *address4 = (struct sockaddr_in *)res -> ai_addr;
+							if (retnAddr != NULL)
+							{
+								inet_ntop (AF_INET, &(address4->sin_addr), retnAddr, INET_ADDRSTRLEN);
+							}
+							address4 -> sin_port = htons (port);
+							if (connect (mSocket, (struct sockaddr *)address4, sizeof (struct sockaddr_in)) == 0)
+							{
+								connected = 1;
+							}
+						}
+						break;
 
-	memset (&mAddress, 0, sizeof (mAddress));
-	mAddress.sin_family = AF_INET;
-	mAddress.sin_port = htons (port);
+					case AF_INET6:
+						{
+							struct sockaddr_in6 *address6 = (struct sockaddr_in6 *)res -> ai_addr;
+							if (retnAddr != NULL)
+							{
+								inet_ntop(AF_INET6, &(address6->sin6_addr), retnAddr, INET6_ADDRSTRLEN);
+							}
+							address6 -> sin6_port = htons (port);
+							if (connect (mSocket, (struct sockaddr *)address6, sizeof (struct sockaddr_in6)) == 0)
+							{
+								connected = 1;
+							}
+						}
+						break;
+					}
+				}
+				freeaddrinfo (result);
 
-	if (inet_pton (AF_INET, host, &mAddress.sin_addr) == EAFNOSUPPORT)
-	{
-		close (mSocket);
-		return -1;
+				if (connected)
+				{
+					return mSocket;
+				}
+			}
+		}
 	}
-	if (connect (mSocket, (struct sockaddr *) &mAddress, sizeof (mAddress)) != 0)
+	close (mSocket);
+	return -1;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  S E T  N O N  B L O C K I N G                                                                                     *
+ *  =============================                                                                                     *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Set the non-blocking flag on/off on a socket.
+ *  \param socket Socket to change.
+ *  \param set Set or clear non-blocking flag.
+ *  \result None.
+ */
+void setNonBlocking(int socket, int set)
+{
+	if (socket != -1)
 	{
-		close (mSocket);
-		return -1;
+		int opts;
+
+		opts = fcntl (socket, F_GETFL);
+		if (opts >= 0)
+		{
+			if (set)
+			{
+				opts = (opts | O_NONBLOCK);
+			}
+			else
+			{
+				opts = (opts & ~O_NONBLOCK);
+			}
+			fcntl(socket, F_SETFL, opts);
+		}
 	}
-	return mSocket;
 }
 
 /**********************************************************************************************************************
@@ -326,19 +399,34 @@ int SocketValid (int socket)
  */
 int GetAddressFromName (char *name, char *address)
 {
-	struct hostent *hostEntry = gethostbyname(name);
+	struct addrinfo *result;
+	struct addrinfo *res;
+	struct addrinfo addrInfoHint;
 
-	if (hostEntry)
+	/* only get all stream addresses */
+	memset (&addrInfoHint, 0, sizeof (addrInfoHint));
+	addrInfoHint.ai_flags = AI_ALL | AI_CANONNAME | AI_ADDRCONFIG;
+	addrInfoHint.ai_socktype = SOCK_STREAM;
+
+	/* resolve the domain name into a list of addresses */
+	if (getaddrinfo(name, NULL, &addrInfoHint, &result) == 0)
 	{
-		if (hostEntry -> h_addr_list[0])
+		/* loop over all returned results and do inverse lookup */
+		for (res = result; res != NULL; res = res->ai_next)
 		{
-			sprintf (address, "%d.%d.%d.%d",
-					(int)hostEntry -> h_addr_list[0][0] & 0xFF,
-					(int)hostEntry -> h_addr_list[0][1] & 0xFF,
-					(int)hostEntry -> h_addr_list[0][2] & 0xFF,
-					(int)hostEntry -> h_addr_list[0][3] & 0xFF);
+			char addrstr[100];
+			char hostname[NI_MAXHOST] = "";
+
+			if (getnameinfo(res->ai_addr, res->ai_addrlen, hostname, NI_MAXHOST, NULL, 0, 0) != 0)
+			{
+				continue;
+			}
+			inet_ntop (res->ai_family, res->ai_addr->sa_data, addrstr, 100);
+			strcpy (address, addrstr);
 			return 1;
 		}
+		freeaddrinfo (result);
 	}
 	return 0;
 }
+

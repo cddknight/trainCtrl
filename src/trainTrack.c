@@ -552,7 +552,7 @@ int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level)
 			{
 				strcpy (addrBuffer, trackCtrl -> server);
 			}
-			if ((cfgSocket = ConnectClientSocket (addrBuffer, trackCtrl -> configPort)) != -1)
+			if ((cfgSocket = ConnectClientSocket (addrBuffer, trackCtrl -> configPort, NULL)) != -1)
 			{
 				FILE *outFile = fopen (tmpConfig, "w+");
 
