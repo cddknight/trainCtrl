@@ -152,7 +152,7 @@ int ServerSocketAccept (int socket, char *address)
 	if (clientSocket != -1)
 	{
 		struct sockaddr_in6 clientaddr;
-		int addrlen=sizeof(clientaddr);		
+		socklen_t addrlen=sizeof(clientaddr);		
 		char str[INET6_ADDRSTRLEN];
 
 		getpeername (clientSocket, (struct sockaddr *)&clientaddr, &addrlen);
