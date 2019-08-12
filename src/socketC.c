@@ -206,6 +206,7 @@ int ConnectSocketFile (char *fileName)
  *  \brief Connect to a remote socket.
  *  \param host Host address to connecto to.
  *  \param port Host port to connect to.
+ *  \param retnAddr Optional (can be NULL) pointer to return used address.
  *  \result Handle of socket or -1 if failed.
  */
 int ConnectClientSocket (char *host, int port, char *retnAddr)
@@ -328,6 +329,35 @@ void setNonBlocking(int socket, int set)
 int SendSocket (int socket, char *buffer, int size)
 {
 	return send (socket, buffer, size, MSG_NOSIGNAL);
+}
+
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  W A I T  S O C K E T                                                                                              *
+ *  ====================                                                                                              *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Wait on recv data to be available.
+ *  \param socket Socket to wait on.
+ *  \param secs Seconds to wait.
+ *  \result Return from select.
+ */
+int WaitSocket (int socket, int secs)
+{
+	int selRetn;
+	fd_set readfds;
+	struct timeval timeout;
+
+	timeout.tv_sec = secs;
+	timeout.tv_usec = 0;
+
+	FD_ZERO(&readfds);
+	FD_SET (socket, &readfds);
+
+	selRetn = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
+	return selRetn;
 }
 
 /**********************************************************************************************************************

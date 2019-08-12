@@ -30,6 +30,7 @@ int ConnectSocketFile (char *fileName);
 int ConnectClientSocket (char *host, int port, char *address);
 int SendSocket (int socket, char *buffer, int size);
 int RecvSocket (int socket, char *buffer, int size);
+int WaitSocket (int socket, int secs);
 int CloseSocket (int *socket);
 int SocketValid (int socket);
 void setNonBlocking(int socket, int set);
