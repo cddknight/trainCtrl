@@ -27,7 +27,7 @@
     <point ident="11" channel="10" default="290" turnout="320"/>
   </pointDaemon>
   <pointDaemon ident="2" count="11">
-    <point ident="12" channel="0" default="285" turnout="250"/>
+    <point ident="12" channel="0" default="290" turnout="335"/>
     <point ident="13" channel="1" default="290" turnout="320"/>
     <point ident="14" channel="2" default="305" turnout="265"/>
     <point ident="15" channel="3" default="290" turnout="320"/>
