@@ -547,7 +547,7 @@ int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level)
 		{
 			int cfgSocket = -1;
 
-			if ((cfgSocket = ConnectClientSocket (trackCtrl -> server, trackCtrl -> configPort, NULL)) != -1)
+			if ((cfgSocket = ConnectClientSocket (trackCtrl -> server, trackCtrl -> configPort, 5, NULL)) != -1)
 			{
 				FILE *outFile = fopen (tmpConfig, "w+");
 
