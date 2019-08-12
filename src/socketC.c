@@ -259,7 +259,7 @@ int ConnectClientSocket (char *host, int port, int timeout, char *retnAddr)
 	struct addrinfo *result;
 	struct addrinfo *res;
 	struct addrinfo addrInfoHint;
-	int on = 1, error, connected = 0;
+	int error, connected = 0;
 	int mSocket = -1;
 
 	/* only get all stream addresses */
