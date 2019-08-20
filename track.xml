@@ -46,7 +46,7 @@
 
 -->
 <track name="The Office Line" server="tinyseven.theknight.home" port="30330" point="30331" config="30332" device="/dev/ttyACM0" flags="1">
-  <trains count="7">
+  <trains count="8">
     <train num="4560" ident="320" slow="12" desc="Black GWR Class 5101 (2-6-2T)">
       <functions count="2" custom="1">
 		<function desc="Front/Rear Lights" ident="0"/>
@@ -59,7 +59,8 @@
 		<function desc="Fire Glow" ident="1"/>
       </functions>
 	</train>
-    <train num="4666" ident="330" slow="6" desc="GWR Class 5700 Pannier (0-6-0PT)" />
+    <train num="4619" ident="370" slow="6" desc="Green GWR Class 5700 (0-6-0PT)" />
+    <train num="4666" ident="330" slow="6" desc="Black GWR Class 5700 (0-6-0PT)" />
     <train num="5601" ident="350" slow="10" desc="Green GWR Class 5600 (0-6-2T)" />
     <train num="42355" ident="360" slow="11" desc="Fowler Class 4P (2-6-4T)" />
     <train num="47451" ident="310" slow="11" desc="Fowler Class 3F 'Jinty' (0-6-0T)">
