@@ -12,7 +12,7 @@
 				default - The default (straight ahead) position.
 				turnout - The turnout position.
 -->
-<pointControl server="tinyseven.theknight.home" port="30331">
+<pointControl server="tinyseven.theknight.home" port="28201">
   <pointDaemon ident="1" count="11">
     <point ident="1" channel="0" default="290" turnout="320"/>
     <point ident="2" channel="1" default="290" turnout="320"/>

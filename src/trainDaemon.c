@@ -965,7 +965,7 @@ int main (int argc, char *argv[])
 {
 	fd_set readfds;
 	struct timeval timeout;
-	char inAddress[21] = "";
+	char inAddress[81] = "";
 	int i, c, p, connectedCount = 0;
 	time_t curRead = time(NULL) + 5;
 
