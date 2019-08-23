@@ -1,6 +1,6 @@
 <track name="The Simple Line" server="192.168.30.135" port="28200" timeout="5" ipver="3" device="/dev/ttyACM0">
   <trains count="1">
-    <train num="68035" id="300" desc="J94"/>
+    <train num="1" id="3" desc="Unknown"/>
   </trains>
   <cells rows="4" cols="4" size="50">
     <cellRow row="0">
