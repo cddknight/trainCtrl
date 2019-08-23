@@ -3,6 +3,7 @@
 	pointControl
 		server - Address of the master track daemon.
 		port - Port number of the listener on the server.
+		timeout - Time to wait for the connection.
 		pointDaemon
 			ident - Server identity for the daemon.
 			count - The number of points controlled.
@@ -12,7 +13,7 @@
 				default - The default (straight ahead) position.
 				turnout - The turnout position.
 -->
-<pointControl server="tinyseven.theknight.home" port="28201">
+<pointControl server="tinyseven.theknight.home" port="28201" ipver="3">
   <pointDaemon ident="1" count="11">
     <point ident="1" channel="0" default="290" turnout="320"/>
     <point ident="2" channel="1" default="290" turnout="320"/>

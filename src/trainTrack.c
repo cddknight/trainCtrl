@@ -33,7 +33,7 @@
  **********************************************************************************************************************/
 static const char *tmpConfig = "/tmp/trainconfig.xml";
 static const char *memoryXML =
-"<track name=\"Simple Track\" server=\"127.0.0.1\" port=\"30330\" device=\"/dev/ttyACM0\">"\
+"<track name=\"Simple Track\" server=\"127.0.0.1\" port=\"30330\" ipver=\"1\" device=\"/dev/ttyACM0\">"\
 "<trains count=\"1\">"\
 "<train num=\"1234\" ident=\"3\" desc=\"Train\"/>"\
 "</trains>"\
@@ -405,41 +405,51 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 		{
 			if (level == 0 && strcmp ((char *)curNode->name, "track") == 0)
 			{
-				xmlChar *nameStr, *serverStr, *portStr, *cfgPointStr, *cfgPortStr, *serialStr, *flagStr;
-				if ((nameStr = xmlGetProp(curNode, (const xmlChar*)"name")) != NULL)
+				xmlChar *tempStr;
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"name")) != NULL)
 				{
-					strncpy (trackCtrl -> trackName, (char *)nameStr, 80);
-					xmlFree (nameStr);
+					strncpy (trackCtrl -> trackName, (char *)tempStr, 80);
+					xmlFree (tempStr);
 				}
-				if ((serverStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
 				{
-					strncpy (trackCtrl -> server, (char *)serverStr, 80);
-					xmlFree (serverStr);
+					strncpy (trackCtrl -> server, (char *)tempStr, 80);
+					xmlFree (tempStr);
 				}
-				if ((portStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)
 				{
-					sscanf ((char *)portStr, "%d", &trackCtrl -> serverPort);
-					xmlFree (portStr);
+					sscanf ((char *)tempStr, "%d", &trackCtrl -> serverPort);
+					xmlFree (tempStr);
 				}
-				if ((cfgPointStr = xmlGetProp(curNode, (const xmlChar*)"point")) != NULL)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"point")) != NULL)
 				{
-					sscanf ((char *)cfgPointStr, "%d", &trackCtrl -> pointPort);
-					xmlFree (cfgPointStr);
+					sscanf ((char *)tempStr, "%d", &trackCtrl -> pointPort);
+					xmlFree (tempStr);
 				}
-				if ((cfgPortStr = xmlGetProp(curNode, (const xmlChar*)"config")) != NULL)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"config")) != NULL)
 				{
-					sscanf ((char *)cfgPortStr, "%d", &trackCtrl -> configPort);
-					xmlFree (cfgPortStr);
+					sscanf ((char *)tempStr, "%d", &trackCtrl -> configPort);
+					xmlFree (tempStr);
 				}
-				if ((serialStr = xmlGetProp(curNode, (const xmlChar*)"device")) != NULL)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"timeout")) != NULL)
 				{
-					strncpy (trackCtrl -> serialDevice, (char *)serialStr, 80);
-					xmlFree (serialStr);
+					sscanf ((char *)tempStr, "%d", &trackCtrl -> conTimeout);
+					xmlFree (tempStr);
 				}
-				if ((flagStr = xmlGetProp(curNode, (const xmlChar*)"flags")) != NULL)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ipver")) != NULL)
 				{
-					sscanf ((char *)flagStr, "%d", &trackCtrl -> flags);
-					xmlFree (flagStr);
+					sscanf ((char *)tempStr, "%d", &trackCtrl -> ipVersion);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"device")) != NULL)
+				{
+					strncpy (trackCtrl -> serialDevice, (char *)tempStr, 80);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"flags")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &trackCtrl -> flags);
+					xmlFree (tempStr);
 				}
 				parseTree (trackCtrl, curNode -> children, 1);
 			}
@@ -547,7 +557,8 @@ int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level)
 		{
 			int cfgSocket = -1;
 
-			if ((cfgSocket = ConnectClientSocket (trackCtrl -> server, trackCtrl -> configPort, 5, NULL)) != -1)
+			if ((cfgSocket = ConnectClientSocket (trackCtrl -> server, trackCtrl -> configPort,
+					trackCtrl -> conTimeout, trackCtrl -> ipVersion, NULL)) != -1)
 			{
 				FILE *outFile = fopen (tmpConfig, "w+");
 

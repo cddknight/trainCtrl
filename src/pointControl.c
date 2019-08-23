@@ -141,38 +141,45 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 	{
 		if (curNode->type == XML_ELEMENT_NODE)
 		{
+			xmlChar *tempStr;
 			if (level == 0 && strcmp ((char *)curNode->name, "pointControl") == 0)
 			{
-				int port = -1;
-				xmlChar *serverStr, *portStr;
-
-				if ((serverStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
 				{
-					strcpy (pointCtrl -> serverName, (char *)serverStr);
-					xmlFree (serverStr);
+					strcpy (pointCtrl -> serverName, (char *)tempStr);
+					xmlFree (tempStr);
 				}
-				if ((portStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"port")) != NULL)
 				{
-					sscanf ((char *)portStr, "%d", &port);
-					pointCtrl -> serverPort = port;
-					xmlFree (portStr);
+					sscanf ((char *)tempStr, "%d", &pointCtrl -> serverPort);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ipver")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &pointCtrl -> ipVersion);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"timeout")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &pointCtrl -> conTimeout);
+					xmlFree (tempStr);
 				}
 				parseTree (pointCtrl, curNode -> children, 1);
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "pointDaemon") == 0)
 			{
 				int readIdent = -1, readCount = -1;
-				xmlChar *identStr, *countStr;
+				xmlChar *tempStr;
 
-				if ((identStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{
-					sscanf ((char *)identStr, "%d", &readIdent);
-					xmlFree (identStr);
+					sscanf ((char *)tempStr, "%d", &readIdent);
+					xmlFree (tempStr);
 				}
-				if ((countStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
 				{
-					sscanf ((char *)countStr, "%d", &readCount);
-					xmlFree (countStr);
+					sscanf ((char *)tempStr, "%d", &readCount);
+					xmlFree (tempStr);
 				}
 				if (readCount != -1 && readIdent == pointCtrl -> server)
 				{

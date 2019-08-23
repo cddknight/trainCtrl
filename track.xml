@@ -7,6 +7,7 @@
 		port - The port number to listen for clients on.
 		point - The port number to listen for point controllers on.
 		config - The point number to listen for config requests (also used by a client).
+		ipver - IP version to use, 1 IPv4, 2 IPv6 or 3 for either.
 		device - The serial device connected to the DCC++.
 		flags - Control various functions.
 
@@ -45,7 +46,8 @@
 				ident - The identity of the point (optional).
 
 -->
-<track name="The Office Line" server="tinyseven.theknight.home" port="28200" point="28201" config="28202" device="/dev/ttyACM0" flags="1">
+<track name="The Office Line" server="tinyseven.theknight.home" port="28200" point="28201" config="28202" 
+		timeout="5" ipver="3" device="/dev/ttyACM0" flags="1">
   <trains count="8">
     <train num="4560" ident="320" slow="12" desc="Black GWR Class 5101 (2-6-2T)">
       <functions count="2" custom="1">

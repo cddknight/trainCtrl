@@ -109,6 +109,8 @@ typedef struct _trackCtrl
 	int serverPort;
 	int pointPort;
 	int configPort;
+	int ipVersion;
+	int conTimeout;
 	int connectRunning;
 	int shownCurrent;
 	int flags;

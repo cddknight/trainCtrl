@@ -1428,7 +1428,9 @@ static void activate (GtkApplication *app, gpointer userData)
 	GMenu *menu;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)malloc (sizeof (trackCtrlDef));
 	memset (trackCtrl, 0, sizeof (trackCtrlDef));
+	trackCtrl -> ipVersion = USE_ANY;
 	trackCtrl -> serverHandle = -1;
+	trackCtrl -> conTimeout = 5;
 
 	g_action_map_add_action_entries (G_ACTION_MAP (app), appEntries, G_N_ELEMENTS (appEntries), app);
 	menu = g_menu_new ();
