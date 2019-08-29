@@ -269,7 +269,7 @@ int main (int argc, char *argv[])
 {
 	fd_set readfds;
 	struct timeval timeout;
-	time_t lastCheck = 0;
+	time_t lastCheck = 0, holdOffConnect = 0;
 	int c;
 
 	while ((c = getopt(argc, argv, "c:s:dLID")) != -1)
@@ -335,29 +335,27 @@ int main (int argc, char *argv[])
 	{
 		if (serverHandle == -1)
 		{
-			putLogMessage (LOG_INFO, "P:Connect to: %s:%d", pointCtrl.serverName, pointCtrl.serverPort);
-			serverHandle = ConnectClientSocket (pointCtrl.serverName, pointCtrl.serverPort,
-					pointCtrl.conTimeout, pointCtrl.ipVersion, NULL);
-			if (serverHandle != -1)
+			if (time (NULL) > holdOffConnect)
 			{
-				char tempBuff[21];
-				sprintf (tempBuff, "<P %d>", pointCtrl.server);
-				SendSocket (serverHandle, tempBuff, strlen (tempBuff));
-				lastCheck = time (NULL);
-			}
-			else
-			{
-				int loop = 10;
-				while (running && --loop)
+				putLogMessage (LOG_INFO, "P:Connect to: %s:%d", pointCtrl.serverName, pointCtrl.serverPort);
+				serverHandle = ConnectClientSocket (pointCtrl.serverName, pointCtrl.serverPort,
+						pointCtrl.conTimeout, pointCtrl.ipVersion, NULL);
+				if (serverHandle != -1)
 				{
-					sleep (1);
+					char tempBuff[21];
+					sprintf (tempBuff, "<P %d>", pointCtrl.server);
+					SendSocket (serverHandle, tempBuff, strlen (tempBuff));
+					lastCheck = time (NULL);
+					holdOffConnect = lastCheck + 15;
+					continue;
 				}
 			}
+			sleep (1);
 		}
 		if (serverHandle != -1 && running)
 		{
 			int selRetn;
-			timeout.tv_sec = 2;
+			timeout.tv_sec = 1;
 			timeout.tv_usec = 0;
 
 			FD_ZERO(&readfds);
@@ -387,6 +385,7 @@ int main (int argc, char *argv[])
 					{
 						putLogMessage (LOG_INFO, "P:Socket closed(%d)", serverHandle);
 						CloseSocket (&serverHandle);
+						holdOffConnect = time(NULL) + 15;
 					}
 				}
 			}
