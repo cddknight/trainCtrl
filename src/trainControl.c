@@ -277,7 +277,7 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 		sprintf (tempBuff, "Functions for %d", train -> trainNum);
 		gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowFunctions), tempBuff);
 		gtk_window_set_transient_for (GTK_WINDOW (trackCtrl -> windowFunctions), GTK_WINDOW (trackCtrl -> windowCtrl));
-		gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowFunctions), 
+		gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowFunctions),
 				"/usr/share/pixmaps/traincontrol.svg", NULL);
 
 		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
@@ -408,7 +408,6 @@ static void slowTrain (GtkWidget *widget, gpointer data)
 		}
 	}
 }
-
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -849,7 +848,7 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 		trackCtrl -> windowTrack = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowTrack), "Track Control");
 /*		gtk_window_set_transient_for (GTK_WINDOW (trackCtrl -> windowFunctions), GTK_WINDOW (trackCtrl -> windowCtrl)); */
-		gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowTrack), 
+		gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowTrack),
 				"/usr/share/pixmaps/traincontrol.svg", NULL);
 		gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowTrack), width, height);
 
@@ -1122,7 +1121,6 @@ static void programTrain (GtkWidget *widget, gpointer data)
 				NULL);
 
 		contentArea = gtk_dialog_get_content_area (GTK_DIALOG (trackCtrl -> dialogProgram));
-
 
 		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 		gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);

@@ -51,11 +51,11 @@ int baseReg(int pin);
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
- *  \brief .
- *  \param pinBase .
- *  \param i2cAddress .
- *  \param freq .
- *  \result .
+ *  \brief Inital setup of the pca9685 interface.
+ *  \param pinBase Base number i2c interface.
+ *  \param i2cAddress Address of the i2c interface.
+ *  \param freq Frequency to use.
+ *  \result File hadle of the i2c.
  */
 int pca9685Setup(const int pinBase, const int i2cAddress, float freq)
 {
@@ -81,7 +81,7 @@ int pca9685Setup(const int pinBase, const int i2cAddress, float freq)
 			{
 				pca9685PWMFreq(fd, freq);
 			}
-			node->fd = fd; 
+			node->fd = fd;
 			node->pwmWrite		= myPwmWrite;
 			node->digitalWrite	= myOnOffWrite;
 			node->digitalRead	= myOffRead;
@@ -98,10 +98,10 @@ int pca9685Setup(const int pinBase, const int i2cAddress, float freq)
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
- *  \brief .
- *  \param fd .
- *  \param freq .
- *  \result .
+ *  \brief Set the frequecy.
+ *  \param fd File handle of the interface.
+ *  \param freq Frequency to set.
+ *  \result None.
  */
 void pca9685PWMFreq(int fd, float freq)
 {
@@ -141,9 +141,9 @@ void pca9685PWMFreq(int fd, float freq)
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
- *  \brief .
- *  \param fd .
- *  \result .
+ *  \brief Reset the i2c interface.
+ *  \param fd File handle of the interface.
+ *  \result None.
  */
 void pca9685PWMReset(int fd)
 {
@@ -158,11 +158,11 @@ void pca9685PWMReset(int fd)
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
- *  \brief .
- *  \param fd .
- *  \param pin .
- *  \param on .
- *  \param off .
+ *  \brief Write to a particular pin.
+ *  \param fd File handle of the i2c interface.
+ *  \param pin Pin to write to.
+ *  \param on Value for on.
+ *  \param off Vlaue for off.
  *  \result .
  */
 void pca9685PWMWrite(int fd, int pin, int on, int off)
@@ -179,12 +179,12 @@ void pca9685PWMWrite(int fd, int pin, int on, int off)
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
- *  \brief .
- *  \param fd .
- *  \param pin .
- *  \param on .
- *  \param off .
- *  \result .
+ *  \brief Read from the interace.
+ *  \param fd File handle of the interface.
+ *  \param pin Pin to read from.
+ *  \param on Return on value.
+ *  \param off Return off value.
+ *  \result None.
  */
 void pca9685PWMRead(int fd, int pin, int *on, int *off)
 {
@@ -205,11 +205,11 @@ void pca9685PWMRead(int fd, int pin, int *on, int *off)
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
- *  \brief .
- *  \param fd .
- *  \param pin .
- *  \param tf .
- *  \result .
+ *  \brief Switch all on.
+ *  \param fd File handle of the interface.
+ *  \param pin Pin to write too.
+ *  \param tf Set true false.
+ *  \result None.
  */
 void pca9685FullOn(int fd, int pin, int tf)
 {
@@ -234,11 +234,11 @@ void pca9685FullOn(int fd, int pin, int tf)
  *                                                                                                                    *
  **********************************************************************************************************************/
 /**
- *  \brief .
- *  \param fd .
- *  \param pin .
- *  \param tf .
- *  \result .
+ *  \brief Switch all off.
+ *  \param fd File handle of the interface.
+ *  \param pin Pin to write too.
+ *  \param tf Set true false.
+ *  \result None.
  */
 void pca9685FullOff(int fd, int pin, int tf)
 {

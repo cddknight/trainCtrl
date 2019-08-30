@@ -38,7 +38,7 @@
 int servoFD = -1;
 int channel = 15;
 
-typedef struct 
+typedef struct
 {
 	GtkWidget *windowCtrl;
 	GtkWidget *labelServo;
