@@ -1,0 +1,12 @@
+[Unit]
+Description=Train controller
+After=syslog.target network.target
+
+[Service]
+PIDFile=/run/trainDaemon.pid
+ExecStart=/usr/bin/traindaemon -d
+ExecStop=/usr/bin/killall /usr/bin/traindaemon
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

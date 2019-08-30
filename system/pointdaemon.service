@@ -1,0 +1,12 @@
+[Unit]
+Description=Point controller
+After=syslog.target network.target
+
+[Service]
+PIDFile=/run/pointDaemon.pid
+ExecStart=/usr/bin/pointdaemon -d
+ExecStop=/usr/bin/killall /usr/bin/pointdaemon
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
