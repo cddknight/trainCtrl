@@ -55,7 +55,7 @@
 char *xmlBuffer;
 long xmlBufferSize;
 char xmlConfigFile[81]	=	"/etc/train/track.xml";
-char pidFileName[81]	=	"/var/run/trainDaemon.pid";
+char pidFileName[81]	=	"/run/trainDaemon.pid";
 int	 logOutput			=	0;
 int	 infoOutput			=	0;
 int	 debugOutput		=	0;
@@ -1159,8 +1159,20 @@ int main (int argc, char *argv[])
 										done = 1;
 									}
 								}
+								if (!done)
+								{
+									putLogMessage (LOG_ERR, "All point servers are already conneted: %s(%d).", inAddress, newSocket);
+								}
+							}
+							else
+							{
+								putLogMessage (LOG_ERR, "No point control configured.");
 							}
 						}
+					}
+					if (i == MAX_HANDLES)
+					{
+						putLogMessage (LOG_ERR, "No free handles: %s(%d).", inAddress, newSocket);
 					}
 					if (!done)
 					{
