@@ -46,7 +46,7 @@
 				ident - The identity of the point (optional).
 
 -->
-<track name="The Office Line" server="tinyseven.theknight.home" port="28200" point="28201" config="28202" 
+<track name="The Office Line" server="tinyfivew.theknight.home" port="28200" point="28201" config="28202" 
 		timeout="5" ipver="3" device="/dev/ttyACM0" flags="1">
   <trains count="8">
     <train num="4560" ident="320" slow="12" desc="Black GWR Class 5101 (2-6-2T)">
