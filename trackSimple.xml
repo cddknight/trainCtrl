@@ -1,7 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    This is where you define your track. A track in made of the following:
+    track
+        name - The name of the track.
+        server - The address of the server (used by a client).
+        port - The port number to listen for clients on.
+        point - The port number to listen for point controllers on.
+        config - The point number to listen for config requests (also used by a client).
+        ipver - IP version to use, 1 IPv4, 2 IPv6 or 3 for either.
+        device - The serial device connected to the DCC++.
+        flags - Control various functions.
+
+    (If this is a client you only need server and config and no other configuration.)
+
+    trains
+        count - Number of trains.
+        train
+            num - How the train is identified.
+            ident - The DCC ID of the train.
+            desc - The description of the train.
+            slow - Speed to set on the slow button.
+            functions
+                count - Number of functions.
+                custom - Turn on custom function setting.
+                function
+                    desc - Description of the function.
+                    ident - DCC function ID.
+
+    pointServers
+        count - Number of point servers.
+
+    cells
+        rows - Number of rows.
+        cols - Number of columns.
+        size - Width and height of the cells.
+        pCount - number of points.
+        cellRow
+            row - Row number.
+            cell
+                col - Column number
+                layout - Where the track goes.
+                point - Which lines form a point (optional).
+                link - Which line links to another point (optional).
+                server - Which pointserver controls this point (optional).
+                ident - The identity of the point (optional).
+
+-->
 <track name="The Simple Line" server="192.168.30.135" port="28200" timeout="5" ipver="3" device="/dev/ttyACM0">
   <trains count="1">
     <train num="1" id="3" desc="Unknown"/>
   </trains>
+<!--
+    Cell layout values are made buy adding up the following values:
+
+    032  002  064
+       \  |  /
+    001 - O - 004
+       /  |  \
+    016  008  128
+-->
   <cells rows="4" cols="4" size="50">
     <cellRow row="0">
       <cell col="0" layout="4"/>
