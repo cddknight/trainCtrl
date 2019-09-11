@@ -146,6 +146,7 @@ void daemonize(void)
 	i = fork();
 	if (i < 0)
 		exit(1); /* fork error */
+
 	if (i > 0)
 		exit(0);			/* parent exits */
 
@@ -242,9 +243,8 @@ int loadConfigFile ()
 			if ((xmlBuffer = (char *)malloc (xmlBufferSize + 10)) != NULL)
 			{
 				if (fread (xmlBuffer, 1, xmlBufferSize, inFile) == xmlBufferSize)
-				{
 					retn = parseMemoryXML (&pointCtrl, xmlBuffer);
-				}
+
 				free (xmlBuffer);
 			}
 			fclose (inFile);
@@ -315,9 +315,7 @@ int main (int argc, char *argv[])
 	 * Daemonize if needed, all port will close.                                                                          *
 	 **********************************************************************************************************************/
 	if (goDaemon)
-	{
 		daemonize();
-	}
 
 	/**********************************************************************************************************************
 	 * Setup the I2C servo control interface.                                                                             *

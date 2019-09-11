@@ -126,12 +126,9 @@ int main (int argc, char *argv[])
 		++done;
 	}
 	if (done == 0)
-	{
 		helpThem();
-	}
 	else
-	{
 		printf ("--------------------------------\n");
-	}
+
 	return 0;
 }
