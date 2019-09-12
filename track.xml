@@ -61,9 +61,9 @@
 		<function desc="Fire Glow" ident="1"/>
       </functions>
 	</train>
-    <train num="4619" ident="370" slow="10" desc="Green GWR Class 5700 (0-6-0PT)" />
     <train num="4666" ident="330" slow="6" desc="Black GWR Class 5700 (0-6-0PT)" />
     <train num="5601" ident="350" slow="10" desc="Green GWR Class 5600 (0-6-2T)" />
+    <train num="6419" ident="370" slow="10" desc="Green GWR Class 5700 (0-6-0PT)" />
     <train num="42355" ident="360" slow="11" desc="Fowler Class 4P (2-6-4T)" />
     <train num="47451" ident="310" slow="11" desc="Fowler Class 3F 'Jinty' (0-6-0T)">
       <functions count="1" custom="0">
