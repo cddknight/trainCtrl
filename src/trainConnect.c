@@ -216,9 +216,9 @@ void *trainConnectThread (void *arg)
 {
 	int selRetn;
 	fd_set readfds;
+	time_t holdOff = 0;
 	struct timeval timeout;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)arg;
-	char addrBuff[100];
 
 	trackCtrl -> connectRunning = 1;
 	trackCtrl -> serverHandle = -1;
@@ -227,12 +227,16 @@ void *trainConnectThread (void *arg)
 	{
 		if (trackCtrl -> serverHandle == -1)
 		{
-			trackCtrl -> serverHandle = ConnectClientSocket (trackCtrl -> server, trackCtrl -> serverPort,
-					trackCtrl -> conTimeout, trackCtrl -> ipVersion, addrBuff);
+			time_t now = time (NULL);
+
+			if (now > holdOff)
+			{
+				trackCtrl -> serverHandle = ConnectClientSocket (trackCtrl -> server, trackCtrl -> serverPort,
+						trackCtrl -> conTimeout, trackCtrl -> ipVersion, trackCtrl -> addressBuffer);
+				holdOff = now + 10;
+			}
 			if (trackCtrl -> serverHandle == -1)
-				sleep (5);
-			else
-				printf ("Connected to: %s\n", addrBuff);
+				sleep (1);
 		}
 		else
 		{

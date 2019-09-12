@@ -919,11 +919,9 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 
 	static char *connectionText[] =
 	{
-		"Server Connected",
+		"Server Address",
+		"Server Port",
 		"Serial Connected",
-		"Client Listen",
-		"Point Control Listen",
-		"Configuration Listen",
 		"Points Connected",
 		"Clients Connected",
 		NULL
@@ -953,28 +951,17 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
 		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 0);
 
-		for (i = 0; i < 7; ++i)
+		for (i = 0; i < 5; ++i)
 		{
 			label = gtk_label_new (connectionText[i]);
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
 			gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
-
-			if (i == 0)
-			{
-				trackCtrl -> connectionLabels[i] = gtk_label_new (trackCtrl -> serverHandle == -1
-						? "Not connected" : "Connected");
-				gtk_widget_set_halign (trackCtrl -> connectionLabels[i], GTK_ALIGN_START);
-				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> connectionLabels[i], 1, i, 1, 1);
-			}
-			else
-			{
-				trackCtrl -> connectionLabels[i] = gtk_label_new ("Unknown");
-				gtk_widget_set_halign (trackCtrl -> connectionLabels[i], GTK_ALIGN_START);
-				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> connectionLabels[i], 1, i, 1, 1);
-				trackCtrl -> connectionStatus[i - 1] = -1;
-			}
+			trackCtrl -> connectionLabels[i] = gtk_label_new ("Unknown");
+			gtk_widget_set_halign (trackCtrl -> connectionLabels[i], GTK_ALIGN_START);
+			gtk_grid_attach (GTK_GRID(grid), trackCtrl -> connectionLabels[i], 1, i, 1, 1);
+			if (i > 1)
+				trackCtrl -> connectionStatus[i - 2] = -1;
 		}
-//		gtk_box_pack_start (GTK_BOX(vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 0);
 
 		trackCtrl -> connectionStatus[6] = 0;
 
@@ -983,13 +970,11 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 		{
 			int sendRes = trainConnectSend (trackCtrl, "<V>", 3);
 
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[0]),
-					sendRes == 3 ?	"Connected" :  "Not connected");
-
-			for (i = 1; i < 6; ++i)
+			for (i = 0; i < 5; ++i)
 			{
 				gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[i]),
-						 sendRes == 3 ? "Pending" : "Unknown");
+						sendRes == 3 ? "Pending" : 
+						i < 2 ? "Not connected" : "Unknown");
 			}
 		}
 		while (gtk_dialog_run (GTK_DIALOG (trackCtrl -> connectionDialog)) == GTK_RESPONSE_APPLY);
@@ -1339,22 +1324,22 @@ gboolean clockTickCallback (gpointer data)
 	{
 		if (trackCtrl -> connectionStatus[6] == 1)
 		{
-			char tempBuff[81];
+			char tempBuff[21] = "";
+
+			if (trackCtrl -> serverHandle != -1)
+				sprintf (tempBuff, "%d", trackCtrl -> serverPort);
 
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[0]),
-					trackCtrl -> serverHandle == -1 ? "Not connected" : "OK");
+					trackCtrl -> serverHandle == -1 ? "Not connected" : trackCtrl -> addressBuffer);
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[1]),
-					trackCtrl -> connectionStatus[0] > 0 ? "OK" : "Not connected");
+					trackCtrl -> serverHandle == -1 ? "Not connected" : tempBuff);
+
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[2]),
-					trackCtrl -> connectionStatus[1] > 0 ? "OK" : "Not listening");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[3]),
-					trackCtrl -> connectionStatus[2] > 0 ? "OK" : "Not listening");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[4]),
-					trackCtrl -> connectionStatus[3] > 0 ? "OK" : "Not listening");
+					trackCtrl -> connectionStatus[0] > 0 ? "OK" : "Not connected");
 			sprintf (tempBuff, "%d", trackCtrl -> connectionStatus[4]);
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[5]), tempBuff);
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[3]), tempBuff);
 			sprintf (tempBuff, "%d", trackCtrl -> connectionStatus[5]);
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[6]), tempBuff);
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[4]), tempBuff);
 			trackCtrl -> connectionStatus[6] = 0;
 		}
 	}
@@ -1567,8 +1552,14 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 			trackCtrl -> statusBar = gtk_statusbar_new();
 			gtk_container_add (GTK_CONTAINER (vbox), trackCtrl -> statusBar);
-			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, "Train control started");
-
+			if (trackCtrl -> serverHandle == -1)
+			{
+				gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
+			}
+			else
+			{
+				gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, "Train control connected");
+			}
 			gtk_widget_show_all (trackCtrl -> windowCtrl);
 			g_timeout_add (100, clockTickCallback, trackCtrl);
 		}
