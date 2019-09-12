@@ -77,9 +77,7 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 	xmlNode *curNode = NULL;
 
 	if ((train -> trainFunc = (trainFuncDef *)malloc (count * sizeof (trainFuncDef))) == NULL)
-	{
 		return;
-	}
 
 	memset (train -> trainFunc, 0, count * sizeof (trainFuncDef));
 
@@ -151,13 +149,10 @@ void processFunctions (trackCtrlDef *trackCtrl, xmlNode *inNode, trainCtrlDef *t
 						xmlFree(customStr);
 					}
 					if (custom != 0)
-					{
 						train -> funcCustom = 1;
-					}
+
 					if (count > 0)
-					{
 						processFunction (trackCtrl, curNode -> children, count, train);
-					}
 				}
 			}
 		}
@@ -184,9 +179,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 	xmlNode *curNode = NULL;
 
 	if ((trackCtrl -> trainCtrl = (trainCtrlDef *)malloc (count * sizeof (trainCtrlDef))) == NULL)
-	{
 		return;
-	}
 
 	memset (trackCtrl -> trainCtrl, 0, count * sizeof (trainCtrlDef));
 
@@ -344,9 +337,8 @@ void processCells (trackCtrlDef *trackCtrl, xmlNode *inNode, int rows, int cols,
 	xmlNode *curNode = NULL;
 
 	if ((trackCtrl -> trackLayout = (trackLayoutDef *)malloc (sizeof (trackLayoutDef))) == NULL)
-	{
 		return;
-	}
+
 	memset (trackCtrl -> trackLayout, 0, sizeof (trackLayoutDef));
 	trackCtrl -> trackLayout -> trackRows = rows;
 	trackCtrl -> trackLayout -> trackCols = cols;
@@ -373,9 +365,7 @@ void processCells (trackCtrlDef *trackCtrl, xmlNode *inNode, int rows, int cols,
 					xmlFree(rowStr);
 
 					if (rowNum > -1)
-					{
 						processCell (trackCtrl, curNode -> children, rowNum);
-					}
 				}
 			}
 		}
@@ -462,9 +452,7 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 					sscanf ((char *)countStr, "%d", &count);
 					xmlFree(countStr);
 					if (count > 0)
-					{
 						processTrains (trackCtrl, curNode -> children, count);
-					}
 				}
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "pointServers") == 0)
@@ -481,9 +469,8 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 						{
 							memset (trackCtrl -> pointCtrl, 0, count * sizeof (pointCtrlDef));
 							for (i = 0; i < count; ++i)
-							{
 								trackCtrl -> pointCtrl[i].intHandle = -1;
-							}
+
 							trackCtrl -> pServerCount = count;
 						}
 					}
@@ -507,9 +494,7 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 						xmlFree(colsStr);
 
 						if (rows > 0 && cols > 0)
-						{
 							processCells (trackCtrl, curNode -> children, rows, cols, size);
-						}
 					}
 					xmlFree(rowsStr);
 				}
@@ -546,9 +531,8 @@ int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level)
 	else
 	{
 		if ((rootElement = xmlDocGetRootElement(doc)) != NULL)
-		{
 			parseTree (trackCtrl, rootElement, 0);
-		}
+
 		if (trackCtrl -> trackLayout != NULL && trackCtrl -> trainCtrl != NULL)
 		{
 			retn = 1;
@@ -575,9 +559,8 @@ int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level)
 					}
 					fclose (outFile);
 					if (totalRead)
-					{
 						retn = parseTrackXML (trackCtrl, tmpConfig, 1);
-					}
+
 					unlink (tmpConfig);
 				}
 				CloseSocket (&cfgSocket);
@@ -609,25 +592,20 @@ int parseMemoryXML (trackCtrlDef *trackCtrl, char *buffer)
 	xmlChar *xmlBuffer = NULL;
 
 	if (buffer == NULL)
-	{
 		xmlBuffer = xmlCharStrndup (memoryXML, strlen (memoryXML));
-	}
 	else
-	{
 		xmlBuffer = xmlCharStrndup (buffer, strlen (buffer));
-	}
+
 	if (xmlBuffer != NULL)
 	{
 		if ((doc = xmlParseDoc (xmlBuffer)) != NULL)
 		{
 			if ((rootElement = xmlDocGetRootElement(doc)) != NULL)
-			{
 				parseTree (trackCtrl, rootElement, 0);
-			}
+
 			if (trackCtrl -> trackLayout != NULL && trackCtrl -> trainCtrl != NULL)
-			{
 				retn = 1;
-			}
+
 			xmlFreeDoc(doc);
 		}
 		xmlFree (xmlBuffer);

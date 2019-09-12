@@ -80,9 +80,8 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 		else if (wordNum >= 0 && buffer[i] == '>')
 		{
 			if (j)
-			{
 				words[++wordNum][0] = 0;
-			}
+
 /*------------------------------------------------------------------*
 			int l = 0;
 			for (l = 0; l < wordNum; ++l)
@@ -97,9 +96,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				int power = atoi(words[1]);
 				trackCtrl -> remotePowerState = power;
 				if (!power)
-				{
 					trackCtrl -> remoteCurrent = -1;
-				}
 			}
 			/* Throttle status */
 			else if (words[0][0] == 'T' && words[0][1] == 0 && wordNum == 4)
@@ -138,9 +135,8 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				int byteOne = atoi(words[2]);
 				int byteTwo = -1;
 				if (wordNum == 4 && (byteOne == 222 || byteOne == 223))
-				{
 					byteTwo = atoi(words[3]);
-				}
+
 				trainUpdateFunction (trackCtrl, trainID, byteOne, byteTwo);
 			}
 			/* Initial function update */
@@ -161,9 +157,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 			else if (words[0][0] == 'a' && words[0][1] == 0 && wordNum == 2)
 			{
 				if (trackCtrl -> powerState == POWER_ON)
-				{
 					trackCtrl -> remoteCurrent = atoi (words[1]);
-				}
 			}
 			/* Our handle number on the server, unique to this client */
 			else if (words[0][0] == 'V' && words[0][1] == 0 && (wordNum == 2 || wordNum == 8))
@@ -173,9 +167,8 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				{
 					int i;
 					for (i = 0; i < 6; ++i)
-					{
 						trackCtrl -> connectionStatus[i] = atoi (words[i + 2]);
-					}
+
 					trackCtrl -> connectionStatus[6] = 1;
 				}
 			}
@@ -202,9 +195,8 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 			j = 0;
 		}
 		if (j > 40)
-		{
 			j = 40;
-		}
+
 		++i;
 	}
 }
@@ -224,9 +216,9 @@ void *trainConnectThread (void *arg)
 {
 	int selRetn;
 	fd_set readfds;
+	time_t holdOff = 0;
 	struct timeval timeout;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)arg;
-	char addrBuff[100];
 
 	trackCtrl -> connectRunning = 1;
 	trackCtrl -> serverHandle = -1;
@@ -235,16 +227,16 @@ void *trainConnectThread (void *arg)
 	{
 		if (trackCtrl -> serverHandle == -1)
 		{
-			trackCtrl -> serverHandle = ConnectClientSocket (trackCtrl -> server, trackCtrl -> serverPort,
-					trackCtrl -> conTimeout, trackCtrl -> ipVersion, addrBuff);
+			time_t now = time (NULL);
+
+			if (now > holdOff)
+			{
+				trackCtrl -> serverHandle = ConnectClientSocket (trackCtrl -> server, trackCtrl -> serverPort,
+						trackCtrl -> conTimeout, trackCtrl -> ipVersion, trackCtrl -> addressBuffer);
+				holdOff = now + 10;
+			}
 			if (trackCtrl -> serverHandle == -1)
-			{
-				sleep (5);
-			}
-			else
-			{
-				printf ("Connected to: %s\n", addrBuff);
-			}
+				sleep (1);
 		}
 		else
 		{
@@ -256,9 +248,8 @@ void *trainConnectThread (void *arg)
 
 			selRetn = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
 			if (selRetn == -1)
-			{
 				CloseSocket (&trackCtrl -> serverHandle);
-			}
+
 			if (selRetn > 0)
 			{
 				if (FD_ISSET(trackCtrl -> serverHandle, &readfds))
@@ -280,9 +271,8 @@ void *trainConnectThread (void *arg)
 		}
 	}
 	if (trackCtrl -> serverHandle != -1)
-	{
 		CloseSocket (&trackCtrl -> serverHandle);
-	}
+
 	return NULL;
 }
 
@@ -304,9 +294,8 @@ int trainConnectSend (trackCtrlDef *trackCtrl, char *buffer, int len)
 	int retn = -1;
 
 	if (trackCtrl -> serverHandle != -1)
-	{
 		retn = SendSocket (trackCtrl -> serverHandle, buffer, len);
-	}
+
 	return retn;
 }
 
@@ -333,9 +322,8 @@ int trainSetSpeed (trackCtrlDef *trackCtrl, trainCtrlDef *train, int speed)
 	{
 		char speedStr[21] = "STOP";
 		if (speed >=0)
-		{
 			sprintf (speedStr, "%d", speed);
-		}
+
 		sprintf (tempBuff, "Set speed: %s for train %d", speedStr, train -> trainNum);
 		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
 		retn = 1;
@@ -395,13 +383,10 @@ int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int funct
 			byteTwo = (train -> functions >> 21) & 0xFF;
 		}
 		if (byteTwo == -1)
-		{
 			sprintf (tempBuff, "<f %d %d>", train -> trainID, byteOne);
-		}
 		else
-		{
 			sprintf (tempBuff, "<f %d %d %d>", train -> trainID, byteOne, byteTwo);
-		}
+
 		if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
 		{
 			sprintf (tempBuff, "Set function: %d to %s for train %d", function,

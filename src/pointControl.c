@@ -71,9 +71,7 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int count)
 	xmlNode *curNode = NULL;
 
 	if ((pointCtrl -> pointStates = (pointStateDef *)malloc (count * sizeof (pointStateDef))) == NULL)
-	{
 		return;
-	}
 
 	memset (pointCtrl -> pointStates, 0, count * sizeof (pointStateDef));
 
@@ -164,6 +162,11 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 					sscanf ((char *)tempStr, "%d", &pointCtrl -> conTimeout);
 					xmlFree (tempStr);
 				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"clientIdent")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &pointCtrl -> clientID);
+					xmlFree (tempStr);
+				}
 				parseTree (pointCtrl, curNode -> children, 1);
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "pointDaemon") == 0)
@@ -181,7 +184,7 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 					sscanf ((char *)tempStr, "%d", &readCount);
 					xmlFree (tempStr);
 				}
-				if (readCount != -1 && readIdent == pointCtrl -> server)
+				if (readCount != -1 && readIdent == pointCtrl -> clientID)
 				{
 					processPoints (pointCtrl, curNode -> children, readCount);
 				}
@@ -214,13 +217,10 @@ int parseMemoryXML (pointCtrlDef *pointCtrl, char *buffer)
 		if ((doc = xmlParseDoc (xmlBuffer)) != NULL)
 		{
 			if ((rootElement = xmlDocGetRootElement(doc)) != NULL)
-			{
 				parseTree (pointCtrl, rootElement, 0);
-			}
 			if (pointCtrl -> pointCount > 0)
-			{
 				retn = 1;
-			}
+
 			xmlFreeDoc(doc);
 		}
 		xmlFree (xmlBuffer);
@@ -248,7 +248,7 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 {
 	int i;
 
-	if (server == pointCtrl -> server && servoFD != -1)
+	if (server == pointCtrl -> clientID && servoFD != -1)
 	{
 		for (i = 0; i < pointCtrl -> pointCount; ++i)
 		{
@@ -295,7 +295,7 @@ void updateAllPoints (pointCtrlDef *pointCtrl, int handle)
 
 	for (i = 0; i < pointCtrl -> pointCount; ++i)
 	{
-		sprintf (tempBuff, "<y %d %d %d>", pointCtrl -> server,
+		sprintf (tempBuff, "<y %d %d %d>", pointCtrl -> clientID,
 				pointCtrl -> pointStates[i].ident,
 				pointCtrl -> pointStates[i].state);
 		SendSocket (handle, tempBuff, strlen (tempBuff));
@@ -355,9 +355,8 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
 		else if (wordNum >= 0 && buffer[i] == '>')
 		{
 			if (j)
-			{
 				words[++wordNum][0] = 0;
-			}
+
 /*------------------------------------------------------------------*
 			for (l = 0; l < wordNum; ++l)
 			{
@@ -395,9 +394,8 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
 			j = 0;
 		}
 		if (j > 40)
-		{
 			j = 40;
-		}
+
 		++i;
 	}
 }

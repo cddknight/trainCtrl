@@ -33,7 +33,7 @@ pointStateDef;
 
 typedef struct _pointCtrl
 {
-	int server;
+	int clientID;
 	int serverPort;
 	int conTimeout;
 	int ipVersion;
