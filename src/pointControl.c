@@ -71,9 +71,7 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int count)
 	xmlNode *curNode = NULL;
 
 	if ((pointCtrl -> pointStates = (pointStateDef *)malloc (count * sizeof (pointStateDef))) == NULL)
-	{
 		return;
-	}
 
 	memset (pointCtrl -> pointStates, 0, count * sizeof (pointStateDef));
 
@@ -219,13 +217,10 @@ int parseMemoryXML (pointCtrlDef *pointCtrl, char *buffer)
 		if ((doc = xmlParseDoc (xmlBuffer)) != NULL)
 		{
 			if ((rootElement = xmlDocGetRootElement(doc)) != NULL)
-			{
 				parseTree (pointCtrl, rootElement, 0);
-			}
 			if (pointCtrl -> pointCount > 0)
-			{
 				retn = 1;
-			}
+
 			xmlFreeDoc(doc);
 		}
 		xmlFree (xmlBuffer);
@@ -360,9 +355,8 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
 		else if (wordNum >= 0 && buffer[i] == '>')
 		{
 			if (j)
-			{
 				words[++wordNum][0] = 0;
-			}
+
 /*------------------------------------------------------------------*
 			for (l = 0; l < wordNum; ++l)
 			{
@@ -400,9 +394,8 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
 			j = 0;
 		}
 		if (j > 40)
-		{
 			j = 40;
-		}
+
 		++i;
 	}
 }

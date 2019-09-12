@@ -119,6 +119,7 @@ typedef struct _trackCtrl
 	char serialDevice[81];
 	pthread_t connectHandle;
 
+	char addressBuffer[111];
 	char remoteProgMsg[111];
 	int remotePowerState;
 	int remoteCurrent;
@@ -145,7 +146,7 @@ typedef struct _trackCtrl
 	GtkWidget *funcSpinner;				// 14
 	GtkWidget *funcLabel;				// 15
 	GtkWidget *buttonStopAll;			// 16
-	GtkWidget *connectionLabels[7];		// 22
+	GtkWidget *connectionLabels[8];		// 22
 #else
 	void *xPointers[22];
 #endif

@@ -161,9 +161,8 @@ static void activate (GtkApplication *app, gpointer userData)
 		gtk_scale_set_digits (GTK_SCALE(pointTest -> scaleServo), 0);
 		gtk_scale_set_has_origin (GTK_SCALE(pointTest -> scaleServo), TRUE);
 		for (j = 0; j <= 500; j += 125)
-		{
 			gtk_scale_add_mark (GTK_SCALE(pointTest -> scaleServo), j, GTK_POS_LEFT, NULL);
-		}
+
 		gtk_widget_set_halign (pointTest -> scaleServo, GTK_ALIGN_CENTER);
 		gtk_range_set_value (GTK_RANGE (pointTest -> scaleServo), pointTest -> currentValue = 250);
 		gtk_container_add (GTK_CONTAINER (vbox), pointTest -> scaleServo);
@@ -229,9 +228,8 @@ int main (int argc, char **argv)
 	wiringPiSetup();
 
 	if ((servoFD = pca9685Setup(PIN_BASE, 0x40, HERTZ)) < 0)
-	{
 		return 0;
-	}
+
 	pca9685PWMReset (servoFD);
 	pwmWrite (PIN_BASE + channel, 250);
 #endif

@@ -255,13 +255,11 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
 
 	if (!checkConnected (trackCtrl))
-	{
 		return;
-	}
+
 	if (trackCtrl -> windowFunctions != NULL)
-	{
 		gtk_widget_destroy (trackCtrl -> windowFunctions);
-	}
+
 	if (trackCtrl -> windowFunctions == NULL && (train -> funcCount || train -> funcCustom))
 	{
 		long i;
@@ -293,7 +291,7 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
 		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 0);
 
-		label = gtk_label_new ("Train: ");
+		label = gtk_label_new ("Train");
 		gtk_widget_set_halign (label, GTK_ALIGN_END);
 		gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
 		sprintf (tempBuff, "%d", train -> trainNum);
@@ -301,7 +299,7 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 		gtk_widget_set_halign (label, GTK_ALIGN_START);
 		gtk_grid_attach (GTK_GRID(grid), label, 1, row++, 1, 1);
 
-		label = gtk_label_new ("Current: ");
+		label = gtk_label_new ("Current");
 		gtk_widget_set_halign (label, GTK_ALIGN_END);
 		gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
 		sprintf (tempBuff, "[%08X]", train -> functions);
@@ -311,7 +309,7 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 
 		for (i = 0; i < train -> funcCount; ++i)
 		{
-			sprintf (tempBuff, "%s:", train -> trainFunc[i].funcDesc);
+			sprintf (tempBuff, "%s", train -> trainFunc[i].funcDesc);
 			label = gtk_label_new (tempBuff);
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
 			gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
@@ -327,7 +325,7 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 
 		if (train -> funcCustom)
 		{
-			label = gtk_label_new ("Function: ");
+			label = gtk_label_new ("Function");
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
 			gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
 			adjust = gtk_adjustment_new (0, 0, 29, 1.0, 1.0, 1.0);
@@ -442,13 +440,10 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 		}
 	}
 	if (trackCtrl -> buttonProgram != NULL)
-	{
 		gtk_widget_set_sensitive (trackCtrl -> buttonProgram, state);
-	}
+
 	if (trackCtrl -> buttonStopAll != NULL)
-	{
 		gtk_widget_set_sensitive (trackCtrl -> buttonStopAll, state);
-	}
 }
 
 /**********************************************************************************************************************
@@ -474,7 +469,7 @@ static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
 	if (trainConnectSend (trackCtrl, newState == POWER_ON ? "<1>" : "<0>", 3) == 3)
 	{
 		trackCtrl -> powerState = newState;
-		sprintf (tempBuff, "Track power: %s", trackCtrl -> powerState == POWER_ON ? "On" : "Off");
+		sprintf (tempBuff, "Track power %s", trackCtrl -> powerState == POWER_ON ? "On" : "Off");
 		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
 
 		if (trackCtrl -> powerState != trackCtrl -> remotePowerState)
@@ -496,9 +491,8 @@ static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
 	else
 	{
 		if (newState == POWER_ON)
-		{
 			gtk_switch_set_active (GTK_SWITCH(trackCtrl -> buttonPower), FALSE);
-		}
+
 		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
 	}
 	return TRUE;
@@ -566,7 +560,7 @@ static void reverseTrain (GtkWidget *widget, gpointer data)
 			train -> curSpeed = train -> remoteCurSpeed = 0;
 			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
 		}
-		sprintf (tempBuff, "Set reverse: %s for train %d", (train -> reverse ? "On" : "Off"), train -> trainNum);
+		sprintf (tempBuff, "Set reverse %s for train %d", (train -> reverse ? "On" : "Off"), train -> trainNum);
 		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
 	}
 }
@@ -835,9 +829,8 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 	if (!checkConnected (trackCtrl))
-	{
 		return;
-	}
+
 	if (trackCtrl -> windowTrack == NULL)
 	{
 		GtkWidget *eventBox;
@@ -892,17 +885,13 @@ void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
 			if (cell -> server == server && cell -> ident == point)
 			{
 				if (state == 0)
-				{
 					cell -> pointState = cell -> pointDefault;
-				}
 				else
-				{
 					cell -> pointState = cell-> point & ~(cell -> pointDefault);
-				}
+
 				if (trackCtrl -> windowTrack != NULL)
-				{
 					gtk_widget_queue_draw (trackCtrl -> drawingArea);
-				}
+
 				break;
 			}
 		}
@@ -930,13 +919,11 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 
 	static char *connectionText[] =
 	{
-		"Server Connected:",
-		"Serial Connected:",
-		"Client Listen:",
-		"Point Control Listen:",
-		"Configuration Listen:",
-		"Points Connected:",
-		"Clients Connected:",
+		"Server Address",
+		"Server Port",
+		"Serial Connected",
+		"Points Connected",
+		"Clients Connected",
 		NULL
 	};
 
@@ -964,28 +951,17 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
 		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 0);
 
-		for (i = 0; i < 7; ++i)
+		for (i = 0; i < 5; ++i)
 		{
 			label = gtk_label_new (connectionText[i]);
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
 			gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
-
-			if (i == 0)
-			{
-				trackCtrl -> connectionLabels[i] = gtk_label_new (trackCtrl -> serverHandle == -1
-						? "Not connected" : "Connected");
-				gtk_widget_set_halign (trackCtrl -> connectionLabels[i], GTK_ALIGN_START);
-				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> connectionLabels[i], 1, i, 1, 1);
-			}
-			else
-			{
-				trackCtrl -> connectionLabels[i] = gtk_label_new ("Unknown");
-				gtk_widget_set_halign (trackCtrl -> connectionLabels[i], GTK_ALIGN_START);
-				gtk_grid_attach (GTK_GRID(grid), trackCtrl -> connectionLabels[i], 1, i, 1, 1);
-				trackCtrl -> connectionStatus[i - 1] = -1;
-			}
+			trackCtrl -> connectionLabels[i] = gtk_label_new ("Unknown");
+			gtk_widget_set_halign (trackCtrl -> connectionLabels[i], GTK_ALIGN_START);
+			gtk_grid_attach (GTK_GRID(grid), trackCtrl -> connectionLabels[i], 1, i, 1, 1);
+			if (i > 1)
+				trackCtrl -> connectionStatus[i - 2] = -1;
 		}
-//		gtk_box_pack_start (GTK_BOX(vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 0);
 
 		trackCtrl -> connectionStatus[6] = 0;
 
@@ -994,13 +970,11 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 		{
 			int sendRes = trainConnectSend (trackCtrl, "<V>", 3);
 
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[0]),
-					sendRes == 3 ?	"Connected" :  "Not connected");
-
-			for (i = 1; i < 6; ++i)
+			for (i = 0; i < 5; ++i)
 			{
 				gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[i]),
-						 sendRes == 3 ? "Pending" : "Unknown");
+						sendRes == 3 ? "Pending" : 
+						i < 2 ? "Not connected" : "Unknown");
 			}
 		}
 		while (gtk_dialog_run (GTK_DIALOG (trackCtrl -> connectionDialog)) == GTK_RESPONSE_APPLY);
@@ -1031,9 +1005,8 @@ static int programYesNo (trackCtrlDef *trackCtrl, char *question)
 			"%s", question);
 
 	if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_OK)
-	{
 		retn = 1;
-	}
+
 	gtk_widget_destroy (dialog);
 	return retn;
 }
@@ -1086,11 +1059,11 @@ static void programTrain (GtkWidget *widget, gpointer data)
 	static char *controlLables[] =
 	{
 		"DCC Address", "CV Number (1 - 1024)", "Byte Value (0 - 255)", "Bit number (0 - 7)", "Bit Value (0 - 1)",
-		"Read current value", "Last reply:", "-"
+		"Read current value", "Last reply", "-"
 	};
 	static char *hintLables[] =
 	{
-		"Hints:",
+		"Hints",
 		"* If DCC address is zero then use programming track.",
 		"* Reads only work with train on the programming track.",
 		"* If bit number in the range 0 to 7 then set bit value.",
@@ -1108,9 +1081,8 @@ static void programTrain (GtkWidget *widget, gpointer data)
 	GtkWidget *label, *grid, *vbox, *checkButton;
 
 	if (!checkConnected (trackCtrl))
-	{
 		return;
-	}
+
 	if (trackCtrl -> dialogProgram == NULL)
 	{
 		trackCtrl -> dialogProgram = gtk_dialog_new_with_buttons ("Program Train",
@@ -1179,9 +1151,8 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 			sendBuffer[0] = 0;
 			for (i = 0; i < 5; ++i)
-			{
 				values[i] = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(spinner[i]));
-			}
+
 			/* Programming track, no train ID */
 			if (values[0] == 0)
 			{
@@ -1219,9 +1190,8 @@ static void programTrain (GtkWidget *widget, gpointer data)
 							sprintf (msgBuffer, "Write to CV#%d, byte value %d on the programming track?",
 									values[1], values[2]);
 							if (programYesNo (trackCtrl, msgBuffer))
-							{
 								sprintf (sendBuffer, "<W %d %d %d 3>", values[1], values[2], trackCtrl -> serverSession);
-							}
+
 							allOK = 1;
 						}
 					}
@@ -1239,9 +1209,8 @@ static void programTrain (GtkWidget *widget, gpointer data)
 						sprintf (msgBuffer, "Write to address %d, CV#%d, bit %d, value %d on the main track?",
 								values[0], values[1], values[3], values[4]);
 						if (programYesNo (trackCtrl, msgBuffer))
-						{
 							sprintf (sendBuffer, "<b %d %d %d %d>", values[0], values[1], values[3], values[4]);
-						}
+
 						allOK = 1;
 					}
 				}
@@ -1254,9 +1223,8 @@ static void programTrain (GtkWidget *widget, gpointer data)
 						sprintf (msgBuffer, "Write to address %d, CV number %d, byte value %d on the main track?",
 								values[0], values[1], values[2]);
 						if (programYesNo (trackCtrl, msgBuffer))
-						{
 							sprintf (sendBuffer, "<w %d %d %d>", values[0], values[1], values[2]);
-						}
+
 						allOK = 1;
 					}
 				}
@@ -1268,13 +1236,10 @@ static void programTrain (GtkWidget *widget, gpointer data)
 			else if (sendBuffer[0] != 0)
 			{
 				if (trainConnectSend (trackCtrl, sendBuffer, strlen (sendBuffer)) > 0)
-				{
 					gtk_label_set_label (GTK_LABEL (trackCtrl -> labelProgram), "Command sent to daemon");
-				}
 				else
-				{
 					gtk_label_set_label (GTK_LABEL (trackCtrl -> labelProgram), notConnected);
-				}
+
 				sendBuffer[0] = 0;
 			}
 		}
@@ -1301,9 +1266,8 @@ gboolean clockTickCallback (gpointer data)
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
 	if (trackCtrl -> powerState != trackCtrl -> remotePowerState)
-	{
 		gtk_switch_set_active (GTK_SWITCH(trackCtrl -> buttonPower), trackCtrl -> remotePowerState == POWER_ON ? TRUE : FALSE);
-	}
+
 	for (i = 0; i < trackCtrl -> trainCount; ++i)
 	{
 		trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
@@ -1329,9 +1293,7 @@ gboolean clockTickCallback (gpointer data)
 				{
 					gboolean active = gtk_switch_get_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch));
 					if (active != (train -> functions & (1 << train -> trainFunc[j].funcID) ? TRUE :FALSE))
-					{
 						gtk_switch_set_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch), !active);
-					}
 				}
 			}
 		}
@@ -1350,13 +1312,10 @@ gboolean clockTickCallback (gpointer data)
 		{
 			char tempBuff[81];
 			if (trackCtrl -> powerState == POWER_ON && trackCtrl -> remoteCurrent >= 0)
-			{
 				sprintf (tempBuff, "Power [%0.1f%%]", ((float)trackCtrl -> remoteCurrent * 100.0) / 1024.0);
-			}
 			else
-			{
 				strcpy (tempBuff, "Power");
-			}
+
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> labelPower), tempBuff);
 			trackCtrl -> shownCurrent = trackCtrl -> remoteCurrent;
 		}
@@ -1365,22 +1324,22 @@ gboolean clockTickCallback (gpointer data)
 	{
 		if (trackCtrl -> connectionStatus[6] == 1)
 		{
-			char tempBuff[81];
+			char tempBuff[21] = "";
+
+			if (trackCtrl -> serverHandle != -1)
+				sprintf (tempBuff, "%d", trackCtrl -> serverPort);
 
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[0]),
-					trackCtrl -> serverHandle == -1 ? "Not connected" : "OK");
+					trackCtrl -> serverHandle == -1 ? "Not connected" : trackCtrl -> addressBuffer);
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[1]),
-					trackCtrl -> connectionStatus[0] > 0 ? "OK" : "Not connected");
+					trackCtrl -> serverHandle == -1 ? "Not connected" : tempBuff);
+
 			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[2]),
-					trackCtrl -> connectionStatus[1] > 0 ? "OK" : "Not listening");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[3]),
-					trackCtrl -> connectionStatus[2] > 0 ? "OK" : "Not listening");
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[4]),
-					trackCtrl -> connectionStatus[3] > 0 ? "OK" : "Not listening");
+					trackCtrl -> connectionStatus[0] > 0 ? "OK" : "Not connected");
 			sprintf (tempBuff, "%d", trackCtrl -> connectionStatus[4]);
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[5]), tempBuff);
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[3]), tempBuff);
 			sprintf (tempBuff, "%d", trackCtrl -> connectionStatus[5]);
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[6]), tempBuff);
+			gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[4]), tempBuff);
 			trackCtrl -> connectionStatus[6] = 0;
 		}
 	}
@@ -1438,11 +1397,7 @@ static void activate (GtkApplication *app, gpointer userData)
 	gtk_application_set_app_menu (GTK_APPLICATION (app), G_MENU_MODEL (menu));
 	g_object_unref (menu);
 
-	if (userData != NULL)
-	{
-		parseRetn = parseTrackXML (trackCtrl, (char *)userData, 0);
-	}
-	else
+	if (userData == NULL)
 	{
 		char configPath[1025], *home;
 		struct stat statBuff;
@@ -1463,23 +1418,23 @@ static void activate (GtkApplication *app, gpointer userData)
 			}
 		}
 	}
-	if (!parseRetn)
+	else
 	{
-		parseRetn = parseMemoryXML (trackCtrl, NULL);
+		parseRetn = parseTrackXML (trackCtrl, (char *)userData, 0);
 	}
+	if (!parseRetn)
+		parseRetn = parseMemoryXML (trackCtrl, NULL);
+
 	if (parseRetn)
 	{
 		if (startConnectThread (trackCtrl))
 		{
 			int screenWidth = trackCtrl -> trainCount * 100;
 			if (screenWidth < 300)
-			{
 				screenWidth = 300;
-			}
+
 			if (screenWidth > 1900)
-			{
 				screenWidth = 1900;
-			}
 
 			sprintf (tempBuff, "Track Control - %s", trackCtrl -> trackName);
 			trackCtrl -> windowCtrl = gtk_application_window_new (app);
@@ -1585,9 +1540,8 @@ static void activate (GtkApplication *app, gpointer userData)
 					gtk_scale_set_digits (GTK_SCALE(train -> scaleSpeed), 0);
 					gtk_scale_set_has_origin (GTK_SCALE(train -> scaleSpeed), TRUE);
 					for (j = 0; j < 126; j += 20)
-					{
 						gtk_scale_add_mark (GTK_SCALE(train -> scaleSpeed), j, GTK_POS_LEFT, NULL);
-					}
+
 					gtk_widget_set_halign (train -> scaleSpeed, GTK_ALIGN_CENTER);
 					gtk_grid_attach(GTK_GRID(grid), train -> scaleSpeed, i, r++, 1, 1);
 					gettimeofday(&train -> lastChange, NULL);
@@ -1598,8 +1552,14 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_container_add (GTK_CONTAINER (vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL));
 			trackCtrl -> statusBar = gtk_statusbar_new();
 			gtk_container_add (GTK_CONTAINER (vbox), trackCtrl -> statusBar);
-			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, "Train control started");
-
+			if (trackCtrl -> serverHandle == -1)
+			{
+				gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
+			}
+			else
+			{
+				gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, "Train control connected");
+			}
 			gtk_widget_show_all (trackCtrl -> windowCtrl);
 			g_timeout_add (100, clockTickCallback, trackCtrl);
 		}
@@ -1674,7 +1634,7 @@ static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer 
 
 	gtk_show_about_dialog (GTK_WINDOW (NULL),
 			"program-name", "Train Control",
-			"version", g_strdup_printf ("Version: %s\nRunning against GTK+ %d.%d.%d",
+			"version", g_strdup_printf ("Version %s\nRunning against GTK+ %d.%d.%d",
 				 VERSION,
 				 gtk_get_major_version (),
 				 gtk_get_minor_version (),

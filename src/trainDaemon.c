@@ -368,9 +368,7 @@ void getAllPointStates ()
 			if (point -> intHandle != -1)
 			{
 				if (handleInfo[point -> intHandle].handle != -1)
-				{
 					SendSocket (handleInfo[point -> intHandle].handle, "<Y>", 3);
-				}
 			}
 		}
 	}
@@ -452,13 +450,10 @@ void savePointState (int pSvrIdent, int ident, int direc)
 			if (cell -> server == pSvrIdent && cell -> ident == ident)
 			{
 				if (direc == 0)
-				{
 					cell -> pointState = cell -> pointDefault;
-				}
 				else
-				{
 					cell -> pointState = cell -> point & ~(cell -> pointDefault);
-				}
+
 				break;
 			}
 		}
@@ -557,17 +552,14 @@ void checkSerialRecvBuffer (char *buffer, int len)
 		else if (wordNum >= 0 && buffer[i] == '>')
 		{
 			if (j)
-			{
 				words[++wordNum][0] = 0;
-			}
+
 			/* Track power status - power off stop trains */
 			if (words[0][0] == 'p' && words[0][1] == 0 && wordNum == 2)
 			{
 				int power = atoi(words[1]);
 				if ((trackCtrl.powerState = power) == 0)
-				{
 					stopAllTrains ();
-				}
 			}
 			/* Throttle status */
 			else if (words[0][0] == 'T' && words[0][1] == 0 && wordNum == 4)
@@ -600,9 +592,8 @@ void checkSerialRecvBuffer (char *buffer, int len)
 			j = 0;
 		}
 		if (j > 40)
-		{
 			j = 40;
-		}
+
 		++i;
 	}
 }
@@ -659,9 +650,8 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 		else if (wordNum >= 0 && buffer[i] == '>')
 		{
 			if (j)
-			{
 				words[++wordNum][0] = 0;
-			}
+
 			/* Set point state */
 			if (words[0][0] == 'Y' && words[0][1] == 0 && wordNum == 4)
 			{
@@ -678,9 +668,7 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 				for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
 				{
 					if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
-					{
 						SendSocket (handleInfo[i].handle, buffer, len);
-					}
 				}
 				retn = 1;
 			}
@@ -693,16 +681,13 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 				int byteTwo = 0;
 
 				if (wordNum == 4)
-				{
 					byteTwo = atoi (words[3]);
-				}
+
 				trainUpdFunction (trainID, byteOne, byteTwo);
 				for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
 				{
 					if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
-					{
 						SendSocket (handleInfo[i].handle, buffer, len);
-					}
 				}
 				retn = 0;
 			}
@@ -717,9 +702,7 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 					if (handleInfo[i].handle != -1)
 					{
 						if (handleInfo[i].handleType >= SERIAL_HTYPE && handleInfo[i].handleType <= CONTRL_HTYPE)
-						{
 							++conCounts[handleInfo[i].handleType - 1];
-						}
 					}
 				}
 				sprintf (buffer, "<V %d %d %d %d %d %d %d>", handleInfo[handle].handle,
@@ -761,9 +744,8 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 			j = 0;
 		}
 		if (j > 40)
-		{
 			j = 40;
-		}
+
 		++i;
 	}
 	return retn;
@@ -796,9 +778,7 @@ void receiveSerial (int handle, char *buffer, int len)
 			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
 			{
 				if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
-				{
 					SendSocket (handleInfo[i].handle, handleInfo[handle].rxedBuff, handleInfo[handle].rxedPosn);
-				}
 			}
 			handleInfo[handle].rxedPosn = 0;
 		}
@@ -835,9 +815,8 @@ void receiveNetwork (int handle, char *buffer, int len)
 		{
 			handleInfo[handle].rxedBuff[handleInfo[handle].rxedPosn] = 0;
 			if (!checkNetworkRecvBuffer (handle, handleInfo[handle].rxedBuff, handleInfo[handle].rxedPosn))
-			{
 				sendSerial (handleInfo[handle].rxedBuff, len);
-			}
+
 			handleInfo[handle].rxedPosn = 0;
 		}
 		if (handleInfo[handle].rxedPosn >= RXED_BUFF_SIZE)
@@ -873,9 +852,7 @@ int loadConfigFile ()
 			if ((xmlBuffer = (char *)malloc (xmlBufferSize + 10)) != NULL)
 			{
 				if (fread (xmlBuffer, 1, xmlBufferSize, inFile) == xmlBufferSize)
-				{
 					retn = parseMemoryXML (&trackCtrl, xmlBuffer);
-				}
 			}
 			fclose (inFile);
 		}
@@ -897,9 +874,7 @@ int loadConfigFile ()
 void sendConfigFile (int newSocket)
 {
 	if (xmlBufferSize && xmlBuffer != NULL)
-	{
 		SendSocket (newSocket, xmlBuffer, xmlBufferSize);
-	}
 }
 
 /**********************************************************************************************************************
@@ -1003,22 +978,16 @@ int main (int argc, char *argv[])
 	 * Allocate and read in the configuration.                                                                            *
 	 **********************************************************************************************************************/
 	if (!loadConfigFile())
-	{
 		parseMemoryXML (&trackCtrl, NULL);
-	}
 
 	for (i = 0; i < MAX_HANDLES; ++i)
-	{
 		handleInfo[i].handle = -1;
-	}
 
 	/**********************************************************************************************************************
 	 * Daemonize if needed, all port will close.                                                                          *
 	 **********************************************************************************************************************/
 	if (goDaemon)
-	{
 		daemonize();
-	}
 
 	/**********************************************************************************************************************
 	 * Setup listening serial and network ports.                                                                          *
@@ -1092,9 +1061,7 @@ int main (int argc, char *argv[])
 		for (i = 0; i < MAX_HANDLES; ++i)
 		{
 			if (handleInfo[i].handle != -1)
-			{
 				FD_SET (handleInfo[i].handle, &readfds);
-			}
 		}
 		selRetn = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout);
 		if (selRetn == -1)
@@ -1160,9 +1127,7 @@ int main (int argc, char *argv[])
 									}
 								}
 								if (!done)
-								{
 									putLogMessage (LOG_ERR, "All point servers are already conneted: %s(%d).", inAddress, newSocket);
-								}
 							}
 							else
 							{
@@ -1175,9 +1140,7 @@ int main (int argc, char *argv[])
 						putLogMessage (LOG_ERR, "No free handles: %s(%d).", inAddress, newSocket);
 					}
 					if (!done)
-					{
 						CloseSocket (&newSocket);
-					}
 				}
 			}
 			if (FD_ISSET(handleInfo[CONFIG_HANDLE].handle, &readfds))
@@ -1221,9 +1184,7 @@ int main (int argc, char *argv[])
 							if (handleInfo[i].handleType == CONTRL_HTYPE)
 							{
 								if (--connectedCount == 0)
-								{
 									sendSerial ("<0>", 3);
-								}
 							}
 							else if (handleInfo[i].handleType == POINTC_HTYPE)
 							{
