@@ -46,7 +46,6 @@ int	 debugOutput		=	0;
 int	 goDaemon			=	0;
 int	 inDaemonise		=	0;
 int	 running			=	1;
-int	 serverIdent		=	1;
 int	 serverHandle		=	-1;
 pointCtrlDef pointCtrl;
 
@@ -207,7 +206,7 @@ void helpThem()
 {
 	fprintf (stderr, "Usage: pointDaemon -l <port>\n");
 	fprintf (stderr, "       -c <config.xml>  . Config file to load.\n");
-	fprintf (stderr, "       -s <identity>  . . Specify server identity.\n");
+	fprintf (stderr, "       -i <identity>  . . Client ID if not in config.\n");
 	fprintf (stderr, "       -d . . . . . . . . Deamonise the process.\n");
 	fprintf (stderr, "       -L . . . . . . . . Write messages to syslog.\n");
 	fprintf (stderr, "       -I . . . . . . . . Write info messages.\n");
@@ -272,7 +271,7 @@ int main (int argc, char *argv[])
 	time_t lastCheck = 0, holdOffConnect = 0;
 	int c;
 
-	while ((c = getopt(argc, argv, "c:s:dLID")) != -1)
+	while ((c = getopt(argc, argv, "c:i:dLID")) != -1)
 	{
 		switch (c)
 		{
@@ -280,8 +279,8 @@ int main (int argc, char *argv[])
 			strncpy (xmlConfigFile, optarg, 80);
 			break;
 
-		case 's':
-			serverIdent = atoi (optarg);
+		case 'i':
+			pointCtrl.clientID = atoi (optarg);
 			break;
 
 		case 'd':
@@ -306,10 +305,13 @@ int main (int argc, char *argv[])
 		}
 	}
 
-	pointCtrl.server = serverIdent;
 	pointCtrl.ipVersion = USE_ANY;
 	pointCtrl.conTimeout = 5;
 	loadConfigFile ();
+	if (!pointCtrl.clientID)
+	{
+		pointCtrl.clientID = 0;
+	}
 
 	/**********************************************************************************************************************
 	 * Daemonize if needed, all port will close.                                                                          *
@@ -343,7 +345,7 @@ int main (int argc, char *argv[])
 				if (serverHandle != -1)
 				{
 					char tempBuff[21];
-					sprintf (tempBuff, "<P %d>", pointCtrl.server);
+					sprintf (tempBuff, "<P %d>", pointCtrl.clientID);
 					SendSocket (serverHandle, tempBuff, strlen (tempBuff));
 					lastCheck = time (NULL);
 					holdOffConnect = lastCheck + 15;
@@ -395,7 +397,7 @@ int main (int argc, char *argv[])
 				{
 					char tempBuff[21];
 					putLogMessage (LOG_INFO, "P:Socket lifesign(%d)", serverHandle);
-					sprintf (tempBuff, "<P %d>", pointCtrl.server);
+					sprintf (tempBuff, "<P %d>", pointCtrl.clientID);
 					SendSocket (serverHandle, tempBuff, strlen (tempBuff));
 					lastCheck += 60;
 				}

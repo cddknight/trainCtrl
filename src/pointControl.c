@@ -164,6 +164,11 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 					sscanf ((char *)tempStr, "%d", &pointCtrl -> conTimeout);
 					xmlFree (tempStr);
 				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"clientIdent")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &pointCtrl -> clientID);
+					xmlFree (tempStr);
+				}
 				parseTree (pointCtrl, curNode -> children, 1);
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "pointDaemon") == 0)
@@ -181,7 +186,7 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 					sscanf ((char *)tempStr, "%d", &readCount);
 					xmlFree (tempStr);
 				}
-				if (readCount != -1 && readIdent == pointCtrl -> server)
+				if (readCount != -1 && readIdent == pointCtrl -> clientID)
 				{
 					processPoints (pointCtrl, curNode -> children, readCount);
 				}
@@ -248,7 +253,7 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 {
 	int i;
 
-	if (server == pointCtrl -> server && servoFD != -1)
+	if (server == pointCtrl -> clientID && servoFD != -1)
 	{
 		for (i = 0; i < pointCtrl -> pointCount; ++i)
 		{
@@ -295,7 +300,7 @@ void updateAllPoints (pointCtrlDef *pointCtrl, int handle)
 
 	for (i = 0; i < pointCtrl -> pointCount; ++i)
 	{
-		sprintf (tempBuff, "<y %d %d %d>", pointCtrl -> server,
+		sprintf (tempBuff, "<y %d %d %d>", pointCtrl -> clientID,
 				pointCtrl -> pointStates[i].ident,
 				pointCtrl -> pointStates[i].state);
 		SendSocket (handle, tempBuff, strlen (tempBuff));
