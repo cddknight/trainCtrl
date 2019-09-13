@@ -972,7 +972,7 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 			for (i = 0; i < 5; ++i)
 			{
 				gtk_label_set_label (GTK_LABEL (trackCtrl -> connectionLabels[i]),
-						sendRes == 3 ? "Pending" : 
+						sendRes == 3 ? "Pending" :
 						i < 2 ? "Not connected" : "Unknown");
 			}
 		}
