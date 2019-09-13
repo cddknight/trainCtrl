@@ -140,7 +140,7 @@ typedef struct _trackCtrl
 	GtkWidget *buttonTrack;				//  8
 	GtkWidget *buttonConnection;		//  9
 	GtkWidget *buttonProgram;			// 10
-	GtkWidget *labelProgram;			// 11
+	GtkWidget *entryProgram;			// 11
 	GtkWidget *drawingArea;				// 12
 	GtkWidget *statusBar;				// 13
 	GtkWidget *funcSpinner;				// 14

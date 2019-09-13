@@ -962,7 +962,6 @@ static void connectionStatus (GtkWidget *widget, gpointer data)
 			if (i > 1)
 				trackCtrl -> connectionStatus[i - 2] = -1;
 		}
-
 		trackCtrl -> connectionStatus[6] = 0;
 
 		gtk_widget_show_all (trackCtrl -> connectionDialog);
@@ -1058,16 +1057,22 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 	static char *controlLables[] =
 	{
-		"DCC Address", "CV Number (1 - 1024)", "Byte Value (0 - 255)", "Bit number (0 - 7)", "Bit Value (0 - 1)",
-		"Read current value", "Last reply", "-"
+		"DCC Address",
+		"CV Number (1 - 1024)",
+		"Byte Value (0 - 255)",
+		"Bit number (0 - 7)",
+		"Bit Value (0 - 1)",
+		"Read current value",
+		"Last reply",
+		"None"
 	};
 	static char *hintLables[] =
 	{
-		"Hints",
-		"* If DCC address is zero then use programming track.",
-		"* Reads only work with train on the programming track.",
-		"* If bit number in the range 0 to 7 then set bit value.",
-		"* If bit number is -1 then set the byte value.",
+		"Programming Hints:",
+		"+ If DCC address is zero then use the programming track.",
+		"+ Reads only work with a train on the programming track.",
+		"+ If bit number in the range 0 to 7 then set bit value.",
+		"+ If bit number is -1 then set the byte value.",
 		NULL
 	};
 	static double defValues[] = { 0.0, 1.0, 0.0, -1.0, 0.0 };
@@ -1078,6 +1083,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 	GtkWidget *contentArea;
 	GtkWidget *spinner[5];
 	GtkAdjustment *adjust[5];
+	GtkEntryBuffer *entryBuffer;
 	GtkWidget *label, *grid, *vbox, *checkButton;
 
 	if (!checkConnected (trackCtrl))
@@ -1138,9 +1144,11 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		gtk_widget_set_halign (label, GTK_ALIGN_END);
 		gtk_grid_attach (GTK_GRID(grid), label, 0, i, 1, 1);
 
-		trackCtrl -> labelProgram = gtk_label_new (controlLables[++i]);
-		gtk_widget_set_halign (trackCtrl -> labelProgram, GTK_ALIGN_START);
-		gtk_grid_attach (GTK_GRID(grid), trackCtrl -> labelProgram, 1, i - 1, 1, 1);
+		entryBuffer = gtk_entry_buffer_new ("None", 4);
+		trackCtrl -> entryProgram = gtk_entry_new_with_buffer (entryBuffer);
+		g_object_set (trackCtrl -> entryProgram, "editable", FALSE, NULL);
+		gtk_entry_set_width_chars (GTK_ENTRY (trackCtrl -> entryProgram), 30);
+		gtk_grid_attach (GTK_GRID(grid), trackCtrl -> entryProgram, 1, ++i - 1, 1, 1);
 
 		gtk_widget_show_all (trackCtrl -> dialogProgram);
 		while (gtk_dialog_run (GTK_DIALOG (trackCtrl -> dialogProgram)) == GTK_RESPONSE_APPLY)
@@ -1231,21 +1239,21 @@ static void programTrain (GtkWidget *widget, gpointer data)
 			}
 			if (allOK == 0)
 			{
-				gtk_label_set_label (GTK_LABEL (trackCtrl -> labelProgram), "Incorrect inputs, read notes.");
+				gtk_entry_set_text (GTK_ENTRY (trackCtrl -> entryProgram), "Incorrect inputs, read notes.");
 			}
 			else if (sendBuffer[0] != 0)
 			{
 				if (trainConnectSend (trackCtrl, sendBuffer, strlen (sendBuffer)) > 0)
-					gtk_label_set_label (GTK_LABEL (trackCtrl -> labelProgram), "Command sent to daemon");
+					gtk_entry_set_text (GTK_ENTRY (trackCtrl -> entryProgram), "Command sent to daemon");
 				else
-					gtk_label_set_label (GTK_LABEL (trackCtrl -> labelProgram), notConnected);
+					gtk_entry_set_text (GTK_ENTRY (trackCtrl -> entryProgram), notConnected);
 
 				sendBuffer[0] = 0;
 			}
 		}
 		gtk_widget_destroy (trackCtrl -> dialogProgram);
 		trackCtrl -> dialogProgram = NULL;
-		trackCtrl -> labelProgram = NULL;
+		trackCtrl -> entryProgram = NULL;
 	}
 }
 
@@ -1300,9 +1308,9 @@ gboolean clockTickCallback (gpointer data)
 	}
 	if (trackCtrl -> remoteProgMsg[0] != 0)
 	{
-		if (trackCtrl -> labelProgram != NULL)
+		if (trackCtrl -> entryProgram != NULL)
 		{
-			gtk_label_set_label (GTK_LABEL (trackCtrl -> labelProgram), trackCtrl -> remoteProgMsg);
+			gtk_entry_set_text (GTK_ENTRY (trackCtrl -> entryProgram), trackCtrl -> remoteProgMsg);
 			trackCtrl -> remoteProgMsg[0] = 0;
 		}
 	}
