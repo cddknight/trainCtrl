@@ -137,16 +137,16 @@ void processFunctions (trackCtrlDef *trackCtrl, xmlNode *inNode, trainCtrlDef *t
 			if (strcmp ((char *)curNode->name, "functions") == 0)
 			{
 				int count = -1, custom = 0;;
-				xmlChar *countStr, *customStr;
-				if ((countStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
+				xmlChar *tempStr;
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
 				{
-					sscanf ((char *)countStr, "%d", &count);
-					xmlFree(countStr);
+					sscanf ((char *)tempStr, "%d", &count);
+					xmlFree(tempStr);
 
-					if ((customStr = xmlGetProp(curNode, (const xmlChar*)"custom")) != NULL)
+					if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"custom")) != NULL)
 					{
-						sscanf ((char *)customStr, "%d", &custom);
-						xmlFree(customStr);
+						sscanf ((char *)tempStr, "%d", &custom);
+						xmlFree(tempStr);
 					}
 					if (custom != 0)
 						train -> funcCustom = 1;
@@ -175,7 +175,7 @@ void processFunctions (trackCtrlDef *trackCtrl, xmlNode *inNode, trainCtrlDef *t
 void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 {
 	int loop = 0;
-	xmlChar *numStr, *idStr, *descStr, *slowStr;
+	xmlChar *tempStr, *descStr;
 	xmlNode *curNode = NULL;
 
 	if ((trackCtrl -> trainCtrl = (trainCtrlDef *)malloc (count * sizeof (trainCtrlDef))) == NULL)
@@ -189,23 +189,22 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 		{
 			if (strcmp ((char *)curNode->name, "train") == 0)
 			{
-				if ((numStr = xmlGetProp(curNode, (const xmlChar*)"num")) != NULL)
+				int num = -1, id = -1, slow = 10;
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"num")) != NULL)
 				{
-					if ((idStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
+					sscanf ((char *)tempStr, "%d", &num);
+					xmlFree(tempStr);
+					if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 					{
+						sscanf ((char *)tempStr, "%d", &id);
+						xmlFree(tempStr);
 						if ((descStr = xmlGetProp(curNode, (const xmlChar*)"desc")) != NULL)
 						{
-							int num = -1, id = -1, slow = 10;
-
-							if ((slowStr = xmlGetProp(curNode, (const xmlChar*)"slow")) != NULL)
+							if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"slow")) != NULL)
 							{
-								sscanf ((char *)slowStr, "%d", &slow);
-								xmlFree(slowStr);
+								sscanf ((char *)tempStr, "%d", &slow);
+								xmlFree(tempStr);
 							}
-
-							sscanf ((char *)numStr, "%d", &num);
-							sscanf ((char *)idStr, "%d", &id);
-
 							if (num != -1 && id != -1 && loop < count)
 							{
 								trackCtrl -> trainCtrl[loop].trainReg = loop + 1;
@@ -218,9 +217,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 							}
 							xmlFree(descStr);
 						}
-						xmlFree(idStr);
 					}
-					xmlFree(numStr);
 				}
 			}
 		}
@@ -244,7 +241,6 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 {
 	xmlNode *curNode = NULL;
-	xmlChar *colStr, *layoutStr, *pointStr, *linkStr, *pointStateStr, *serverStr, *identStr;
 
 	for (curNode = inNode; curNode; curNode = curNode->next)
 	{
@@ -252,64 +248,77 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 		{
 			if (strcmp ((char *)curNode->name, "cell") == 0)
 			{
-				if ((colStr = xmlGetProp(curNode, (const xmlChar*)"col")) != NULL)
+				xmlChar *tempStr;
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"col")) != NULL)
 				{
-					int posn, i;
-					int colNum = -1, layout = 0, point = 0, link = 0, pointState = 0, server = 0, ident = 0;
-					sscanf ((char *)colStr, "%d", &colNum);
+					int colNum = -1;
+					sscanf ((char *)tempStr, "%d", &colNum);
+					xmlFree(tempStr);
 
 					if (colNum > -1)
 					{
-						posn = (rowNum * trackCtrl -> trackLayout -> trackCols) + colNum;
+						int i, pointState = 0, point = 0;
+						int posn = (rowNum * trackCtrl -> trackLayout -> trackCols) + colNum;
+						memset (&trackCtrl -> trackLayout -> trackCells[posn], 0, sizeof (trackCellDef));
 
-						if ((layoutStr = xmlGetProp(curNode, (const xmlChar*)"layout")) != NULL)
+						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"layout")) != NULL)
 						{
-							sscanf ((char *)layoutStr, "%d", &layout);
-							xmlFree(layoutStr);
+							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].layout);
+							xmlFree(tempStr);
 						}
-						if ((pointStr = xmlGetProp(curNode, (const xmlChar*)"point")) != NULL)
+						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"point")) != NULL)
 						{
-							sscanf ((char *)pointStr, "%d", &point);
-							xmlFree(pointStr);
+							sscanf ((char *)tempStr, "%hd", &point);
+							xmlFree(tempStr);
+							trackCtrl -> trackLayout -> trackCells[posn].point.point = point;
 						}
-						if ((linkStr = xmlGetProp(curNode, (const xmlChar*)"link")) != NULL)
+						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"state")) != NULL)
 						{
-							sscanf ((char *)linkStr, "%d", &link);
-							xmlFree(linkStr);
+							sscanf ((char *)tempStr, "%hd", &pointState);
+							xmlFree(tempStr);
+							trackCtrl -> trackLayout -> trackCells[posn].point.pointDef =
+									trackCtrl -> trackLayout -> trackCells[posn].point.state = pointState;
 						}
-						if ((pointStateStr = xmlGetProp(curNode, (const xmlChar*)"state")) != NULL)
+						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"link")) != NULL)
 						{
-							sscanf ((char *)pointStateStr, "%d", &pointState);
-							xmlFree(pointStateStr);
+							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].point.link);
+							xmlFree(tempStr);
 						}
-						if ((serverStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
+						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
 						{
-							sscanf ((char *)serverStr, "%d", &server);
-							xmlFree(serverStr);
+							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].point.server);
+							xmlFree(tempStr);
 						}
-						if ((identStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
+						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 						{
-							sscanf ((char *)identStr, "%d", &ident);
-							xmlFree(identStr);
+							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].point.ident);
+							xmlFree(tempStr);
 						}
-						trackCtrl -> trackLayout -> trackCells[posn].layout = layout;
-						trackCtrl -> trackLayout -> trackCells[posn].point = point;
-						trackCtrl -> trackLayout -> trackCells[posn].link = link;
-						trackCtrl -> trackLayout -> trackCells[posn].pointDefault =
-						trackCtrl -> trackLayout -> trackCells[posn].pointState = pointState;
-						trackCtrl -> trackLayout -> trackCells[posn].server = server;
-						trackCtrl -> trackLayout -> trackCells[posn].ident = ident;
+						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"signal")) != NULL)
+						{
+							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].signal.signal);
+							xmlFree(tempStr);
+						}
+						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"sserver")) != NULL)
+						{
+							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].signal.server);
+							xmlFree(tempStr);
+						}
+						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"sident")) != NULL)
+						{
+							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].signal.ident);
+							xmlFree(tempStr);
+						}
 						for (i = 0; i < 8 && point && pointState == 0; ++i)
 						{
 							if (point & (1 << i))
 							{
-								trackCtrl -> trackLayout -> trackCells[posn].pointDefault =
-								trackCtrl -> trackLayout -> trackCells[posn].pointState = (1 << i);
+								trackCtrl -> trackLayout -> trackCells[posn].point.pointDef =
+										trackCtrl -> trackLayout -> trackCells[posn].point.state = (1 << i);
 								break;
 							}
 						}
 					}
-					xmlFree(colStr);
 				}
 			}
 		}

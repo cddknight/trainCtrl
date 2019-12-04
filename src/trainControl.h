@@ -26,15 +26,31 @@
 #define POWER_ON			1
 #define TRACK_FLAG_SLOW		1
 
+typedef struct _pointCell
+{
+	unsigned short point;
+	unsigned short link;
+	unsigned short state;
+	unsigned short pointDef;
+	unsigned short server;
+	unsigned short ident;
+}
+pointCellDef;
+
+typedef struct _signalCell
+{
+	unsigned short signal;
+	unsigned short state;
+	unsigned short server;
+	unsigned short ident;
+}
+signalCellDef;
+
 typedef struct _trackCell
 {
 	unsigned short layout;
-	unsigned short point;
-	unsigned short link;
-	unsigned short pointState;
-	unsigned short pointDefault;
-	unsigned short server;
-	unsigned short ident;
+	signalCellDef signal;
+	pointCellDef point;
 }
 trackCellDef;
 

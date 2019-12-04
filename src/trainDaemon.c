@@ -410,12 +410,12 @@ void setAllPointStates (int pSvrIdent)
 				for (i = 0; i < cells; ++i)
 				{
 					trackCellDef *cell = &trackCtrl.trackLayout -> trackCells[i];
-					if (cell -> point)
+					if (cell -> point.point)
 					{
-						if (cell -> server == pSvrIdent)
+						if (cell -> point.server == pSvrIdent)
 						{
-							sprintf (tempBuff, "<Y %d %d %d>", pSvrIdent, cell -> ident,
-									cell -> pointState == cell -> pointDefault ? 0 : 1);
+							sprintf (tempBuff, "<Y %d %d %d>", pSvrIdent, cell -> point.ident,
+									cell -> point.state == cell -> point.pointDef ? 0 : 1);
 							SendSocket (handleInfo[pointSever -> intHandle].handle, tempBuff, strlen (tempBuff));
 						}
 					}
@@ -445,14 +445,14 @@ void savePointState (int pSvrIdent, int ident, int direc)
 	for (i = 0; i < cells; ++i)
 	{
 		trackCellDef *cell = &trackCtrl.trackLayout -> trackCells[i];
-		if (cell -> point)
+		if (cell -> point.point)
 		{
-			if (cell -> server == pSvrIdent && cell -> ident == ident)
+			if (cell -> point.server == pSvrIdent && cell -> point.ident == ident)
 			{
 				if (direc == 0)
-					cell -> pointState = cell -> pointDefault;
+					cell -> point.state = cell -> point.pointDef;
 				else
-					cell -> pointState = cell -> point & ~(cell -> pointDefault);
+					cell -> point.state = cell -> point.point & ~(cell -> point.pointDef);
 
 				break;
 			}

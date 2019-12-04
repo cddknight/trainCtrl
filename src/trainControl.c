@@ -38,6 +38,8 @@ static const GdkRGBA bufferCol = { 0.6, 0.0, 0.0, 1.0 };
 static const GdkRGBA inactCol = { 0.8, 0.0, 0.0, 1.0 };
 static const GdkRGBA iaFillCol = { 0.4, 0.0, 0.0, 1.0 };
 static const GdkRGBA circleCol = { 0.8, 0.8, 0.8, 1.0 };
+static const GdkRGBA sigRedCol = { 0.9, 0.0, 0.0, 1.0 };
+static const GdkRGBA sigGrnCol = { 0.0, 0.9, 0.0, 1.0 };
 static const double xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
 static const double yChange[8] = { 1, 0, 1, 2, 2, 0, 0, 2 };
 
@@ -631,9 +633,9 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 				if (trackCtrl -> trackLayout -> trackCells[posn].layout & (1 << loop))
 				{
 					++count;
-					if (trackCtrl -> trackLayout -> trackCells[posn].point & (1 << loop))
+					if (trackCtrl -> trackLayout -> trackCells[posn].point.point & (1 << loop))
 					{
-						if (!(trackCtrl -> trackLayout -> trackCells[posn].pointState & (1 << loop)))
+						if (!(trackCtrl -> trackLayout -> trackCells[posn].point.state & (1 << loop)))
 						{
 							xPos[2] = (j * cellSize) + xChangeMod[loop];
 							yPos[2] = (i * cellSize) + yChangeMod[loop];
@@ -661,6 +663,22 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 							posMask |= 2;
 						}
 					}
+				}
+				if (trackCtrl -> trackLayout -> trackCells[posn].signal.signal & (1 << loop))
+				{
+					cairo_save (cr);
+					if (trackCtrl -> trackLayout -> trackCells[posn].signal.state == 0)
+						gdk_cairo_set_source_rgba (cr, &sigRedCol);
+					else
+						gdk_cairo_set_source_rgba (cr, &sigGrnCol);
+
+					cairo_arc (cr, 
+							(j * cellSize) + (cellSize >> 2) + (xChangeMod[loop] >> 1), 
+							(i * cellSize) + (cellSize >> 2) + (yChangeMod[loop] >> 1), 
+							(double)cellSize / 7.5, 0, 2 * G_PI);
+					cairo_fill (cr);
+					cairo_stroke (cr);
+					cairo_restore (cr);
 				}
 			}
 			if (posMask & 4)
@@ -741,24 +759,24 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 				int cellSize = trackCtrl -> trackLayout -> trackSize;
 				int posn = (((int)event -> y / cellSize) * cols) + ((int)event -> x / cellSize);
 
-				if (trackCtrl -> trackLayout -> trackCells[posn].point)
+				if (trackCtrl -> trackLayout -> trackCells[posn].point.point)
 				{
 					char tempBuff[81];
 					trackCellDef *cell = &trackCtrl -> trackLayout -> trackCells[posn];
-					unsigned short newState = cell -> point;
+					unsigned short newState = cell -> point.point;
 
-					newState &= ~(cell -> pointState);
-					sprintf (tempBuff, "<Y %d %d %d>", cell -> server, cell -> ident,
-							cell -> pointDefault == newState ? 0 : 1);
+					newState &= ~(cell -> point.state);
+					sprintf (tempBuff, "<Y %d %d %d>", cell -> point.server, cell -> point.ident,
+							cell -> point.pointDef == newState ? 0 : 1);
 					if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
 					{
 						/* This point is linked so change the other point */
-						if (trackCtrl -> trackLayout -> trackCells[posn].link)
+						if (trackCtrl -> trackLayout -> trackCells[posn].point.link)
 						{
 							int i;
 							for (i = 0; i < 8; ++i)
 							{
-								if (cell -> link & (1 << i))
+								if (cell -> point.link & (1 << i))
 								{
 									int newLinkState, newPosn = posn + (cols * linkRow[i]) + linkCol[i];
 									if (newPosn >= 0 && newPosn < (rows * cols))
@@ -766,20 +784,20 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 										trackCellDef *newCell = &trackCtrl -> trackLayout -> trackCells[newPosn];
 
 										/* The new point should have a link, we hope to us */
-										if (newCell -> link)
+										if (newCell -> point.link)
 										{
-											if (cell -> link == newState)
+											if (cell -> point.link == newState)
 											{
 												/* We are setting to the link, so set other point to the link */
-												newLinkState = newCell -> link;
+												newLinkState = newCell -> point.link;
 											}
 											else
 											{
 												/* We are breaking the link, so set other point away from link */
-												newLinkState = newCell -> point & ~newCell -> link;
+												newLinkState = newCell -> point.point & ~newCell -> point.link;
 											}
-											sprintf (tempBuff, "<Y %d %d %d>", newCell -> server, newCell -> ident,
-													newCell -> pointDefault == newLinkState ? 0 : 1);
+											sprintf (tempBuff, "<Y %d %d %d>", newCell -> point.server, newCell -> point.ident,
+													newCell -> point.pointDef == newLinkState ? 0 : 1);
 											trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff));
 										}
 									}
@@ -787,6 +805,22 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 							}
 						}
 					}
+				}
+			}
+			return TRUE;
+
+		case GDK_BUTTON_MIDDLE:
+			{
+				int rows = trackCtrl -> trackLayout -> trackRows;
+				int cols = trackCtrl -> trackLayout -> trackCols;
+				int cellSize = trackCtrl -> trackLayout -> trackSize;
+				int posn = (((int)event -> y / cellSize) * cols) + ((int)event -> x / cellSize);
+
+				if (trackCtrl -> trackLayout -> trackCells[posn].signal.signal)
+				{
+					trackCtrl -> trackLayout -> trackCells[posn].signal.state = 
+						 (trackCtrl -> trackLayout -> trackCells[posn].signal.state ? 0 : 1);
+					gtk_widget_queue_draw (trackCtrl -> drawingArea);
 				}
 			}
 			return TRUE;
@@ -840,7 +874,6 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 
 		trackCtrl -> windowTrack = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 		gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowTrack), "Track Control");
-/*		gtk_window_set_transient_for (GTK_WINDOW (trackCtrl -> windowFunctions), GTK_WINDOW (trackCtrl -> windowCtrl)); */
 		gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowTrack),
 				"/usr/share/pixmaps/traincontrol.svg", NULL);
 		gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowTrack), width, height);
@@ -880,14 +913,14 @@ void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
 	for (i = 0; i < cells; ++i)
 	{
 		trackCellDef *cell = &trackCtrl -> trackLayout -> trackCells[i];
-		if (cell -> point)
+		if (cell -> point.point)
 		{
-			if (cell -> server == server && cell -> ident == point)
+			if (cell -> point.server == server && cell -> point.ident == point)
 			{
 				if (state == 0)
-					cell -> pointState = cell -> pointDefault;
+					cell -> point.state = cell -> point.pointDef;
 				else
-					cell -> pointState = cell-> point & ~(cell -> pointDefault);
+					cell -> point.state = cell-> point.point & ~(cell -> point.pointDef);
 
 				if (trackCtrl -> windowTrack != NULL)
 					gtk_widget_queue_draw (trackCtrl -> drawingArea);
