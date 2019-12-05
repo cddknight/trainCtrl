@@ -48,7 +48,7 @@
 -->
 <track name="The Office Line" server="tinyfive.theknight.home" port="28200" point="28201" config="28202" 
 		timeout="5" ipver="3" device="/dev/ttyACM0" flags="1">
-  <trains count="8">
+  <trains count="9">
     <train num="4560" ident="320" slow="12" desc="Black GWR Class 5101 (2-6-2T)">
       <functions count="2" custom="1">
 		<function desc="Front/Rear Lights" ident="0"/>
@@ -63,6 +63,7 @@
 	</train>
     <train num="4666" ident="330" slow="6" desc="Black GWR Class 5700 (0-6-0PT)" />
     <train num="5601" ident="350" slow="10" desc="Green GWR Class 5600 (0-6-2T)" />
+    <train num="5749" ident="380" slow="10" desc="Black GWR Class 5700 (0-6-0PT)" />
     <train num="6419" ident="370" slow="10" desc="Green GWR Class 5700 (0-6-0PT)" />
     <train num="42355" ident="360" slow="11" desc="Fowler Class 4P (2-6-4T)" />
     <train num="47451" ident="310" slow="11" desc="Fowler Class 3F 'Jinty' (0-6-0T)">
@@ -95,7 +96,7 @@
       <cell col="10" layout="5"/>
       <cell col="11" layout="5"/>
       <cell col="12" layout="21" point="17" link="16" server="1" ident="2"/>
-      <cell col="13" layout="129"/>
+      <cell col="13" layout="129" signal="32" sserver="1" sident="1"/>
     </cellRow>
     <cellRow row="1">
       <cell col="2" layout="4"/>
@@ -109,7 +110,7 @@
       <cell col="10" layout="21" point="17" link="16" server="1" ident="5"/>
       <cell col="11" layout="69" point="68" link="64" server="1" ident="6"/>
       <cell col="12" layout="5"/>
-      <cell col="13" layout="129"/>
+      <cell col="13" layout="129" signal="32" sserver="1" sident="2"/>
       <cell col="14" layout="160"/>
     </cellRow>
     <cellRow row="2">
@@ -183,7 +184,7 @@
       <cell col="3" layout="5"/>
       <cell col="4" layout="133" point="132" link="4" state="128" server="2" ident="16"/>
       <cell col="5" layout="37" point="33" link="1" state="32" server="2" ident="17"/>
-      <cell col="6" layout="133" point="132" link="128" server="2" ident="18"/>
+      <cell col="6" layout="133" point="132" link="128" server="2" ident="18" signal="32" sserver="2" sident="1"/>
       <cell col="7" layout="5"/>
       <cell col="8" layout="5"/>
       <cell col="9" layout="5"/>
@@ -195,7 +196,7 @@
     </cellRow>
     <cellRow row="12">
       <cell col="5" layout="36"/>
-      <cell col="6" layout="5"/>
+      <cell col="6" layout="5" signal="32" sserver="2" sident="2"/>
       <cell col="7" layout="37" point="33" link="32" server="2" ident="20"/>
       <cell col="8" layout="5"/>
       <cell col="9" layout="5"/>
