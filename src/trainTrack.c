@@ -268,13 +268,13 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 						}
 						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"point")) != NULL)
 						{
-							sscanf ((char *)tempStr, "%hd", &point);
+							sscanf ((char *)tempStr, "%d", &point);
 							xmlFree(tempStr);
 							trackCtrl -> trackLayout -> trackCells[posn].point.point = point;
 						}
 						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"state")) != NULL)
 						{
-							sscanf ((char *)tempStr, "%hd", &pointState);
+							sscanf ((char *)tempStr, "%d", &pointState);
 							xmlFree(tempStr);
 							trackCtrl -> trackLayout -> trackCells[posn].point.pointDef =
 									trackCtrl -> trackLayout -> trackCells[posn].point.state = pointState;
