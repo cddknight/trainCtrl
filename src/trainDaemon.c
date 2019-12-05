@@ -1127,11 +1127,11 @@ int main (int argc, char *argv[])
 									}
 								}
 								if (!done)
-									putLogMessage (LOG_ERR, "All point servers are already conneted: %s(%d).", inAddress, newSocket);
+									putLogMessage (LOG_INFO, "All point servers are already conneted: %s(%d).", inAddress, newSocket);
 							}
 							else
 							{
-								putLogMessage (LOG_ERR, "No point control configured.");
+								putLogMessage (LOG_INFO, "No point control configured.");
 							}
 						}
 					}
