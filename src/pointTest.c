@@ -36,14 +36,15 @@
 #define HERTZ 50
 
 int servoFD = -1;
-int channel = 15;
 
 typedef struct
 {
 	GtkWidget *windowCtrl;
 	GtkWidget *labelServo;
 	GtkWidget *scaleServo;
+	GtkWidget *spinner;
 	double currentValue;
+	int channel;
 }
 pointTestDef;
 
@@ -93,16 +94,25 @@ gboolean clockTickCallback (gpointer data)
 	if (pointTest != NULL)
 	{
 		double curVal = gtk_range_get_value (GTK_RANGE (pointTest -> scaleServo));
-		if (curVal != pointTest -> currentValue)
+		int newChannel = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(pointTest -> spinner));
+
+		if (curVal != pointTest -> currentValue || pointTest -> channel != newChannel)
 		{
-			pointTest -> currentValue = curVal;
+			char tempBuff[41];
+			printf ("[%d -> %d] = [%f -> %f]\n", pointTest -> channel, newChannel, curVal, pointTest -> currentValue);
 #ifdef HAVE_WIRINGPI_H
 			if (servoFD != -1)
 			{
-				pwmWrite (PIN_BASE + channel, curVal);
-				printf ("Updated to: %f\n", curVal);
+				if (pointTest -> channel != newChannel && pointTest -> channel != -1)
+					pwmWrite (PIN_BASE + pointTest -> channel, 0);
+				
+				pwmWrite (PIN_BASE + newChannel, curVal);
 			}
 #endif
+			sprintf (tempBuff, "Servo[%d]", newChannel);
+			gtk_label_set_label (GTK_LABEL (pointTest -> labelServo), tempBuff);
+			pointTest -> currentValue = curVal;
+			pointTest -> channel = newChannel;
 		}
 	}
 	return TRUE;
@@ -137,6 +147,9 @@ static void activate (GtkApplication *app, gpointer userData)
 	pointTest = (pointTestDef *)malloc (sizeof (pointTestDef));
 	if (pointTest != NULL)
 	{
+		GtkAdjustment *adjust;
+
+		pointTest -> channel = -1;
 		pointTest -> windowCtrl = gtk_application_window_new (app);
 		g_signal_connect (pointTest -> windowCtrl, "destroy", G_CALLBACK (windowDestroy), pointTest);
 		gtk_window_set_title (GTK_WINDOW (pointTest -> windowCtrl), "Point Test");
@@ -151,7 +164,7 @@ static void activate (GtkApplication *app, gpointer userData)
 		gtk_container_set_border_width (GTK_CONTAINER(vbox), 5);
 		gtk_container_add (GTK_CONTAINER (pointTest -> windowCtrl), vbox);
 
-		sprintf (buff, "Servo[%d]", channel);
+		sprintf (buff, "Servo[%d]", pointTest -> channel);
 		pointTest -> labelServo = gtk_label_new (buff);
 		gtk_container_add (GTK_CONTAINER (vbox), pointTest -> labelServo);
 
@@ -166,6 +179,11 @@ static void activate (GtkApplication *app, gpointer userData)
 		gtk_widget_set_halign (pointTest -> scaleServo, GTK_ALIGN_CENTER);
 		gtk_range_set_value (GTK_RANGE (pointTest -> scaleServo), pointTest -> currentValue = 250);
 		gtk_container_add (GTK_CONTAINER (vbox), pointTest -> scaleServo);
+
+		adjust = gtk_adjustment_new (15, 0, 16, 1.0, 1.0, 1.0);
+		pointTest -> spinner = gtk_spin_button_new (adjust, 10, 0);
+		gtk_widget_set_halign (GTK_WIDGET (pointTest -> spinner), GTK_ALIGN_FILL);
+		gtk_container_add (GTK_CONTAINER (vbox), pointTest -> spinner);
 
 		gtk_widget_show_all (pointTest -> windowCtrl);
 		g_timeout_add (100, clockTickCallback, pointTest);
@@ -231,7 +249,6 @@ int main (int argc, char **argv)
 		return 0;
 
 	pca9685PWMReset (servoFD);
-	pwmWrite (PIN_BASE + channel, 250);
 #endif
 
 	app = gtk_application_new ("Point.Test", G_APPLICATION_HANDLES_OPEN); // G_APPLICATION_FLAGS_NONE);
