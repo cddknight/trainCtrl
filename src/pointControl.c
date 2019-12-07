@@ -102,6 +102,7 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int count)
 									pointCtrl -> pointStates[loop].channel = channel;
 									pointCtrl -> pointStates[loop].defaultPos = defaultPos;
 									pointCtrl -> pointStates[loop].turnoutPos = turnoutPos;
+									pointCtrl -> pointStates[loop].offTime = 0;
 									++loop;
 								}
 								xmlFree(turnoutStr);
@@ -246,10 +247,9 @@ int parseMemoryXML (pointCtrlDef *pointCtrl, char *buffer)
  */
 void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, int state)
 {
-	int i;
-
 	if (server == pointCtrl -> clientID && servoFD != -1)
 	{
+		int i;
 		for (i = 0; i < pointCtrl -> pointCount; ++i)
 		{
 			if (pointCtrl -> pointStates[i].ident == point)
@@ -268,9 +268,47 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 				delay(150);
 #endif
 				pointCtrl -> pointStates[i].state = state;
+				pointCtrl -> pointStates[i].offTime = time(NULL) + 2;
 				sprintf (tempBuff, "<y %d %d %d>", server, point, state);
 				SendSocket (handle, tempBuff, strlen (tempBuff));
 				break;
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  C H E C K  P O I N T S  O F F                                                                                     *
+ *  =============================                                                                                     *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Turn off the point after it moves.
+ *  \param pointCtrl Point settings.
+ *  \param handle Point handle.
+ *  \result None.
+ */
+void checkPointsOff (pointCtrlDef *pointCtrl, int handle)
+{
+	if (servoFD != -1)
+	{
+		int i;
+		for (i = 0; i < pointCtrl -> pointCount; ++i)
+		{
+			if (pointCtrl -> pointStates[i].offTime != 0)
+			{
+				if (pointCtrl -> pointStates[i].offTime < time(NULL))
+				{
+#ifdef HAVE_WIRINGPI_H
+					putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
+							PIN_BASE + pointCtrl -> pointStates[i].channel, 0);
+
+					pwmWrite(PIN_BASE + pointCtrl -> pointStates[i].channel, 0);
+					delay(150);
+#endif
+					pointCtrl -> pointStates[i].offTime = 0;
+				}
 			}
 		}
 	}

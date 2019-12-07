@@ -204,6 +204,14 @@ static void activate (GtkApplication *app, gpointer userData)
  */
 static void shutdown (GtkApplication *app, gpointer userData)
 {
+#ifdef HAVE_WIRINGPI_H
+	if (servoFD != -1)
+	{
+		int i;
+		for (i = 0; i < 16; ++i)
+			pwmWrite (PIN_BASE + i, 0);
+	}
+#endif
 }
 
 /**********************************************************************************************************************
