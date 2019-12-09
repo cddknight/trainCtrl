@@ -383,8 +383,8 @@ void updateSignal (pointCtrlDef *pointCtrl, int handle, int server, int signal, 
 					delay(150);
 					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
 				}
-#endif
 				delay(150);
+#endif
 				pointCtrl -> signalStates[i].state = state;
 				sprintf (tempBuff, "<x %d %d %d>", server, signal, state);
 				SendSocket (handle, tempBuff, strlen (tempBuff));
