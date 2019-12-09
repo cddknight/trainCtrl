@@ -32,6 +32,17 @@ typedef struct _pointState
 }
 pointStateDef;
 
+typedef struct _signalState
+{
+	int ident;
+	int state;
+	int channelRed;
+	int channelGreen;
+	int redOut;
+	int greenOut;
+}
+signalStateDef;
+
 typedef struct _pointCtrl
 {
 	int clientID;
@@ -39,8 +50,10 @@ typedef struct _pointCtrl
 	int conTimeout;
 	int ipVersion;
 	int pointCount;
+	int signalCount;
 	char serverName[81];
 	pointStateDef *pointStates;
+	signalStateDef *signalStates;
 }
 pointCtrlDef;
 

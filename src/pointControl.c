@@ -61,62 +61,111 @@ int servoFD = -1;
  *  \brief Process reading in all the ports.
  *  \param pointCtrl Save data hear.
  *  \param inNode Current node under this you will find the points.
- *  \param count Expected number of points.
+ *  \param pCount Number of points to expect.
+ *  \param sCount Number od signals to expect.
  *  \result None.
  */
-void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int count)
+void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sCount)
 {
-	int loop = 0;
-	xmlChar *identStr, *channelStr, *defaultStr, *turnoutStr;
+	int pFound = 0, sFound = 0;
+	xmlChar *tempStr;
 	xmlNode *curNode = NULL;
 
-	if ((pointCtrl -> pointStates = (pointStateDef *)malloc (count * sizeof (pointStateDef))) == NULL)
-		return;
+	if (pCount > 0)
+	{
+		if ((pointCtrl -> pointStates = (pointStateDef *)malloc (pCount * sizeof (pointStateDef))) == NULL)
+			return;
+		memset (pointCtrl -> pointStates, 0, pCount * sizeof (pointStateDef));
+	}
+	if (sCount > 0)
+	{
+		if ((pointCtrl -> signalStates = (signalStateDef *)malloc (sCount * sizeof (signalStateDef))) == NULL)
+			return;
+		memset (pointCtrl -> signalStates, 0, sCount * sizeof (signalStateDef));
+	}
 
-	memset (pointCtrl -> pointStates, 0, count * sizeof (pointStateDef));
-
-	for (curNode = inNode; curNode && loop < count; curNode = curNode->next)
+	for (curNode = inNode; curNode; curNode = curNode->next)
 	{
 		if (curNode->type == XML_ELEMENT_NODE)
 		{
-			if (strcmp ((char *)curNode->name, "point") == 0)
+			if (strcmp ((char *)curNode->name, "point") == 0 && pFound < pCount)
 			{
-				if ((identStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
+				int ident = -1, channel = -1, defaultPos = -1, turnoutPos = -1;
+
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{
-					if ((channelStr = xmlGetProp(curNode, (const xmlChar*)"channel")) != NULL)
-					{
-						if ((defaultStr = xmlGetProp(curNode, (const xmlChar*)"default")) != NULL)
-						{
-							if ((turnoutStr = xmlGetProp(curNode, (const xmlChar*)"turnout")) != NULL)
-							{
-								int ident = -1, channel = -1, defaultPos = -1, turnoutPos = -1;
+					sscanf ((char *)tempStr, "%d", &ident);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"channel")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &channel);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"default")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &defaultPos);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"turnout")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &turnoutPos);
+					xmlFree (tempStr);
+				}								
+				if (ident != -1 && channel != -1 && defaultPos != -1 && turnoutPos != -1)
+				{
+					pointCtrl -> pointStates[pFound].ident = ident;
+					pointCtrl -> pointStates[pFound].channel = channel;
+					pointCtrl -> pointStates[pFound].defaultPos = defaultPos;
+					pointCtrl -> pointStates[pFound].turnoutPos = turnoutPos;
+					pointCtrl -> pointStates[pFound].offTime = 0;
+					++pFound;
+				}
+			}
+			else if (strcmp ((char *)curNode->name, "signal") == 0 && sFound < sCount)
+			{
+				int ident = -1, cRed = -1, cGreen, redOut = -1, greenOut = -1;
 
-								sscanf ((char *)identStr, "%d", &ident);
-								sscanf ((char *)channelStr, "%d", &channel);
-								sscanf ((char *)defaultStr, "%d", &defaultPos);
-								sscanf ((char *)turnoutStr, "%d", &turnoutPos);
-
-								if (ident != -1 && channel != -1 && defaultPos != -1 && turnoutPos != -1)
-								{
-									pointCtrl -> pointStates[loop].ident = ident;
-									pointCtrl -> pointStates[loop].channel = channel;
-									pointCtrl -> pointStates[loop].defaultPos = defaultPos;
-									pointCtrl -> pointStates[loop].turnoutPos = turnoutPos;
-									pointCtrl -> pointStates[loop].offTime = 0;
-									++loop;
-								}
-								xmlFree(turnoutStr);
-							}
-							xmlFree(defaultStr);
-						}
-						xmlFree(channelStr);
-					}
-					xmlFree(identStr);
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &ident);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"channelRed")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &cRed);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"channelGreen")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &cGreen);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"redOut")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &redOut);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"greenOut")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &greenOut);
+					xmlFree (tempStr);
+				}
+				if (ident != -1 && cRed != -1 && cGreen != -1 && redOut != -1 && greenOut != -1)
+				{
+					pointCtrl -> signalStates[sFound].ident = ident;
+					pointCtrl -> signalStates[sFound].channelRed = cRed;
+					pointCtrl -> signalStates[sFound].channelGreen = cGreen;
+					pointCtrl -> signalStates[sFound].redOut = redOut;
+					pointCtrl -> signalStates[sFound].greenOut = greenOut;
+					pointCtrl -> signalStates[sFound].state = 0;
+					++sFound;
 				}
 			}
 		}
 	}
-	pointCtrl -> pointCount = loop;
+	pointCtrl -> pointCount = pFound;
+	pointCtrl -> signalCount = sFound;
 }
 
 /**********************************************************************************************************************
@@ -172,7 +221,7 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "pointDaemon") == 0)
 			{
-				int readIdent = -1, readCount = -1;
+				int readIdent = -1, pointCount = 0, signalCount = 0;
 				xmlChar *tempStr;
 
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
@@ -180,14 +229,19 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 					sscanf ((char *)tempStr, "%d", &readIdent);
 					xmlFree (tempStr);
 				}
-				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"pCount")) != NULL)
 				{
-					sscanf ((char *)tempStr, "%d", &readCount);
+					sscanf ((char *)tempStr, "%d", &pointCount);
 					xmlFree (tempStr);
 				}
-				if (readCount != -1 && readIdent == pointCtrl -> clientID)
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"sCount")) != NULL)
 				{
-					processPoints (pointCtrl, curNode -> children, readCount);
+					sscanf ((char *)tempStr, "%d", &signalCount);
+					xmlFree (tempStr);
+				}
+				if (readIdent == pointCtrl -> clientID)
+				{
+					processPoints (pointCtrl, curNode -> children, pointCount, signalCount);
 				}
 			}
 		}
@@ -279,6 +333,69 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  U P D A T E  S I G N A L                                                                                          *
+ *  ========================                                                                                          *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Update the state of a signal.
+ *  \param pointCtrl Pointer to the config.
+ *  \param handle Hande of the controller.
+ *  \param server Number of the server.
+ *  \param signal Number of the signal.
+ *  \param state New signal state.
+ *  \result None.
+ */
+void updateSignal (pointCtrlDef *pointCtrl, int handle, int server, int signal, int state)
+{
+	if (server == pointCtrl -> clientID && servoFD != -1)
+	{
+		int i;
+		for (i = 0; i < pointCtrl -> signalCount; ++i)
+		{
+			if (pointCtrl -> signalStates[i].ident == signal)
+			{
+				char tempBuff[81];
+
+#ifdef HAVE_WIRINGPI_H
+				putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
+						PIN_BASE + pointCtrl -> signalStates[i].channelRed, 
+						state == 1 ? pointCtrl -> signalStates[i].redOut : 0);
+				putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
+						PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 
+						state == 2 ? pointCtrl -> signalStates[i].greenOut : 0);
+
+				if (state == 1)
+				{
+					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
+					delay(150);
+					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
+				}
+				else if (state == 2)
+				{
+					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
+					delay(150);
+					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, pointCtrl -> signalStates[i].greenOut);
+				}
+				else
+				{
+					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
+					delay(150);
+					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
+				}
+#endif
+				delay(150);
+				pointCtrl -> signalStates[i].state = state;
+				sprintf (tempBuff, "<x %d %d %d>", server, signal, state);
+				SendSocket (handle, tempBuff, strlen (tempBuff));
+				break;
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  C H E C K  P O I N T S  O F F                                                                                     *
  *  =============================                                                                                     *
  *                                                                                                                    *
@@ -339,6 +456,33 @@ void updateAllPoints (pointCtrlDef *pointCtrl, int handle)
 		SendSocket (handle, tempBuff, strlen (tempBuff));
 	}
 }
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  U P D A T E  A L L  S I G N A L S                                                                                 *
+ *  =================================                                                                                 *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Send out the state of all the signals.
+ *  \param pointCtrl Pointer to the config.
+ *  \param handle Hande of the controller.
+ *  \result None.
+ */
+void updateAllSignals (pointCtrlDef *pointCtrl, int handle)
+{
+	int i;
+	char tempBuff[81];
+
+	for (i = 0; i < pointCtrl -> pointCount; ++i)
+	{
+		sprintf (tempBuff, "<x %d %d %d>", pointCtrl -> clientID,
+				pointCtrl -> signalStates[i].ident,
+				pointCtrl -> signalStates[i].state);
+		SendSocket (handle, tempBuff, strlen (tempBuff));
+	}
+}
+
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -417,6 +561,20 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
 					updateAllPoints (pointCtrl, handle);
 				}
 			}
+			else if (words[0][0] == 'X' && words[0][1] == 0)
+			{
+				if (wordNum == 4)
+				{
+					int server = atoi (words[1]);
+					int signal = atoi (words[2]);
+					int state = atoi (words[3]);
+					updateSignal (pointCtrl, handle, server, signal, state);
+				}
+				else
+				{
+					updateAllSignals (pointCtrl, handle);
+				}
+			}
 			inType = 0;
 			wordNum = -1;
 			j = 0;
@@ -466,6 +624,15 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 	{
 		pwmWrite (PIN_BASE + pointCtrl -> pointStates[i].channel, pointCtrl -> pointStates[i].defaultPos);
 		delay (150);
+		pointCtrl -> pointStates[i].offTime = time(NULL) + 2;
+	}
+	for (i = 0; i < pointCtrl -> signalCount; ++i)
+	{
+		pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
+		delay (150);
+		pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
+		delay (150);
+		pointCtrl -> signalStates[i].state = 1;
 	}
 #endif
 	return 1;

@@ -15,7 +15,7 @@
 				turnout - The turnout position.
 -->
 <pointControl server="tinyfive.theknight.home" port="28201" timeout="5" ipver="3">
-  <pointDaemon ident="1" count="11">
+  <pointDaemon ident="1" pCount="11" sCount="2">
     <point ident="1" channel="0" default="290" turnout="320"/>
     <point ident="2" channel="1" default="290" turnout="320"/>
     <point ident="3" channel="2" default="290" turnout="320"/>
@@ -27,8 +27,10 @@
     <point ident="9" channel="8" default="290" turnout="320"/>
     <point ident="10" channel="9" default="290" turnout="320"/>
     <point ident="11" channel="10" default="290" turnout="320"/>
+	<signal ident="1" channelRed="11" channelGreen="12" redOut="250" greenOut="125"/>
+	<signal ident="2" channelRed="13" channelGreen="14" redOut="250" greenOut="125"/>
   </pointDaemon>
-  <pointDaemon ident="2" count="11">
+  <pointDaemon ident="2" pCount="11" sCount="2">
     <point ident="12" channel="0" default="300" turnout="350"/>
     <point ident="13" channel="1" default="290" turnout="320"/>
     <point ident="14" channel="2" default="350" turnout="310"/>
@@ -40,6 +42,8 @@
     <point ident="20" channel="8" default="290" turnout="320"/>
     <point ident="21" channel="9" default="290" turnout="320"/>
     <point ident="22" channel="10" default="290" turnout="320"/>
+	<signal ident="3" channelRed="11" channelGreen="12" redOut="250" greenOut="125"/>
+	<signal ident="4" channelRed="13" channelGreen="14" redOut="250" greenOut="125"/>
   </pointDaemon>
 </pointControl>
 

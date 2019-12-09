@@ -40,6 +40,7 @@ static const GdkRGBA iaFillCol = { 0.4, 0.0, 0.0, 1.0 };
 static const GdkRGBA circleCol = { 0.8, 0.8, 0.8, 1.0 };
 static const GdkRGBA sigRedCol = { 0.9, 0.0, 0.0, 1.0 };
 static const GdkRGBA sigGrnCol = { 0.0, 0.9, 0.0, 1.0 };
+static const GdkRGBA sigOffCol = { 0.9, 0.9, 0.9, 1.0 };
 static const double xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
 static const double yChange[8] = { 1, 0, 1, 2, 2, 0, 0, 2 };
 
@@ -667,10 +668,12 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 				if (trackCtrl -> trackLayout -> trackCells[posn].signal.signal & (1 << loop))
 				{
 					cairo_save (cr);
-					if (trackCtrl -> trackLayout -> trackCells[posn].signal.state == 0)
+					if (trackCtrl -> trackLayout -> trackCells[posn].signal.state == 1)
 						gdk_cairo_set_source_rgba (cr, &sigRedCol);
-					else
+					else if (trackCtrl -> trackLayout -> trackCells[posn].signal.state == 2)
 						gdk_cairo_set_source_rgba (cr, &sigGrnCol);
+					else
+						gdk_cairo_set_source_rgba (cr, &sigOffCol);
 
 					cairo_arc (cr, 
 							(j * cellSize) + (cellSize >> 2) + (xChangeMod[loop] >> 1), 
@@ -818,9 +821,12 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 
 				if (trackCtrl -> trackLayout -> trackCells[posn].signal.signal)
 				{
-					trackCtrl -> trackLayout -> trackCells[posn].signal.state = 
-						 (trackCtrl -> trackLayout -> trackCells[posn].signal.state ? 0 : 1);
-					gtk_widget_queue_draw (trackCtrl -> drawingArea);
+					char tempBuff[81];
+					trackCellDef *cell = &trackCtrl -> trackLayout -> trackCells[posn];
+					cell -> signal.state = (cell -> signal.state == 1 ? 2 : 1);
+					sprintf (tempBuff, "<X %d %d %d>", cell -> signal.server, cell -> signal.ident, 
+							cell -> signal.state);
+					trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff));
 				}
 			}
 			return TRUE;
@@ -922,6 +928,41 @@ void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
 				else
 					cell -> point.state = cell-> point.point & ~(cell -> point.pointDef);
 
+				if (trackCtrl -> windowTrack != NULL)
+					gtk_widget_queue_draw (trackCtrl -> drawingArea);
+
+				break;
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  U P D A T E  S I G N A L  S T A T E                                                                               *
+ *  ===================================                                                                               *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Update the state of the signal.
+ *  \param trackCtrl Pointer to the config.
+ *  \param server Which server to update.
+ *  \param point Which signal to update.
+ *  \param state New state of the signal.
+ *  \result None.
+ */
+void updateSignalState (trackCtrlDef *trackCtrl, int server, int signal, int state)
+{
+	int i, cells = trackCtrl -> trackLayout -> trackRows * trackCtrl -> trackLayout -> trackCols;
+
+	for (i = 0; i < cells; ++i)
+	{
+		trackCellDef *cell = &trackCtrl -> trackLayout -> trackCells[i];
+		if (cell -> signal.signal)
+		{
+			if (cell -> signal.server == server && cell -> signal.ident == signal)
+			{
+				cell -> signal.state = state;
 				if (trackCtrl -> windowTrack != NULL)
 					gtk_widget_queue_draw (trackCtrl -> drawingArea);
 

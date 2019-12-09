@@ -368,7 +368,10 @@ void getAllPointStates ()
 			if (point -> intHandle != -1)
 			{
 				if (handleInfo[point -> intHandle].handle != -1)
+				{
 					SendSocket (handleInfo[point -> intHandle].handle, "<Y>", 3);
+					SendSocket (handleInfo[point -> intHandle].handle, "<X>", 3);
+				}
 			}
 		}
 	}
@@ -419,6 +422,10 @@ void setAllPointStates (int pSvrIdent)
 							SendSocket (handleInfo[pointSever -> intHandle].handle, tempBuff, strlen (tempBuff));
 						}
 					}
+					if (cell -> signal.signal)
+					{
+
+					}
 				}
 			}
 		}
@@ -462,6 +469,38 @@ void savePointState (int pSvrIdent, int ident, int direc)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  S A V E  S I G N A L  S T A T E                                                                                   *
+ *  ===============================                                                                                   *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Save the state of the signal.
+ *  \param sSvrIdent Identity of the server.
+ *  \param ident Identity of the signal.
+ *  \param state New state of the signal.
+ *  \result None.
+ */
+void saveSignalState (int sSvrIdent, int ident, int state)
+{
+	int i, cells = trackCtrl.trackLayout -> trackRows * trackCtrl.trackLayout -> trackCols;
+
+	for (i = 0; i < cells; ++i)
+	{
+		trackCellDef *cell = &trackCtrl.trackLayout -> trackCells[i];
+		if (cell -> signal.state)
+		{
+			if (cell -> signal.server == sSvrIdent && cell -> signal.ident == ident)
+			{
+				cell -> signal.state = state;
+				break;
+			}
+		}
+	}
+}
+
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  S E N D  P O I N T  S E R V E R                                                                                   *
  *  ===============================                                                                                   *
  *                                                                                                                    *
@@ -493,6 +532,47 @@ void sendPointServer (int pSvrIdent, int ident, int direc)
 						SendSocket (handleInfo[pointCtrl -> intHandle].handle,
 								tempBuff, strlen (tempBuff));
 						savePointState (pSvrIdent, ident, direc);
+					}
+				}
+				break;
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  S E N D  S I G N A L  S E R V E R                                                                                 *
+ *  =================================                                                                                 *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Send the state of a signal.
+ *  \param sSvrIdent Identity of the server.
+ *  \param ident Identity of the signal.
+ *  \param state State of the signal.
+ *  \result None.
+ */
+void sendSignalServer (int sSvrIdent, int ident, int state)
+{
+	int p;
+
+	if (trackCtrl.pointCtrl != NULL)
+	{
+		for (p = 0; p < trackCtrl.pServerCount; ++p)
+		{
+			pointCtrlDef *pointCtrl = &trackCtrl.pointCtrl[p];
+			if (sSvrIdent == pointCtrl -> ident)
+			{
+				if (pointCtrl -> intHandle != -1)
+				{
+					if (handleInfo[pointCtrl -> intHandle].handle != -1)
+					{
+						char tempBuff[81];
+						sprintf (tempBuff, "<X %d %d %d>", sSvrIdent, ident, state);
+						SendSocket (handleInfo[pointCtrl -> intHandle].handle,
+								tempBuff, strlen (tempBuff));
+						saveSignalState (sSvrIdent, ident, state);
 					}
 				}
 				break;
@@ -663,6 +743,26 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 			}
 			/* Reply point server state */
 			else if (words[0][0] == 'y' && words[0][1] == 0 && wordNum == 4)
+			{
+				int i;
+				for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
+				{
+					if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
+						SendSocket (handleInfo[i].handle, buffer, len);
+				}
+				retn = 1;
+			}
+			/* Set signal state */
+			else if (words[0][0] == 'X' && words[0][1] == 0 && wordNum == 4)
+			{
+				int server = atoi (words[1]);
+				int ident = atoi (words[2]);
+				int state = atoi (words[3]);
+				sendSignalServer (server, ident, state);
+				retn = 1;
+			}
+			/* Reply signal server state */
+			else if (words[0][0] == 'x' && words[0][1] == 0 && wordNum == 4)
 			{
 				int i;
 				for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
