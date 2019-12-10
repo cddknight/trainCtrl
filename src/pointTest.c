@@ -48,6 +48,8 @@ typedef struct
 }
 pointTestDef;
 
+pointTestDef *pointTest;
+
 static void quitCallback (GSimpleAction *action, GVariant *parameter, gpointer data);
 
 static GActionEntry appEntries[] =
@@ -136,7 +138,6 @@ static void activate (GtkApplication *app, gpointer userData)
 	char buff[41];
 	GtkWidget *vbox;
 	GMenu *menu;
-	pointTestDef *pointTest;
 
 	g_action_map_add_action_entries (G_ACTION_MAP (app), appEntries, G_N_ELEMENTS (appEntries), app);
 	menu = g_menu_new ();
@@ -212,6 +213,8 @@ static void shutdown (GtkApplication *app, gpointer userData)
 			pwmWrite (PIN_BASE + i, 0);
 	}
 #endif
+	free (pointTest);
+	pointTest = NULL;
 }
 
 /**********************************************************************************************************************
