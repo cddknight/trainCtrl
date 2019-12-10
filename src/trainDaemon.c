@@ -1015,7 +1015,7 @@ void sendAllFunctions (int handle)
  */
 void helpThem()
 {
-	fprintf (stderr, "Usage: trainDaemon [-c config] [-l port] [-s device]\n");
+	fprintf (stderr, "Usage: trainDaemon [-c config]\n");
 	fprintf (stderr, "       -c config.xml . . Name of the config file\n");
 	fprintf (stderr, "       -d  . . . . . . . Deamonise the process.\n");
 	fprintf (stderr, "       -L  . . . . . . . Write messages to syslog.\n");
