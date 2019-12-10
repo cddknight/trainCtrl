@@ -36,6 +36,7 @@
 
 #include "socketC.h"
 #include "trainControl.h"
+#include "config.h"
 
 #define RXED_BUFF_SIZE	1024
 #define MAX_HANDLES		25
@@ -1015,6 +1016,7 @@ void sendAllFunctions (int handle)
  */
 void helpThem()
 {
+	fprintf (stderr, "Train Daemon, Version: %s\n", PACKAGE_VERSION);
 	fprintf (stderr, "Usage: trainDaemon [-c config]\n");
 	fprintf (stderr, "       -c config.xml . . Name of the config file\n");
 	fprintf (stderr, "       -d  . . . . . . . Deamonise the process.\n");
@@ -1044,7 +1046,7 @@ int main (int argc, char *argv[])
 	int i, c, p, connectedCount = 0;
 	time_t curRead = time(NULL) + 5;
 
-	while ((c = getopt(argc, argv, "c:dLID")) != -1)
+	while ((c = getopt(argc, argv, "c:dLID?")) != -1)
 	{
 		switch (c)
 		{
