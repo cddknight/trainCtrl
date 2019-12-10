@@ -310,7 +310,7 @@ int main (int argc, char *argv[])
 	loadConfigFile ();
 	if (!pointCtrl.clientID)
 	{
-		pointCtrl.clientID = 0;
+		pointCtrl.clientID = 1;
 	}
 
 	/**********************************************************************************************************************
