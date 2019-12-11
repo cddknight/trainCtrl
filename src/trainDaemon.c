@@ -1042,7 +1042,7 @@ int main (int argc, char *argv[])
 {
 	fd_set readfds;
 	struct timeval timeout;
-	char inAddress[81] = "";
+	char inAddress[50] = "";
 	int i, c, p, connectedCount = 0;
 	time_t curRead = time(NULL) + 5;
 
@@ -1185,7 +1185,7 @@ int main (int argc, char *argv[])
 							char outBuffer[41];
 							handleInfo[i].handle = newSocket;
 							handleInfo[i].handleType = CONTRL_HTYPE;
-							strncpy (handleInfo[i].localName, inAddress, 40);
+							strncpy (handleInfo[i].localName, inAddress, 50);
 							putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
 							sprintf (outBuffer, "<V %d>", handleInfo[i].handle);
 							SendSocket (handleInfo[i].handle, outBuffer, strlen (outBuffer));
@@ -1223,7 +1223,7 @@ int main (int argc, char *argv[])
 										trackCtrl.pointCtrl[p].intHandle = i;
 										handleInfo[i].handle = newSocket;
 										handleInfo[i].handleType = POINTC_HTYPE;
-										strncpy (handleInfo[i].localName, inAddress, 40);
+										strncpy (handleInfo[i].localName, inAddress, 50);
 										putLogMessage (LOG_INFO, "Socket opened: %s(%d)", handleInfo[i].localName, handleInfo[i].handle);
 										done = 1;
 									}
