@@ -823,9 +823,8 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 				{
 					char tempBuff[81];
 					trackCellDef *cell = &trackCtrl -> trackLayout -> trackCells[posn];
-					cell -> signal.state = (cell -> signal.state == 1 ? 2 : 1);
-					sprintf (tempBuff, "<X %d %d %d>", cell -> signal.server, cell -> signal.ident, 
-							cell -> signal.state);
+					int newState = (cell -> signal.state == 1 ? 2 : 1);
+					sprintf (tempBuff, "<X %d %d %d>", cell -> signal.server, cell -> signal.ident, newState);
 					trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff));
 				}
 			}
@@ -965,7 +964,6 @@ void updateSignalState (trackCtrlDef *trackCtrl, int server, int signal, int sta
 				cell -> signal.state = state;
 				if (trackCtrl -> windowTrack != NULL)
 					gtk_widget_queue_draw (trackCtrl -> drawingArea);
-
 				break;
 			}
 		}
@@ -1473,7 +1471,6 @@ static void activate (GtkApplication *app, gpointer userData)
 
 	g_action_map_add_action_entries (G_ACTION_MAP (app), appEntries, G_N_ELEMENTS (appEntries), app);
 	menu = g_menu_new ();
-//	g_menu_append (menu, "Preferences", "app.preferences");
 	g_menu_append (menu, "About Train Control", "app.about");
 	g_menu_append (menu, "Quit", "app.quit");
 	gtk_application_set_app_menu (GTK_APPLICATION (app), G_MENU_MODEL (menu));
