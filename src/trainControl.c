@@ -812,7 +812,7 @@ gboolean windowClickCallback (GtkWidget * widget, GdkEventButton * event, gpoint
 			}
 			return TRUE;
 
-		case GDK_BUTTON_MIDDLE:
+		case GDK_BUTTON_SECONDARY:
 			{
 				int rows = trackCtrl -> trackLayout -> trackRows;
 				int cols = trackCtrl -> trackLayout -> trackCols;
