@@ -626,7 +626,7 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 	{
 		for (j = 0; j < cols; ++j)
 		{
-			int lineType, xPos[3]={0,0,0}, yPos[3]={0,0,0}, posMask = 0;
+			int lineType, xPos[5]={0,0,0,0,0}, yPos[5]={0,0,0,0,0}, posMask = 0, saveVal = 0;
 			int posn = (i * cols) + j, count = 0, loop;
 
 			for (loop = 0; loop < 8; ++loop)
@@ -638,30 +638,24 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 					{
 						if (!(trackCtrl -> trackLayout -> trackCells[posn].point.state & (1 << loop)))
 						{
-							xPos[2] = (j * cellSize) + xChangeMod[loop];
-							yPos[2] = (i * cellSize) + yChangeMod[loop];
-							posMask |= 4;
+							xPos[4] = (j * cellSize) + xChangeMod[loop];
+							yPos[4] = (i * cellSize) + yChangeMod[loop];
+							posMask |= 16;
 						}
-						else
+						else if (saveVal < 4)
 						{
-							xPos[1] = (j * cellSize) + xChangeMod[loop];
-							yPos[1] = (i * cellSize) + yChangeMod[loop];
-							posMask |= 2;
+							xPos[saveVal] = (j * cellSize) + xChangeMod[loop];
+							yPos[saveVal] = (i * cellSize) + yChangeMod[loop];
+							posMask |= (1 << saveVal++);
 						}
 					}
 					else
 					{
-						if (!(posMask & 1))
+						if (saveVal < 4)
 						{
-							xPos[0] = (j * cellSize) + xChangeMod[loop];
-							yPos[0] = (i * cellSize) + yChangeMod[loop];
-							posMask |= 1;
-						}
-						else
-						{
-							xPos[1] = (j * cellSize) + xChangeMod[loop];
-							yPos[1] = (i * cellSize) + yChangeMod[loop];
-							posMask |= 2;
+							xPos[saveVal] = (j * cellSize) + xChangeMod[loop];
+							yPos[saveVal] = (i * cellSize) + yChangeMod[loop];
+							posMask |= (1 << saveVal++);
 						}
 					}
 				}
@@ -684,7 +678,7 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 					cairo_restore (cr);
 				}
 			}
-			if (posMask & 4)
+			if (posMask & 16)
 			{
 				for (lineType = 0; lineType < 2; ++lineType)
 				{
@@ -693,7 +687,7 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 					gdk_cairo_set_source_rgba (cr, lineType ? &iaFillCol : &inactCol);
 					cairo_set_line_width (cr, lineWidths[lineType]);
 					cairo_move_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
-					cairo_line_to (cr, xPos[2], yPos[2]);
+					cairo_line_to (cr, xPos[4], yPos[4]);
 					cairo_stroke (cr);
 					cairo_restore (cr);
 				}
@@ -711,6 +705,15 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 					if (posMask & 2)
 					{
 						cairo_line_to (cr, xPos[1], yPos[1]);
+						if (posMask & 4)
+						{
+							cairo_move_to (cr, xPos[2], yPos[2]);
+							cairo_line_to (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf);
+							if (posMask & 8)
+							{
+								cairo_line_to (cr, xPos[3], yPos[3]);
+							}
+						}
 					}
 					cairo_stroke (cr);
 					cairo_restore (cr);
