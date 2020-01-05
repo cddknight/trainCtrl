@@ -87,10 +87,12 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 		{
 			if (strcmp ((char *)curNode->name, "function") == 0)
 			{
-				xmlChar *idStr, *descStr;
+				xmlChar *idStr;
 
 				if ((idStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{
+					xmlChar *descStr;
+
 					if ((descStr = xmlGetProp(curNode, (const xmlChar*)"desc")) != NULL)
 					{
 						int id = -1;
@@ -263,7 +265,7 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 
 						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"layout")) != NULL)
 						{
-							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].layout);
+							sscanf ((char *)tempStr, "%hu", &trackCtrl -> trackLayout -> trackCells[posn].layout);
 							xmlFree(tempStr);
 						}
 						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"point")) != NULL)
@@ -281,32 +283,32 @@ void processCell (trackCtrlDef *trackCtrl, xmlNode *inNode, int rowNum)
 						}
 						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"link")) != NULL)
 						{
-							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].point.link);
+							sscanf ((char *)tempStr, "%hu", &trackCtrl -> trackLayout -> trackCells[posn].point.link);
 							xmlFree(tempStr);
 						}
 						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
 						{
-							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].point.server);
+							sscanf ((char *)tempStr, "%hu", &trackCtrl -> trackLayout -> trackCells[posn].point.server);
 							xmlFree(tempStr);
 						}
 						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 						{
-							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].point.ident);
+							sscanf ((char *)tempStr, "%hu", &trackCtrl -> trackLayout -> trackCells[posn].point.ident);
 							xmlFree(tempStr);
 						}
 						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"signal")) != NULL)
 						{
-							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].signal.signal);
+							sscanf ((char *)tempStr, "%hu", &trackCtrl -> trackLayout -> trackCells[posn].signal.signal);
 							xmlFree(tempStr);
 						}
 						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"sserver")) != NULL)
 						{
-							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].signal.server);
+							sscanf ((char *)tempStr, "%hu", &trackCtrl -> trackLayout -> trackCells[posn].signal.server);
 							xmlFree(tempStr);
 						}
 						if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"sident")) != NULL)
 						{
-							sscanf ((char *)tempStr, "%hd", &trackCtrl -> trackLayout -> trackCells[posn].signal.ident);
+							sscanf ((char *)tempStr, "%hu", &trackCtrl -> trackLayout -> trackCells[posn].signal.ident);
 							xmlFree(tempStr);
 						}
 						for (i = 0; i < 8 && point && pointState == 0; ++i)
@@ -466,7 +468,7 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "pointServers") == 0)
 			{
-				int count = -1, i;
+				int count = -1;
 				xmlChar *countStr;
 				if ((countStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
 				{
@@ -476,6 +478,8 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 					{
 						if ((trackCtrl -> pointCtrl = (pointCtrlDef *)malloc (count * sizeof (pointCtrlDef))) != NULL)
 						{
+							int i;
+
 							memset (trackCtrl -> pointCtrl, 0, count * sizeof (pointCtrlDef));
 							for (i = 0; i < count; ++i)
 								trackCtrl -> pointCtrl[i].intHandle = -1;
@@ -488,11 +492,13 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 			else if (level == 1 && strcmp ((char *)curNode->name, "cells") == 0)
 			{
 				int rows = -1, cols = -1, size = 40;
-				xmlChar *rowsStr, *colsStr, *sizeStr;
+				xmlChar *rowsStr;
 				if ((rowsStr = xmlGetProp(curNode, (const xmlChar*)"rows")) != NULL)
 				{
+					xmlChar *colsStr;
 					if ((colsStr = xmlGetProp(curNode, (const xmlChar*)"cols")) != NULL)
 					{
+						xmlChar *sizeStr;
 						if ((sizeStr = xmlGetProp(curNode, (const xmlChar*)"size")) != NULL)
 						{
 							sscanf ((char *)sizeStr, "%d", &size);

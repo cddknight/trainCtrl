@@ -745,11 +745,11 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 			/* Reply point server state */
 			else if (words[0][0] == 'y' && words[0][1] == 0 && wordNum == 4)
 			{
-				int i;
-				for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
+				int h;
+				for (h = FIRST_HANDLE; h < MAX_HANDLES; ++h)
 				{
-					if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
-						SendSocket (handleInfo[i].handle, buffer, len);
+					if (handleInfo[h].handle != -1 && handleInfo[h].handleType == CONTRL_HTYPE)
+						SendSocket (handleInfo[h].handle, buffer, len);
 				}
 				retn = 1;
 			}
@@ -765,18 +765,18 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 			/* Reply signal server state */
 			else if (words[0][0] == 'x' && words[0][1] == 0 && wordNum == 4)
 			{
-				int i;
-				for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
+				int h;
+				for (h = FIRST_HANDLE; h < MAX_HANDLES; ++h)
 				{
-					if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
-						SendSocket (handleInfo[i].handle, buffer, len);
+					if (handleInfo[h].handle != -1 && handleInfo[h].handleType == CONTRL_HTYPE)
+						SendSocket (handleInfo[h].handle, buffer, len);
 				}
 				retn = 1;
 			}
 			/* Record and tell everyone about a function change */
 			else if (words[0][0] == 'f' && words[0][1] == 0 && (wordNum == 3 || wordNum == 4))
 			{
-				int i;
+				int h;
 				int trainID = atoi (words[1]);
 				int byteOne = atoi (words[2]);
 				int byteTwo = 0;
@@ -785,10 +785,10 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 					byteTwo = atoi (words[3]);
 
 				trainUpdFunction (trainID, byteOne, byteTwo);
-				for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
+				for (h = FIRST_HANDLE; h < MAX_HANDLES; ++h)
 				{
-					if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
-						SendSocket (handleInfo[i].handle, buffer, len);
+					if (handleInfo[h].handle != -1 && handleInfo[h].handleType == CONTRL_HTYPE)
+						SendSocket (handleInfo[h].handle, buffer, len);
 				}
 				retn = 0;
 			}
@@ -796,14 +796,14 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 			else if (words[0][0] == 'V' && words[0][1] == 0 && wordNum == 1)
 			{
 				char buffer[101];
-				int i, conCounts[6] = { 0, 0, 0, 0, 0, 0 };
+				int h, conCounts[6] = { 0, 0, 0, 0, 0, 0 };
 
-				for (i = SERIAL_HANDLE; i < MAX_HANDLES; ++i)
+				for (h = SERIAL_HANDLE; h < MAX_HANDLES; ++h)
 				{
-					if (handleInfo[i].handle != -1)
+					if (handleInfo[h].handle != -1)
 					{
-						if (handleInfo[i].handleType >= SERIAL_HTYPE && handleInfo[i].handleType <= CONTRL_HTYPE)
-							++conCounts[handleInfo[i].handleType - 1];
+						if (handleInfo[h].handleType >= SERIAL_HTYPE && handleInfo[h].handleType <= CONTRL_HTYPE)
+							++conCounts[handleInfo[h].handleType - 1];
 					}
 				}
 				sprintf (buffer, "<V %d %d %d %d %d %d %d>", handleInfo[handle].handle,
@@ -867,7 +867,7 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
  */
 void receiveSerial (int handle, char *buffer, int len)
 {
-	int i = 0, j = 0;
+	int h, j = 0;
 
 	while (j < len)
 	{
@@ -876,10 +876,10 @@ void receiveSerial (int handle, char *buffer, int len)
 		{
 			handleInfo[handle].rxedBuff[handleInfo[handle].rxedPosn] = 0;
 			checkSerialRecvBuffer (handleInfo[handle].rxedBuff, handleInfo[handle].rxedPosn);
-			for (i = FIRST_HANDLE; i < MAX_HANDLES; ++i)
+			for (h = FIRST_HANDLE; h < MAX_HANDLES; ++h)
 			{
-				if (handleInfo[i].handle != -1 && handleInfo[i].handleType == CONTRL_HTYPE)
-					SendSocket (handleInfo[i].handle, handleInfo[handle].rxedBuff, handleInfo[handle].rxedPosn);
+				if (handleInfo[h].handle != -1 && handleInfo[h].handleType == CONTRL_HTYPE)
+					SendSocket (handleInfo[h].handle, handleInfo[handle].rxedBuff, handleInfo[handle].rxedPosn);
 			}
 			handleInfo[handle].rxedPosn = 0;
 		}
@@ -1215,7 +1215,6 @@ int main (int argc, char *argv[])
 						{
 							if (trackCtrl.pointCtrl != NULL)
 							{
-								int p;
 								for (p = 0; p < trackCtrl.pServerCount && !done; ++p)
 								{
 									if (trackCtrl.pointCtrl[p].intHandle == -1)

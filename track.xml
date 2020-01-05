@@ -44,11 +44,8 @@
 				link - Which line links to another point (optional).
 				server - Which pointserver controls this point (optional).
 				ident - The identity of the point (optional).
-				signal - Position of a signal (optional). 
-				sserver - Which pointserver controls this signal (optional).
-				sident - The identity of the signal (optional).
--->
 
+-->
 <track name="The Office Line" server="tinyfive.theknight.home" port="28200" point="28201" config="28202" 
 		timeout="5" ipver="3" device="/dev/ttyACM0" flags="1">
   <trains count="9">
@@ -76,8 +73,7 @@
 	</train>
     <train num="68035" ident="300" slow="11" desc="Austerity Saddle Tank J94 (0-6-0ST)" />
   </trains>
-  <pointServers count="3"/>
-
+  <pointServers count="2"/>
 <!--
 	Cell layout values are made buy adding up the following values:
 
@@ -87,8 +83,7 @@
 	   /  |  \
 	016  008  128
 -->
-
-  <cells rows="13" cols="16" size="42" pCount="18">
+  <cells rows="17" cols="16" size="42" pCount="18">
     <cellRow row="0">
       <cell col="2" layout="4"/>
       <cell col="3" layout="5"/>
@@ -96,7 +91,7 @@
       <cell col="5" layout="5"/>
       <cell col="6" layout="5"/>
       <cell col="7" layout="5"/>
-      <cell col="8" layout="133" point="132" link="128" server="1" ident="1"/>
+      <cell col="8" layout="133" point="132" link="128" server="3" ident="1"/>
       <cell col="9" layout="5"/>
       <cell col="10" layout="5"/>
       <cell col="11" layout="5"/>
@@ -108,13 +103,13 @@
       <cell col="3" layout="5"/>
       <cell col="4" layout="5"/>
       <cell col="5" layout="5"/>
-      <cell col="6" layout="133" point="132" link="128" server="3" ident="20"/>
+      <cell col="6" layout="133" point="132" link="128" server="3" ident="3"/>
       <cell col="7" layout="5"/>
       <cell col="8" layout="5"/>
-      <cell col="9" layout="37" point="33" link="32"  server="1" ident="3"/>
-      <cell col="10" layout="21" point="17" link="16" server="1" ident="4"/>
-      <cell col="11" layout="69" point="68" link="64" server="1" ident="5"/>
-      <cell col="12" layout="5"/>
+      <cell col="9" layout="37" point="33" link="32"  server="1" ident="4"/>
+      <cell col="10" layout="21" point="17" server="1" ident="5"/>
+      <cell col="11" layout="69" point="68" link="64" server="1" ident="6"/>
+      <cell col="12" layout="21" point="17" server="1" ident="7"/>
       <cell col="13" layout="129" signal="32" sserver="1" sident="2"/>
       <cell col="14" layout="160"/>
     </cellRow>
@@ -123,39 +118,55 @@
       <cell col="3" layout="5"/>
       <cell col="4" layout="5"/>
       <cell col="5" layout="5"/>
-      <cell col="6" layout="5"/>
-      <cell col="7" layout="37" point="33" link="32" server="3" ident="21"/>
-      <cell col="8" layout="133" point="132" server="1" ident="6"/>
-      <cell col="9" layout="69" point="68" link="64" server="1" ident="7"/>
+      <cell col="6" layout="133" point="132" link="128" server="3" ident="8"/>
+      <cell col="7" layout="37" point="33" link="32" server="3" ident="9"/>
+      <cell col="8" layout="5" />
+      <cell col="9" layout="85" />
       <cell col="10" layout="5"/>
-      <cell col="11" layout="5"/>
-      <cell col="12" layout="5"/>
-      <cell col="13" layout="1"/>
+      <cell col="11" layout="65"/>
       <cell col="14" layout="40"/>
       <cell col="15" layout="40"/>
     </cellRow>
     <cellRow row="3">
-      <cell col="9" layout="36"/>
+      <cell col="7" layout="36"/>
+      <cell col="8" layout="85"/>
+      <cell col="9" layout="5"/>
       <cell col="10" layout="5"/>
       <cell col="11" layout="5"/>
       <cell col="12" layout="5"/>
       <cell col="13" layout="1"/>
       <cell col="14" layout="10"/>
-      <cell col="15" layout="26"  point="24" link="16" server="1" ident="8"/>
+      <cell col="15" layout="26"  point="24" link="16" server="1" ident="10"/>
     </cellRow>
     <cellRow row="4">
-      <cell col="14" layout="74" point="66" link="64" server="1" ident="9"/>
+      <cell col="7" layout="88" point="24" server="3" ident="11"/>
+      <cell col="14" layout="74" point="66" link="64" server="1" ident="12"/>
       <cell col="15" layout="10"/>
     </cellRow>
     <cellRow row="5">
+      <cell col="2" layout="4"/>
+      <cell col="3" layout="5"/>
+      <cell col="4" layout="5"/>
+      <cell col="5" layout="5"/>
+      <cell col="6" layout="81" point="17" server="3" ident="13"/>
+      <cell col="7" layout="18"/>
       <cell col="14" layout="10"/>
       <cell col="15" layout="10"/>
     </cellRow>
     <cellRow row="6">
+      <cell col="2" layout="4"/>
+      <cell col="3" layout="5"/>
+      <cell col="4" layout="5"/>
+      <cell col="5" layout="65"/>
+      <cell col="6" layout="80"/>
       <cell col="14" layout="10"/>
       <cell col="15" layout="10"/>
     </cellRow>
     <cellRow row="7">
+      <cell col="2" layout="4"/>
+      <cell col="3" layout="5"/>
+      <cell col="4" layout="5"/>
+      <cell col="5" layout="65"/>
       <cell col="14" layout="10"/>
       <cell col="15" layout="10"/>
     </cellRow>
@@ -164,49 +175,65 @@
       <cell col="15" layout="10"/>
     </cellRow>
     <cellRow row="9">
+      <cell col="14" layout="10"/>
+      <cell col="15" layout="10"/>
+    </cellRow>
+    <cellRow row="10">
+      <cell col="14" layout="10"/>
+      <cell col="15" layout="10"/>
+    </cellRow>
+    <cellRow row="11">
+      <cell col="14" layout="10"/>
+      <cell col="15" layout="10"/>
+    </cellRow>
+    <cellRow row="12">
+      <cell col="14" layout="10"/>
+      <cell col="15" layout="10"/>
+    </cellRow>
+    <cellRow row="13">
       <cell col="0" layout="4"/>
       <cell col="1" layout="5"/>
       <cell col="2" layout="5"/>
-      <cell col="3" layout="133" point="132" link="128" server="2" ident="10"/>
+      <cell col="3" layout="133" point="132" link="128" server="2" ident="14"/>
       <cell col="4" layout="5"/>
       <cell col="5" layout="1"/>
       <cell col="14" layout="10"/>
       <cell col="15" layout="10"/>
     </cellRow>
-    <cellRow row="10">
+    <cellRow row="14">
       <cell col="0" layout="4"/>
       <cell col="1" layout="5"/>
-      <cell col="2" layout="21" point="17" link="16" server="2" ident="11"/>
+      <cell col="2" layout="21" point="17" link="16" server="2" ident="15"/>
       <cell col="3" layout="5"/>
-      <cell col="4" layout="161" point="33" link="32" server="2" ident="12"/>
+      <cell col="4" layout="161" point="33" link="32" server="2" ident="16"/>
       <cell col="14" layout="18"/>
       <cell col="15" layout="18"/>
     </cellRow>
-    <cellRow row="11">
+    <cellRow row="15">
       <cell col="0" layout="4"/>
-      <cell col="1" layout="69" point="68" link="64" server="2" ident="13"/>
+      <cell col="1" layout="69" point="68" link="64" server="2" ident="17"/>
       <cell col="2" layout="5"/>
       <cell col="3" layout="5"/>
-      <cell col="4" layout="133" point="132" link="4" state="128" server="2" ident="14"/>
-      <cell col="5" layout="37" point="33" link="1" state="32" server="2" ident="15"/>
-      <cell col="6" layout="133" point="132" link="128" server="2" ident="16" signal="32" sserver="2" sident="3"/>
+      <cell col="4" layout="133" point="132" link="4" state="128" server="2" ident="18"/>
+      <cell col="5" layout="37" point="33" link="1" state="32" server="2" ident="19"/>
+      <cell col="6" layout="133" point="132" link="128" server="2" ident="20" signal="32" sserver="2" sident="3"/>
       <cell col="7" layout="5"/>
       <cell col="8" layout="5"/>
       <cell col="9" layout="5"/>
       <cell col="10" layout="5"/>
       <cell col="11" layout="5"/>
-      <cell col="12" layout="21" point="17" link="16" server="2" ident="17"/>
+      <cell col="12" layout="21" point="17" link="16" server="2" ident="21"/>
       <cell col="13" layout="65"/>
       <cell col="14" layout="80"/>
     </cellRow>
-    <cellRow row="12">
+    <cellRow row="16">
       <cell col="5" layout="36"/>
       <cell col="6" layout="5" signal="32" sserver="2" sident="4"/>
-      <cell col="7" layout="37" point="33" link="32" server="2" ident="18"/>
+      <cell col="7" layout="37" point="33" link="32" server="2" ident="22"/>
       <cell col="8" layout="5"/>
       <cell col="9" layout="5"/>
       <cell col="10" layout="5"/>
-      <cell col="11" layout="69" point="68" link="64" server="2" ident="19"/>
+      <cell col="11" layout="69" point="68" link="64" server="2" ident="23"/>
       <cell col="12" layout="5"/>
       <cell col="13" layout="65"/>
     </cellRow>

@@ -222,7 +222,6 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 			else if (level == 1 && strcmp ((char *)curNode->name, "pointDaemon") == 0)
 			{
 				int readIdent = -1, pointCount = 0, signalCount = 0;
-				xmlChar *tempStr;
 
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{

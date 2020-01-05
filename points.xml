@@ -21,36 +21,38 @@
 				greenOut - Brightness for green channel.
 -->
 <pointControl server="tinyfive.theknight.home" port="28201" timeout="5" ipver="3">
-  <pointDaemon ident="1" pCount="9" sCount="2">
-    <point ident="1" channel="0" default="290" turnout="320"/>
-    <point ident="2" channel="1" default="290" turnout="320"/>
-    <point ident="3" channel="2" default="290" turnout="320"/>
-    <point ident="4" channel="3" default="290" turnout="320"/>
-    <point ident="5" channel="4" default="290" turnout="320"/>
-    <point ident="6" channel="5" default="290" turnout="320"/>
-    <point ident="7" channel="6" default="290" turnout="320"/>
-    <point ident="8" channel="7" default="290" turnout="320"/>
-    <point ident="9" channel="8" default="290" turnout="320"/>
+  <pointDaemon ident="1" pCount="7" sCount="2">
+    <point ident="2" channel="0" default="290" turnout="320"/>
+    <point ident="4" channel="1" default="290" turnout="320"/>
+    <point ident="5" channel="2" default="290" turnout="320"/>
+    <point ident="6" channel="3" default="290" turnout="320"/>
+    <point ident="7" channel="4" default="290" turnout="320"/>
+    <point ident="10" channel="5" default="290" turnout="320"/>
+    <point ident="12" channel="6" default="290" turnout="320"/>
     <signal ident="1" channelRed="12" channelGreen="13" redOut="250" greenOut="125"/>
     <signal ident="2" channelRed="14" channelGreen="15" redOut="250" greenOut="125"/>
   </pointDaemon>
   <pointDaemon ident="2" pCount="10" sCount="2">
-    <point ident="10" channel="0" default="300" turnout="350"/>
-    <point ident="11" channel="1" default="290" turnout="320"/>
-    <point ident="12" channel="2" default="350" turnout="310"/>
-    <point ident="13" channel="3" default="310" turnout="345"/>
-    <point ident="14" channel="4" default="335" turnout="310"/>
-    <point ident="15" channel="5" default="355" turnout="295"/>
-    <point ident="16" channel="6" default="295" turnout="355"/>
-    <point ident="17" channel="7" default="290" turnout="320"/>
+    <point ident="14" channel="2" default="350" turnout="310"/>
+    <point ident="15" channel="3" default="310" turnout="345"/>
+    <point ident="16" channel="4" default="335" turnout="310"/>
+    <point ident="17" channel="5" default="355" turnout="295"/>
+    <point ident="18" channel="6" default="295" turnout="355"/>
+    <point ident="19" channel="7" default="290" turnout="320"/>
     <point ident="18" channel="8" default="290" turnout="320"/>
-    <point ident="19" channel="9" default="290" turnout="320"/>
+    <point ident="20" channel="9" default="290" turnout="320"/>
+    <point ident="21" channel="10" default="290" turnout="320"/>
+    <point ident="22" channel="11" default="290" turnout="320"/>
     <signal ident="3" channelRed="12" channelGreen="13" redOut="250" greenOut="125"/>
     <signal ident="4" channelRed="14" channelGreen="15" redOut="250" greenOut="125"/>
   </pointDaemon>
-  <pointDaemon ident="3" pCount="2" sCount="0">
-    <point ident="20" channel="0" default="290" turnout="320"/>
-    <point ident="21" channel="1" default="290" turnout="320"/>
+  <pointDaemon ident="3" pCount="6" sCount="0">
+    <point ident="1" channel="0" default="290" turnout="320"/>
+    <point ident="3" channel="1" default="290" turnout="320"/>
+    <point ident="8" channel="2" default="290" turnout="320"/>
+    <point ident="9" channel="3" default="290" turnout="320"/>
+    <point ident="11" channel="4" default="290" turnout="320"/>
+    <point ident="13" channel="5" default="290" turnout="320"/>
   </pointDaemon>
 </pointControl>
 
