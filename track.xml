@@ -73,7 +73,7 @@
 	</train>
     <train num="68035" ident="300" slow="11" desc="Austerity Saddle Tank J94 (0-6-0ST)" />
   </trains>
-  <pointServers count="2"/>
+  <pointServers count="3"/>
 <!--
 	Cell layout values are made buy adding up the following values:
 
