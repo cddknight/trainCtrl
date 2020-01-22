@@ -1517,8 +1517,8 @@ static void activate (GtkApplication *app, gpointer userData)
 				screenWidth = 300;
 			else if (screenWidth > 1900)
 				screenWidth = 1900;
-			if (screenHeight < 300)
-				screenHeight = 300;
+			if (screenHeight < 400)
+				screenHeight = 400;
 			else if (screenHeight > 1060)
 				screenWidth = 1060;
 
