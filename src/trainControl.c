@@ -1511,11 +1511,16 @@ static void activate (GtkApplication *app, gpointer userData)
 		if (startConnectThread (trackCtrl))
 		{
 			int screenWidth = trackCtrl -> trainCount * 100;
+			int screenHeight = trackCtrl -> trackLayout -> trackRows * trackCtrl -> trackLayout -> trackSize;
+
 			if (screenWidth < 300)
 				screenWidth = 300;
-
-			if (screenWidth > 1900)
+			else if (screenWidth > 1900)
 				screenWidth = 1900;
+			if (screenHeight < 300)
+				screenHeight = 300;
+			else if (screenHeight > 1060)
+				screenWidth = 1060;
 
 			sprintf (tempBuff, "Track Control - %s", trackCtrl -> trackName);
 			trackCtrl -> windowCtrl = gtk_application_window_new (app);
@@ -1527,7 +1532,7 @@ static void activate (GtkApplication *app, gpointer userData)
 			{
 				gtk_window_set_icon_name (GTK_WINDOW (trackCtrl -> windowCtrl), "preferences-desktop");
 			}
-			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), screenWidth, 600);
+			gtk_window_set_default_size (GTK_WINDOW (trackCtrl -> windowCtrl), screenWidth, screenHeight);
 
 			vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
 			gtk_container_set_border_width (GTK_CONTAINER(vbox), 5);
