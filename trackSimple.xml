@@ -48,7 +48,7 @@
 -->
 <track name="The Simple Line" server="192.168.30.135" port="28200" timeout="5" ipver="3" device="/dev/ttyACM0">
   <trains count="1">
-    <train num="1" id="3" desc="Unknown"/>
+    <train num="1" ident="3" slow="10" desc="Unknown"/>
   </trains>
 <!--
     Cell layout values are made buy adding up the following values:
