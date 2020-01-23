@@ -96,7 +96,7 @@
       <cell col="10" layout="5"/>
       <cell col="11" layout="5"/>
       <cell col="12" layout="21" point="17" link="16" server="1" ident="2"/>
-      <cell col="13" layout="129" signal="32" sserver="1" sident="1"/>
+      <cell col="13" layout="129" signal="64" sserver="1" sident="1"/>
     </cellRow>
     <cellRow row="1">
       <cell col="2" layout="4"/>
@@ -110,7 +110,7 @@
       <cell col="10" layout="21" point="17" server="1" ident="5"/>
       <cell col="11" layout="69" point="68" link="64" server="1" ident="6"/>
       <cell col="12" layout="21" point="17" server="1" ident="7"/>
-      <cell col="13" layout="129" signal="32" sserver="1" sident="2"/>
+      <cell col="13" layout="129"/>
       <cell col="14" layout="160"/>
     </cellRow>
     <cellRow row="2">
@@ -124,6 +124,7 @@
       <cell col="9" layout="85" />
       <cell col="10" layout="5"/>
       <cell col="11" layout="65"/>
+      <cell col="13" signal="64" sserver="1" sident="2"/>
       <cell col="14" layout="40"/>
       <cell col="15" layout="40"/>
     </cellRow>
@@ -228,9 +229,9 @@
     </cellRow>
     <cellRow row="16">
       <cell col="5" layout="36"/>
-      <cell col="6" layout="5" signal="32" sserver="2" sident="4"/>
+      <cell col="6" layout="5"/>
       <cell col="7" layout="37" point="33" link="32" server="2" ident="22"/>
-      <cell col="8" layout="5"/>
+      <cell col="8" layout="5" signal="16" sserver="2" sident="4"/>
       <cell col="9" layout="5"/>
       <cell col="10" layout="5"/>
       <cell col="11" layout="69" point="68" link="64" server="2" ident="23"/>

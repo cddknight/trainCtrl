@@ -32,15 +32,16 @@
 
 static char *notConnected = "Not connected to the train controller";
 static const GdkRGBA blackCol = { 0.1, 0.1, 0.1, 1.0 };
-static const GdkRGBA trackCol = { 0.6, 0.6, 0.6, 1.0 };
-static const GdkRGBA trFillCol = { 0.0, 0.4, 0.0, 1.0 };
+static const GdkRGBA trackCol = { 0.7, 0.7, 0.7, 1.0 };
+static const GdkRGBA trFillCol = { 0.0, 0.5, 0.0, 1.0 };
 static const GdkRGBA bufferCol = { 0.6, 0.0, 0.0, 1.0 };
-static const GdkRGBA inactCol = { 0.8, 0.0, 0.0, 1.0 };
-static const GdkRGBA iaFillCol = { 0.4, 0.0, 0.0, 1.0 };
+static const GdkRGBA inactCol = { 0.6, 0.0, 0.0, 1.0 };
+static const GdkRGBA iaFillCol = { 0.2, 0.0, 0.0, 1.0 };
 static const GdkRGBA circleCol = { 0.8, 0.8, 0.8, 1.0 };
 static const GdkRGBA sigRedCol = { 0.9, 0.0, 0.0, 1.0 };
 static const GdkRGBA sigGrnCol = { 0.0, 0.9, 0.0, 1.0 };
-static const GdkRGBA sigOffCol = { 0.9, 0.9, 0.9, 1.0 };
+static const GdkRGBA sigOffCol = { 0.2, 0.2, 0.2, 1.0 };
+static const GdkRGBA sigOutCol = { 0.8, 0.8, 0.8, 1.0 };
 static const double xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
 static const double yChange[8] = { 1, 0, 1, 2, 2, 0, 0, 2 };
 
@@ -672,9 +673,17 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 					cairo_arc (cr, 
 							(j * cellSize) + (cellSize >> 2) + (xChangeMod[loop] >> 1), 
 							(i * cellSize) + (cellSize >> 2) + (yChangeMod[loop] >> 1), 
-							(double)cellSize / 7.5, 0, 2 * G_PI);
+							(double)cellSize / 8.5, 0, 2 * G_PI);
 					cairo_fill (cr);
 					cairo_stroke (cr);
+
+					gdk_cairo_set_source_rgba (cr, &sigOutCol);
+					cairo_arc (cr, 
+							(j * cellSize) + (cellSize >> 2) + (xChangeMod[loop] >> 1), 
+							(i * cellSize) + (cellSize >> 2) + (yChangeMod[loop] >> 1), 
+							(double)cellSize / 8.5, 0, 2 * G_PI);
+					cairo_stroke (cr);
+
 					cairo_restore (cr);
 				}
 			}
@@ -722,12 +731,12 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 			if (count == 1)
 			{
 				gdk_cairo_set_source_rgba (cr, &bufferCol);
-				cairo_arc (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf, (double)cellSize / 7.5, 0, 2 * G_PI);
+				cairo_arc (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf, (double)cellSize / 8.5, 0, 2 * G_PI);
 				cairo_fill (cr);
 				cairo_stroke (cr);
 
 				gdk_cairo_set_source_rgba (cr, &circleCol);
-				cairo_arc (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf, (double)cellSize / 7.5, 0, 2 * G_PI);
+				cairo_arc (cr, (j * cellSize) + cellHalf, (i * cellSize) + cellHalf, (double)cellSize / 8.5, 0, 2 * G_PI);
 				cairo_stroke (cr);
 			}
 		}
