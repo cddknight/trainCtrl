@@ -1729,11 +1729,9 @@ static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer 
 
 	gtk_show_about_dialog (GTK_WINDOW (NULL),
 			"program-name", "Train Control",
-			"version", g_strdup_printf ("Version %s\nRunning against GTK+ %d.%d.%d",
+			"version", g_strdup_printf ("Version: %s\nBuilt: %s %s",
 				 VERSION,
-				 gtk_get_major_version (),
-				 gtk_get_minor_version (),
-				 gtk_get_micro_version ()),
+				 __DATE__, __TIME__),
 			"copyright", "Copyright © 2018 - 2020 TheKnight",
 			"license-type", GTK_LICENSE_LGPL_2_1,
 			"website", "http://www.theknight.co.uk",
