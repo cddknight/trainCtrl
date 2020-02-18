@@ -37,6 +37,7 @@
 #include "socketC.h"
 #include "pointControl.h"
 #include "config.h"
+#include "buildDate.h"
 
 char xmlConfigFile[81]	=	"/etc/train/points.xml";
 char pidFileName[81]	=	"/var/run/pointDaemon.pid";
@@ -205,7 +206,7 @@ void daemonize(void)
  */
 void helpThem()
 {
-	fprintf (stderr, "Point Daemon, Version: %s\n", PACKAGE_VERSION);
+	fprintf (stderr, "Point Daemon, Version: %s (%s)\n", PACKAGE_VERSION, buildDate);
 	fprintf (stderr, "Usage: pointDaemon -l <port>\n");
 	fprintf (stderr, "       -c <config.xml>  . Config file to load.\n");
 	fprintf (stderr, "       -i <identity>  . . Client ID if not in config.\n");
