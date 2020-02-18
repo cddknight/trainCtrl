@@ -27,6 +27,7 @@
 #include <stdlib.h>
 
 #include "config.h"
+#include "buildDate.h"
 #include "trainControl.h"
 #include "socketC.h"
 
@@ -1730,8 +1731,7 @@ static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer 
 	gtk_show_about_dialog (GTK_WINDOW (NULL),
 			"program-name", "Train Control",
 			"version", g_strdup_printf ("Version: %s\nBuilt: %s %s",
-				 VERSION,
-				 __DATE__, __TIME__),
+				 VERSION, buildDate, buildTime),
 			"copyright", "Copyright © 2018 - 2020 TheKnight",
 			"license-type", GTK_LICENSE_LGPL_2_1,
 			"website", "http://www.theknight.co.uk",
