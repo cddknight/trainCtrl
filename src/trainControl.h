@@ -25,6 +25,7 @@
 #define POWER_OFF			0
 #define POWER_ON			1
 #define TRACK_FLAG_SLOW		1
+#define TRACK_FLAG_SHOW		2
 
 typedef struct _pointCell
 {

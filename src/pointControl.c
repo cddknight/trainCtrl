@@ -473,7 +473,7 @@ void updateAllSignals (pointCtrlDef *pointCtrl, int handle)
 	int i;
 	char tempBuff[81];
 
-	for (i = 0; i < pointCtrl -> pointCount; ++i)
+	for (i = 0; i < pointCtrl -> signalCount; ++i)
 	{
 		sprintf (tempBuff, "<x %d %d %d>", pointCtrl -> clientID,
 				pointCtrl -> signalStates[i].ident,

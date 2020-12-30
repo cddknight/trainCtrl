@@ -449,7 +449,9 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 				}
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"flags")) != NULL)
 				{
-					sscanf ((char *)tempStr, "%d", &trackCtrl -> flags);
+					int flags = 0;
+					sscanf ((char *)tempStr, "%d", &flags);
+					trackCtrl -> flags |= flags;
 					xmlFree (tempStr);
 				}
 				parseTree (trackCtrl, curNode -> children, 1);

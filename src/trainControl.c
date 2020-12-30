@@ -486,8 +486,10 @@ static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
 				if (train -> curSpeed > 0 && trackCtrl -> powerState == POWER_OFF)
 				{
 					trainSetSpeed (trackCtrl, train, -1);
+					train -> reverse = train -> remoteReverse = 0;
 					train -> curSpeed = train -> remoteCurSpeed = 0;
 					gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
+					gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), train -> reverse);
 				}
 			}
 		}
@@ -1115,10 +1117,12 @@ static void stopAllTrains (GtkWidget *widget, gpointer data)
 	{
 		trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
 		if (train -> curSpeed > 0)
-		{
+		{		
 			trainSetSpeed (trackCtrl, train, -1);
+			train -> reverse = train -> remoteReverse = 0;
 			train -> curSpeed = train -> remoteCurSpeed = 0;
 			gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
+			gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), train -> reverse);
 		}
 	}
 }
@@ -1658,6 +1662,11 @@ static void activate (GtkApplication *app, gpointer userData)
 			}
 			gtk_widget_show_all (trackCtrl -> windowCtrl);
 			g_timeout_add (100, clockTickCallback, trackCtrl);
+			
+			if (trackCtrl -> flags & TRACK_FLAG_SHOW)
+			{
+				displayTrack (trackCtrl -> windowCtrl, trackCtrl);
+			}			
 		}
 		else
 		{
