@@ -124,11 +124,16 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sC
 			}
 			else if (strcmp ((char *)curNode->name, "signal") == 0 && sFound < sCount)
 			{
-				int ident = -1, cRed = -1, cGreen, redOut = -1, greenOut = -1;
+				int ident = -1, cRed = -1, cGreen = 0, redOut = -1, greenOut = -1, sType = -1;
 
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{
 					sscanf ((char *)tempStr, "%d", &ident);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"type")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &sType);
 					xmlFree (tempStr);
 				}
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"channelRed")) != NULL)
@@ -151,14 +156,16 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sC
 					sscanf ((char *)tempStr, "%d", &greenOut);
 					xmlFree (tempStr);
 				}
-				if (ident != -1 && cRed != -1 && cGreen != -1 && redOut != -1 && greenOut != -1)
+				if (ident != -1 && cRed != -1 && sType != -1 && redOut != -1 && greenOut != -1)
 				{
 					pointCtrl -> signalStates[sFound].ident = ident;
+					pointCtrl -> signalStates[sFound].type = sType;
 					pointCtrl -> signalStates[sFound].channelRed = cRed;
 					pointCtrl -> signalStates[sFound].channelGreen = cGreen;
 					pointCtrl -> signalStates[sFound].redOut = redOut;
 					pointCtrl -> signalStates[sFound].greenOut = greenOut;
 					pointCtrl -> signalStates[sFound].state = 0;
+					pointCtrl -> signalStates[sFound].offTime = 0;
 					++sFound;
 				}
 			}
@@ -319,9 +326,9 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 						pointCtrl -> pointStates[i].turnoutPos :
 						pointCtrl -> pointStates[i].defaultPos);
 				delay(150);
+				pointCtrl -> pointStates[i].offTime = time(NULL) + 2;
 #endif
 				pointCtrl -> pointStates[i].state = state;
-				pointCtrl -> pointStates[i].offTime = time(NULL) + 2;
 				sprintf (tempBuff, "<y %d %d %d>", server, point, state);
 				SendSocket (handle, tempBuff, strlen (tempBuff));
 				break;
@@ -357,32 +364,48 @@ void updateSignal (pointCtrlDef *pointCtrl, int handle, int server, int signal, 
 				char tempBuff[81];
 
 #ifdef HAVE_WIRINGPI_H
-				putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
-						PIN_BASE + pointCtrl -> signalStates[i].channelRed, 
-						state == 1 ? pointCtrl -> signalStates[i].redOut : 0);
-				putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
-						PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 
-						state == 2 ? pointCtrl -> signalStates[i].greenOut : 0);
+				if (pointCtrl -> signalStates[i].type == 0)
+				{
+					putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
+							PIN_BASE + pointCtrl -> signalStates[i].channelRed, 
+							state == 1 ? pointCtrl -> signalStates[i].redOut : 0);
+					putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
+							PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 
+							state == 2 ? pointCtrl -> signalStates[i].greenOut : 0);
 
-				if (state == 1)
-				{
-					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
+					if (state == 1)
+					{
+						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
+						delay(150);
+						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
+					}
+					else if (state == 2)
+					{
+						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
+						delay(150);
+						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, pointCtrl -> signalStates[i].greenOut);
+					}
+					else
+					{
+						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
+						delay(150);
+						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
+					}
 					delay(150);
-					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
 				}
-				else if (state == 2)
+				else if (pointCtrl -> signalStates[i].type == 1)
 				{
-					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
+					putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
+							PIN_BASE + pointCtrl -> signalStates[i].channelRed, state == 0 ? 0 : state == 1 ?
+							pointCtrl -> signalStates[i].redOut :
+							pointCtrl -> signalStates[i].greenOut);
+
+					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, state == 0 ? 0 : state == 1 ?
+							pointCtrl -> signalStates[i].redOut :
+							pointCtrl -> signalStates[i].greenOut);
 					delay(150);
-					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, pointCtrl -> signalStates[i].greenOut);
+					pointCtrl -> signalStates[i].offTime = time(NULL) + 2;
 				}
-				else
-				{
-					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
-					delay(150);
-					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
-				}
-				delay(150);
 #endif
 				pointCtrl -> signalStates[i].state = state;
 				sprintf (tempBuff, "<x %d %d %d>", server, signal, state);
@@ -424,6 +447,23 @@ void checkPointsOff (pointCtrlDef *pointCtrl, int handle)
 					delay(150);
 #endif
 					pointCtrl -> pointStates[i].offTime = 0;
+				}
+			}
+		}
+		for (i = 0; i < pointCtrl -> signalCount; ++i)
+		{
+			if (pointCtrl -> signalStates[i].offTime != 0)
+			{
+				if (pointCtrl -> signalStates[i].offTime < time(NULL))
+				{
+#ifdef HAVE_WIRINGPI_H
+					putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
+							PIN_BASE + pointCtrl -> signalStates[i].redChannel, 0);
+
+					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].redChannel, 0);
+					delay(150);
+#endif
+					pointCtrl -> signalStates[i].offTime = 0;
 				}
 			}
 		}
@@ -627,10 +667,19 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 	}
 	for (i = 0; i < pointCtrl -> signalCount; ++i)
 	{
-		pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
-		delay (150);
-		pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
-		delay (150);
+		if (pointCtrl -> signalStates[i].type == 0)
+		{
+			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
+			delay (150);
+			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
+			delay (150);
+		}
+		else if (pointCtrl -> signalStates[i].type == 1)
+		{
+			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].redChannel, pointCtrl -> signalStates[i].redOut);
+			delay (150);
+			pointCtrl -> signalStates[i].offTime = time(NULL) + 2;
+		}		
 		pointCtrl -> signalStates[i].state = 1;
 	}
 #endif

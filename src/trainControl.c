@@ -941,9 +941,6 @@ void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
 				else
 					cell -> point.state = cell-> point.point & ~(cell -> point.pointDef);
 
-				if (trackCtrl -> windowTrack != NULL)
-					gtk_widget_queue_draw (trackCtrl -> drawingArea);
-
 				break;
 			}
 		}

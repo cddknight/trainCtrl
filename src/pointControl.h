@@ -36,10 +36,12 @@ typedef struct _signalState
 {
 	int ident;
 	int state;
+	int type;
 	int channelRed;
 	int channelGreen;
 	int redOut;
 	int greenOut;
+	time_t offTime;
 }
 signalStateDef;
 

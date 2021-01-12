@@ -45,10 +45,11 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 {
 	char words[41][41];
 	int wordNum = -1, i = 0, j = 0, inType = 0;
+	int queueDraw = 0;
 
-/*------------------------------------------------------------------*/
+/*------------------------------------------------------------------*
 	printf ("Rxed:[%s]\n", buffer);
-/*------------------------------------------------------------------*/
+*------------------------------------------------------------------*/
 	while (i < len)
 	{
 		if (buffer[i] == '<' && wordNum == -1)
@@ -179,6 +180,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				int point = atoi (words[2]);
 				int state = atoi (words[3]);
 				updatePointPosn (trackCtrl, server, point, state);
+				++queueDraw;
 			}
 			/* Point change update */
 			else if (words[0][0] == 'x' && words[0][1] == 0 && wordNum == 4)
@@ -187,6 +189,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				int signal = atoi (words[2]);
 				int state = atoi (words[3]);
 				updateSignalState (trackCtrl, server, signal, state);
+				++queueDraw;
 			}
 			inType = 0;
 			wordNum = -1;
@@ -206,6 +209,18 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 			j = 40;
 
 		++i;
+	}
+	if (queueDraw)
+	{
+		if (trackCtrl -> windowTrack != NULL)
+		{
+			gtk_widget_queue_draw (trackCtrl -> drawingArea);
+			printf ("queueDraw: %d\n", queueDraw);
+		}
+	}
+	if (j || wordNum >= 0)
+	{ 
+		printf ("Rxed incomplete:[%s]\n", buffer);
 	}
 }
 
