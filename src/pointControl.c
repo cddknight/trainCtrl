@@ -628,10 +628,12 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 	{
 		if (pointCtrl -> signalStates[i].type == 0)
 		{
+#ifdef HAVE_WIRINGPI_H
 			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
 			delay (PWM_DELAY);
 			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
 			delay (PWM_DELAY);
+#endif
 		}
 		else if (pointCtrl -> signalStates[i].type == 1)
 		{
