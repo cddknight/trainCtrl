@@ -1,6 +1,6 @@
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  T R A I N  D A E M O N . C                                                                                        *
+ *  P O I N T  D A E M O N . C                                                                                        *
  *  ==========================                                                                                        *
  *                                                                                                                    *
  *  This is free software; you can redistribute it and/or modify it under the terms of the GNU General Public         *
@@ -34,9 +34,10 @@
 #include <termios.h>
 #include <time.h>
 
-#include "socketC.h"
-#include "pointControl.h"
 #include "config.h"
+#include "socketC.h"
+#include "servoCtrl.h"
+#include "pointControl.h"
 #include "buildDate.h"
 
 char xmlConfigFile[81]	=	"/etc/train/points.xml";
@@ -402,7 +403,6 @@ int main (int argc, char *argv[])
 					lastCheck += 60;
 				}
 			}
-			checkPointsOff(&pointCtrl, serverHandle);
 		}
 	}
 	/**********************************************************************************************************************

@@ -20,15 +20,14 @@
  *  \file
  *  \brief Control the points taking commands from the network.
  */
-
 typedef struct _pointState
 {
 	int ident;
 	int state;
-	int channel;
 	int defaultPos;
 	int turnoutPos;
-	time_t offTime;
+	int servoChannel;
+	servoStateDef servoState;
 }
 pointStateDef;
 
@@ -41,7 +40,8 @@ typedef struct _signalState
 	int channelGreen;
 	int redOut;
 	int greenOut;
-	time_t offTime;
+	int servoChannel;
+	servoStateDef servoState;
 }
 signalStateDef;
 

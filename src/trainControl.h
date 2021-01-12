@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  T R A I N  C T R L . H                                                                                            *
- *  ======================                                                                                            *
+ *  T R A I N  C O N T R O L . H                                                                                      *
+ *  ============================                                                                                      *
  *                                                                                                                    *
  *  This is free software; you can redistribute it and/or modify it under the terms of the GNU General Public         *
  *  License version 2 as published by the Free Software Foundation.  Note that I am not granting permission to        *
@@ -20,7 +20,6 @@
  *  \file
  *  \brief Header file for train control.
  */
-
 #define POWER_SRT			-1
 #define POWER_OFF			0
 #define POWER_ON			1

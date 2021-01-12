@@ -20,7 +20,6 @@
  *  \file
  *  \brief Control the points taking commands from the network.
  */
-
 #include "config.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,13 +42,12 @@
 #endif
 
 #include "socketC.h"
+#include "servoCtrl.h"
 #include "pointControl.h"
 
-#define PIN_BASE 300
-#define MAX_PWM 4096
-#define HERTZ 50
-
 int servoFD = -1;
+extern int running;
+pthread_t threadHandle;
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -115,16 +113,15 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sC
 				if (ident != -1 && channel != -1 && defaultPos != -1 && turnoutPos != -1)
 				{
 					pointCtrl -> pointStates[pFound].ident = ident;
-					pointCtrl -> pointStates[pFound].channel = channel;
+					pointCtrl -> pointStates[pFound].servoChannel = channel;
 					pointCtrl -> pointStates[pFound].defaultPos = defaultPos;
 					pointCtrl -> pointStates[pFound].turnoutPos = turnoutPos;
-					pointCtrl -> pointStates[pFound].offTime = 0;
 					++pFound;
 				}
 			}
 			else if (strcmp ((char *)curNode->name, "signal") == 0 && sFound < sCount)
 			{
-				int ident = -1, cRed = -1, cGreen = 0, redOut = -1, greenOut = -1, sType = -1;
+				int ident = -1, cRed = -1, cGreen = -1, channel = -1, redOut = -1, greenOut = -1, sType = -1;
 
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{
@@ -134,6 +131,11 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sC
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"type")) != NULL)
 				{
 					sscanf ((char *)tempStr, "%d", &sType);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"channel")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &channel);
 					xmlFree (tempStr);
 				}
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"channelRed")) != NULL)
@@ -156,16 +158,16 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sC
 					sscanf ((char *)tempStr, "%d", &greenOut);
 					xmlFree (tempStr);
 				}
-				if (ident != -1 && cRed != -1 && sType != -1 && redOut != -1 && greenOut != -1)
+				if (ident != -1 && sType != -1 && redOut != -1 && greenOut != -1)
 				{
 					pointCtrl -> signalStates[sFound].ident = ident;
 					pointCtrl -> signalStates[sFound].type = sType;
+					pointCtrl -> signalStates[sFound].servoChannel = channel;
 					pointCtrl -> signalStates[sFound].channelRed = cRed;
 					pointCtrl -> signalStates[sFound].channelGreen = cGreen;
 					pointCtrl -> signalStates[sFound].redOut = redOut;
 					pointCtrl -> signalStates[sFound].greenOut = greenOut;
 					pointCtrl -> signalStates[sFound].state = 0;
-					pointCtrl -> signalStates[sFound].offTime = 0;
 					++sFound;
 				}
 			}
@@ -316,18 +318,9 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 			{
 				char tempBuff[81];
 
-#ifdef HAVE_WIRINGPI_H
-				putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
-						PIN_BASE + pointCtrl -> pointStates[i].channel, state ?
+				servoMove (&pointCtrl -> pointStates[i].servoState, state ?
 						pointCtrl -> pointStates[i].turnoutPos :
 						pointCtrl -> pointStates[i].defaultPos);
-
-				pwmWrite(PIN_BASE + pointCtrl -> pointStates[i].channel, state ?
-						pointCtrl -> pointStates[i].turnoutPos :
-						pointCtrl -> pointStates[i].defaultPos);
-				delay(150);
-				pointCtrl -> pointStates[i].offTime = time(NULL) + 2;
-#endif
 				pointCtrl -> pointStates[i].state = state;
 				sprintf (tempBuff, "<y %d %d %d>", server, point, state);
 				SendSocket (handle, tempBuff, strlen (tempBuff));
@@ -363,16 +356,9 @@ void updateSignal (pointCtrlDef *pointCtrl, int handle, int server, int signal, 
 			{
 				char tempBuff[81];
 
-#ifdef HAVE_WIRINGPI_H
 				if (pointCtrl -> signalStates[i].type == 0)
 				{
-					putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
-							PIN_BASE + pointCtrl -> signalStates[i].channelRed, 
-							state == 1 ? pointCtrl -> signalStates[i].redOut : 0);
-					putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
-							PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 
-							state == 2 ? pointCtrl -> signalStates[i].greenOut : 0);
-
+#ifdef HAVE_WIRINGPI_H
 					if (state == 1)
 					{
 						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
@@ -392,79 +378,18 @@ void updateSignal (pointCtrlDef *pointCtrl, int handle, int server, int signal, 
 						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
 					}
 					delay(150);
+#endif
 				}
 				else if (pointCtrl -> signalStates[i].type == 1)
 				{
-					putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
-							PIN_BASE + pointCtrl -> signalStates[i].channelRed, state == 0 ? 0 : state == 1 ?
+					servoMove (&pointCtrl -> signalStates[i].servoState, state == 0 ? 0 : state == 1 ?
 							pointCtrl -> signalStates[i].redOut :
 							pointCtrl -> signalStates[i].greenOut);
-
-					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, state == 0 ? 0 : state == 1 ?
-							pointCtrl -> signalStates[i].redOut :
-							pointCtrl -> signalStates[i].greenOut);
-					delay(150);
-					pointCtrl -> signalStates[i].offTime = time(NULL) + 2;
 				}
-#endif
 				pointCtrl -> signalStates[i].state = state;
 				sprintf (tempBuff, "<x %d %d %d>", server, signal, state);
 				SendSocket (handle, tempBuff, strlen (tempBuff));
 				break;
-			}
-		}
-	}
-}
-
-/**********************************************************************************************************************
- *                                                                                                                    *
- *  C H E C K  P O I N T S  O F F                                                                                     *
- *  =============================                                                                                     *
- *                                                                                                                    *
- **********************************************************************************************************************/
-/**
- *  \brief Turn off the point after it moves.
- *  \param pointCtrl Point settings.
- *  \param handle Point handle.
- *  \result None.
- */
-void checkPointsOff (pointCtrlDef *pointCtrl, int handle)
-{
-	if (servoFD != -1)
-	{
-		int i;
-		for (i = 0; i < pointCtrl -> pointCount; ++i)
-		{
-			if (pointCtrl -> pointStates[i].offTime != 0)
-			{
-				if (pointCtrl -> pointStates[i].offTime < time(NULL))
-				{
-#ifdef HAVE_WIRINGPI_H
-					putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
-							PIN_BASE + pointCtrl -> pointStates[i].channel, 0);
-
-					pwmWrite(PIN_BASE + pointCtrl -> pointStates[i].channel, 0);
-					delay(150);
-#endif
-					pointCtrl -> pointStates[i].offTime = 0;
-				}
-			}
-		}
-		for (i = 0; i < pointCtrl -> signalCount; ++i)
-		{
-			if (pointCtrl -> signalStates[i].offTime != 0)
-			{
-				if (pointCtrl -> signalStates[i].offTime < time(NULL))
-				{
-#ifdef HAVE_WIRINGPI_H
-					putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
-							PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
-
-					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
-					delay(150);
-#endif
-					pointCtrl -> signalStates[i].offTime = 0;
-				}
 			}
 		}
 	}
@@ -637,6 +562,40 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  C H E C K  P O I N T S  S T A T E                                                                                 *
+ *  =================================                                                                                 *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Turn off the point after it moves.
+ *  \param pointPtr Point configuration pointer.
+ *  \result None.
+ */
+void *checkPointsState (void *pointPtr)
+{
+	pointCtrlDef *pointCtrl = (pointCtrlDef *)pointPtr;
+
+	while (running)
+	{
+		if (servoFD != -1)
+		{
+			int i;
+			for (i = 0; i < pointCtrl -> pointCount; ++i)
+			{
+				servoUpdate (&pointCtrl -> pointStates[i].servoState);
+			}
+			for (i = 0; i < pointCtrl -> signalCount; ++i)
+			{
+				servoUpdate (&pointCtrl -> signalStates[i].servoState);
+			}
+		}
+		sleep (0.1);
+	}
+	return NULL;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  P O I N T  C O N T R O L  S E T U P                                                                               *
  *  ===================================                                                                               *
  *                                                                                                                    *
@@ -648,22 +607,22 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
  */
 int pointControlSetup (pointCtrlDef *pointCtrl)
 {
-#ifdef HAVE_WIRINGPI_H
 	int i;
-	wiringPiSetup();
 
+#ifdef HAVE_WIRINGPI_H
+	wiringPiSetup();
 	if ((servoFD = pca9685Setup(PIN_BASE, 0x40, HERTZ)) < 0)
 	{
 		putLogMessage (LOG_ERR, "Error setting up point control");
 		return 0;
 	}
 	pca9685PWMReset (servoFD);
+#endif
 
 	for (i = 0; i < pointCtrl -> pointCount; ++i)
 	{
-		pwmWrite (PIN_BASE + pointCtrl -> pointStates[i].channel, pointCtrl -> pointStates[i].defaultPos);
-		delay (150);
-		pointCtrl -> pointStates[i].offTime = time(NULL) + 2;
+		servoInit (&pointCtrl -> pointStates[i].servoState, pointCtrl -> pointStates[i].servoChannel, 
+				pointCtrl -> pointStates[i].defaultPos);
 	}
 	for (i = 0; i < pointCtrl -> signalCount; ++i)
 	{
@@ -676,13 +635,16 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 		}
 		else if (pointCtrl -> signalStates[i].type == 1)
 		{
-			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
-			delay (150);
-			pointCtrl -> signalStates[i].offTime = time(NULL) + 2;
+			servoInit (&pointCtrl -> signalStates[i].servoState, pointCtrl -> signalStates[i].servoChannel, 
+					pointCtrl -> signalStates[i].redOut);
 		}		
 		pointCtrl -> signalStates[i].state = 1;
 	}
-#endif
+
+	if (pthread_create (&threadHandle, NULL, checkPointsState, pointCtrl) != 0)
+	{
+		return 0;
+	}
 	return 1;
 }
 

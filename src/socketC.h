@@ -18,7 +18,7 @@
  **********************************************************************************************************************/
 /**
  *  \file
- *  \brief .
+ *  \brief Functions to handle the socket.
  */
 #ifndef MY_SOCKET_H
 #define MY_SOCKET_H

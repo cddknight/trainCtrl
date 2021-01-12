@@ -1,7 +1,7 @@
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  T R A I N  C T R L . C                                                                                            *
- *  ======================                                                                                            *
+ *  T R A I N  C O N T R O L . C                                                                                      *
+ *  ============================                                                                                      *
  *                                                                                                                    *
  *  This is free software; you can redistribute it and/or modify it under the terms of the GNU General Public         *
  *  License version 2 as published by the Free Software Foundation.  Note that I am not granting permission to        *
@@ -957,7 +957,7 @@ void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state)
  *  \brief Update the state of the signal.
  *  \param trackCtrl Pointer to the config.
  *  \param server Which server to update.
- *  \param point Which signal to update.
+ *  \param signal Which signal to update.
  *  \param state New state of the signal.
  *  \result None.
  */
