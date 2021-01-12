@@ -458,9 +458,9 @@ void checkPointsOff (pointCtrlDef *pointCtrl, int handle)
 				{
 #ifdef HAVE_WIRINGPI_H
 					putLogMessage (LOG_INFO, "Channel: %d, Set to: %d",
-							PIN_BASE + pointCtrl -> signalStates[i].redChannel, 0);
+							PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
 
-					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].redChannel, 0);
+					pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
 					delay(150);
 #endif
 					pointCtrl -> signalStates[i].offTime = 0;
@@ -676,7 +676,7 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 		}
 		else if (pointCtrl -> signalStates[i].type == 1)
 		{
-			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].redChannel, pointCtrl -> signalStates[i].redOut);
+			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
 			delay (150);
 			pointCtrl -> signalStates[i].offTime = time(NULL) + 2;
 		}		
