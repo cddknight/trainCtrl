@@ -362,22 +362,22 @@ void updateSignal (pointCtrlDef *pointCtrl, int handle, int server, int signal, 
 					if (state == 1)
 					{
 						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
-						delay(150);
+						delay(PWM_DELAY);
 						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
 					}
 					else if (state == 2)
 					{
 						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
-						delay(150);
+						delay(PWM_DELAY);
 						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, pointCtrl -> signalStates[i].greenOut);
 					}
 					else
 					{
 						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelRed, 0);
-						delay(150);
+						delay(PWM_DELAY);
 						pwmWrite(PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
 					}
-					delay(150);
+					delay(PWM_DELAY);
 #endif
 				}
 				else if (pointCtrl -> signalStates[i].type == 1)
@@ -589,7 +589,7 @@ void *checkPointsState (void *pointPtr)
 				servoUpdate (&pointCtrl -> signalStates[i].servoState);
 			}
 		}
-		sleep (0.1);
+		sleep (0.05);
 	}
 	return NULL;
 }
@@ -629,9 +629,9 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 		if (pointCtrl -> signalStates[i].type == 0)
 		{
 			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
-			delay (150);
+			delay (PWM_DELAY);
 			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
-			delay (150);
+			delay (PWM_DELAY);
 		}
 		else if (pointCtrl -> signalStates[i].type == 1)
 		{
