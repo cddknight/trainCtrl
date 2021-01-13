@@ -50,5 +50,5 @@ servoStateDef;
 void servoInit (servoStateDef *servoDef, int channel, int defPos);
 void servoFree (servoStateDef *servoDef);
 void servoMove (servoStateDef *servoDef, int newPos);
-void servoUpdate (servoStateDef *servoDef);
+int servoUpdate (servoStateDef *servoDef);
 

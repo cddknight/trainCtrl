@@ -577,19 +577,26 @@ void *checkPointsState (void *pointPtr)
 
 	while (running)
 	{
-		if (servoFD != -1)
+		int i, update = 0;
+		for (i = 0; i < pointCtrl -> pointCount && !update; ++i)
 		{
-			int i;
-			for (i = 0; i < pointCtrl -> pointCount; ++i)
-			{
-				servoUpdate (&pointCtrl -> pointStates[i].servoState);
-			}
-			for (i = 0; i < pointCtrl -> signalCount; ++i)
-			{
-				servoUpdate (&pointCtrl -> signalStates[i].servoState);
-			}
+			update = servoUpdate (&pointCtrl -> pointStates[i].servoState);
 		}
-		sleep (0.05);
+		for (i = 0; i < pointCtrl -> signalCount && !update; ++i)
+		{
+			update = servoUpdate (&pointCtrl -> signalStates[i].servoState);
+		}
+		sleep (0.1);
+		update = 0;
+		for (i = pointCtrl -> signalCount; i > 0 && !update; --i)
+		{
+			update = servoUpdate (&pointCtrl -> signalStates[i - 1].servoState);
+		}
+		for (i = pointCtrl -> pointCount; i > 0 && !update; --i)
+		{
+			update = servoUpdate (&pointCtrl -> pointStates[i - 1].servoState);
+		}
+		sleep (0.1);
 	}
 	return NULL;
 }
