@@ -31,7 +31,7 @@
     <point ident="10" channel="6" default="290" turnout="320"/>
     <point ident="12" channel="7" default="290" turnout="320"/>
     <signal ident="1" type="0" channelRed="12" channelGreen="13" redOut="250" greenOut="125"/>
-    <signal ident="2" type="1" channelRed="15" redOut="250" greenOut="230"/>
+    <signal ident="2" type="1" channel="15" redOut="110" greenOut="170"/>
   </pointDaemon>
   <pointDaemon ident="2" pCount="10" sCount="2">
     <point ident="14" channel="0" default="300" turnout="350"/>
@@ -44,8 +44,8 @@
     <point ident="21" channel="7" default="290" turnout="320"/>
     <point ident="22" channel="8" default="290" turnout="320"/>
     <point ident="23" channel="9" default="290" turnout="320"/>
-    <signal ident="3" channelRed="12" channelGreen="13" redOut="250" greenOut="125"/>
-    <signal ident="4" channelRed="14" channelGreen="15" redOut="250" greenOut="125"/>
+    <signal ident="3" type="0" channelRed="12" channelGreen="13" redOut="250" greenOut="125"/>
+    <signal ident="4" type="1" channel="15" redOut="110" greenOut="170"/>
   </pointDaemon>
   <pointDaemon ident="3" pCount="5" sCount="0">
     <point ident="3" channel="0" default="255" turnout="215"/>
