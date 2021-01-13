@@ -158,17 +158,18 @@ int servoUpdate (servoStateDef *servoDef)
 
 	case SERVO_SLEEP:
 		if (servoDef -> count)
+		{
 			--servoDef -> count;
-
-		if (servoDef -> count == 0)
+		}
+		else if (servoDef -> count == 0)
 		{
 			putLogMessage (LOG_INFO, "O:Channel %d off", servoDef -> channel);
 #ifdef HAVE_WIRINGPI_H
 			pwmWrite(PIN_BASE + servoDef -> channel, 0);
-			update = 1;
 #endif
 			servoDef -> state = SERVO_OFF;
 		}
+		update = 1;
 		break;
 	}
 	pthread_mutex_unlock (&servoDef -> updateMutex);
