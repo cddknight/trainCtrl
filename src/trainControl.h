@@ -134,6 +134,7 @@ typedef struct _trackCtrl
 	char trackName[81];
 	char serialDevice[81];
 	pthread_t connectHandle;
+	time_t trackRepaint;
 
 	char addressBuffer[111];
 	char remoteProgMsg[111];

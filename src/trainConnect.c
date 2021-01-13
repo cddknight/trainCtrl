@@ -213,10 +213,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 	if (queueDraw)
 	{
 		if (trackCtrl -> windowTrack != NULL)
-		{
 			gtk_widget_queue_draw (trackCtrl -> drawingArea);
-			printf ("queueDraw: %d\n", queueDraw);
-		}
 	}
 	if (j || wordNum >= 0)
 	{ 

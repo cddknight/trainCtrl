@@ -1436,6 +1436,15 @@ gboolean clockTickCallback (gpointer data)
 			trackCtrl -> connectionStatus[6] = 0;
 		}
 	}
+	if (trackCtrl -> windowTrack != NULL)
+	{
+		time_t now = time (NULL);
+		if (now - trackCtrl -> trackRepaint > 2)
+		{
+			gtk_widget_queue_draw (trackCtrl -> drawingArea);
+			trackCtrl -> trackRepaint = now;
+		}
+	}
 	return TRUE;
 }
 
