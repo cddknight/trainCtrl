@@ -586,7 +586,7 @@ void *checkPointsState (void *pointPtr)
 		{
 			update = servoUpdate (&pointCtrl -> signalStates[i].servoState);
 		}
-		usleep (100000);
+		usleep (50000);
 		update = 0;
 		for (i = pointCtrl -> signalCount; i > 0 && !update; --i)
 		{
@@ -596,7 +596,7 @@ void *checkPointsState (void *pointPtr)
 		{
 			update = servoUpdate (&pointCtrl -> pointStates[i - 1].servoState);
 		}
-		usleep (100000);
+		usleep (50000);
 	}
 	return NULL;
 }

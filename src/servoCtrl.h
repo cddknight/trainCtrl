@@ -28,7 +28,7 @@
 #define SERVO_SLEEP		2
 #define SERVO_START		3
 
-#define SERVO_STEP 		10
+#define SERVO_STEP 		5
 #define SERVO_WAIT		2
 
 #define PIN_BASE 		300
