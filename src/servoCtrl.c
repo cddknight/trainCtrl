@@ -48,7 +48,7 @@
  */
 void servoInit (servoStateDef *servoDef, int channel, int defPos)
 {
-	servoDef -> state = SERVO_OFF;
+	servoDef -> state = SERVO_CHECK;
 	servoDef -> channel = channel;
 	servoDef -> currentPos = defPos;
 	servoDef -> targetPos = defPos;
@@ -94,6 +94,11 @@ void servoMove (servoStateDef *servoDef, int newPos)
 		servoDef -> state = SERVO_SLEEP;
 		servoDef -> count = SERVO_WAIT;
 	}
+	else if (newPos == servoDef -> currentPos)
+	{
+		servoDef -> state = SERVO_CHECK;
+		servoDef -> count = 0;
+	}
 	else
 	{
 		servoDef -> state = SERVO_MOVE;
@@ -120,11 +125,10 @@ int servoUpdate (servoStateDef *servoDef)
 	pthread_mutex_lock (&servoDef -> updateMutex);
 	switch (servoDef -> state)
 	{
-	case SERVO_START:
+	case SERVO_CHECK:
 #ifdef HAVE_WIRINGPI_H
-		putLogMessage (LOG_INFO, "S:Channel %d to %d", servoDef -> channel, servoDef -> currentPos);
 		pwmWrite(PIN_BASE + servoDef -> channel, servoDef -> currentPos);
-		delay (PWM_DELAY);
+		update = 1;
 #endif
 		servoDef -> state = SERVO_SLEEP;
 		servoDef -> count = SERVO_WAIT;
@@ -149,7 +153,6 @@ int servoUpdate (servoStateDef *servoDef)
 			if (servoDef -> currentPos < servoDef -> targetPos)
 				servoDef -> currentPos = servoDef -> targetPos;
 		}
-		putLogMessage (LOG_INFO, "M:Channel %d to %d [%d]", servoDef -> channel, servoDef -> currentPos, servoDef -> targetPos);
 #ifdef HAVE_WIRINGPI_H
 		pwmWrite(PIN_BASE + servoDef -> channel, servoDef -> currentPos);
 		update = 1;
@@ -163,7 +166,6 @@ int servoUpdate (servoStateDef *servoDef)
 		}
 		else if (servoDef -> count == 0)
 		{
-			putLogMessage (LOG_INFO, "O:Channel %d off", servoDef -> channel);
 #ifdef HAVE_WIRINGPI_H
 			pwmWrite(PIN_BASE + servoDef -> channel, 0);
 #endif

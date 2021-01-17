@@ -393,6 +393,7 @@ void getAllPointStates ()
 void setAllPointStates (int pSvrIdent)
 {
 	int p;
+	putLogMessage (LOG_DEBUG, "setAllPointStates: %d", pSvrIdent);
 	if (trackCtrl.pointCtrl != NULL)
 	{
 		pointCtrlDef *pointSever = NULL;
@@ -426,6 +427,12 @@ void setAllPointStates (int pSvrIdent)
 					}
 					if (cell -> signal.signal)
 					{
+						if (cell -> signal.server == pSvrIdent)
+						{
+							sprintf (tempBuff, "<X %d %d %d>", pSvrIdent, cell -> signal.ident, 
+								cell -> signal.state == 2 ? 2 : 1);
+							SendSocket (handleInfo[pointSever -> intHandle].handle, tempBuff, strlen (tempBuff));
+						}
 
 					}
 				}
@@ -489,13 +496,10 @@ void saveSignalState (int sSvrIdent, int ident, int state)
 	for (i = 0; i < cells; ++i)
 	{
 		trackCellDef *cell = &trackCtrl.trackLayout -> trackCells[i];
-		if (cell -> signal.state)
+		if (cell -> signal.server == sSvrIdent && cell -> signal.ident == ident)
 		{
-			if (cell -> signal.server == sSvrIdent && cell -> signal.ident == ident)
-			{
-				cell -> signal.state = state;
-				break;
-			}
+			cell -> signal.state = state;
+			break;
 		}
 	}
 }

@@ -26,10 +26,10 @@
 #define SERVO_OFF		0
 #define SERVO_MOVE		1
 #define SERVO_SLEEP		2
-#define SERVO_START		3
+#define SERVO_CHECK		3
 
 #define SERVO_STEP 		5
-#define SERVO_WAIT		2
+#define SERVO_WAIT		6
 
 #define PIN_BASE 		300
 #define MAX_PWM 		4096

@@ -31,7 +31,7 @@
     <point ident="10" channel="6" default="290" turnout="320"/>
     <point ident="12" channel="7" default="290" turnout="320"/>
     <signal ident="1" type="0" channelRed="12" channelGreen="13" redOut="250" greenOut="125"/>
-    <signal ident="2" type="1" channel="15" redOut="110" greenOut="170"/>
+    <signal ident="2" type="1" channel="15" redOut="200" greenOut="290"/>
   </pointDaemon>
   <pointDaemon ident="2" pCount="10" sCount="2">
     <point ident="14" channel="0" default="300" turnout="350"/>
