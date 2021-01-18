@@ -280,8 +280,12 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 		sprintf (tempBuff, "Functions for %d", train -> trainNum);
 		gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowFunctions), tempBuff);
 		gtk_window_set_transient_for (GTK_WINDOW (trackCtrl -> windowFunctions), GTK_WINDOW (trackCtrl -> windowCtrl));
-		gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowFunctions),
-				"/usr/share/pixmaps/traincontrol.svg", NULL);
+		if (!gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowFunctions),
+				"/usr/share/pixmaps/traincontrol.svg", NULL))
+		{
+			gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowFunctions),
+					"/usr/share/pixmaps/traincontrol.png", NULL);
+		}
 
 		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 		gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
