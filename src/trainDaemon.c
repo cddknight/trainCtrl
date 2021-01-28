@@ -1313,18 +1313,22 @@ int main (int argc, char *argv[])
 				}
 			}
 		}
-		now = time (NULL);
-		if (curRead < now && trackCtrl.powerState == POWER_ON)
+		if (trackCtrl.powerState == POWER_ON)
 		{
-			sendSerial ("<c>", 3);
-			curRead = now + 2;
-		}
-		if (trackCtrl.idleOff > 0)
-		{
-			if (now - lastRxed > trackCtrl.idleOff)
+			now = time (NULL);
+			if (curRead < now)
 			{
-				putLogMessage (LOG_INFO, "Idle timeout reached turning off power");
-				sendSerial ("<0>", 3);
+				sendSerial ("<c>", 3);
+				curRead = now + 2;
+			}
+			if (trackCtrl.idleOff > 0)
+			{
+				if (now - lastRxed > trackCtrl.idleOff)
+				{
+					putLogMessage (LOG_INFO, "Idle timeout reached turning off power");
+					sendSerial ("<0>", 3);
+					lastRxed = now;
+				}
 			}
 		}
 	}
