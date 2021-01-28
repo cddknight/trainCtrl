@@ -33,7 +33,7 @@
  **********************************************************************************************************************/
 static const char *tmpConfig = "/tmp/trainconfig.xml";
 static const char *memoryXML =
-"<track name=\"Simple Track\" server=\"127.0.0.1\" port=\"30330\" ipver=\"1\" device=\"/dev/ttyACM0\">"\
+"<track name=\"Simple Track\" server=\"127.0.0.1\" port=\"30330\" ipver=\"1\" device=\"/dev/ttyACM0\" idleOff=\"15\">"\
 "<trains count=\"1\">"\
 "<train num=\"1234\" ident=\"3\" desc=\"Train\"/>"\
 "</trains>"\
@@ -452,6 +452,13 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 					int flags = 0;
 					sscanf ((char *)tempStr, "%d", &flags);
 					trackCtrl -> flags |= flags;
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"idleOff")) != NULL)
+				{
+					int idleOff = 0;
+					sscanf ((char *)tempStr, "%d", &idleOff);
+					trackCtrl -> idleOff = idleOff * 60;
 					xmlFree (tempStr);
 				}
 				parseTree (trackCtrl, curNode -> children, 1);

@@ -43,12 +43,13 @@ typedef struct _servoState
 	int currentPos;
 	int targetPos;
 	int count;
+	int priority;
 	pthread_mutex_t updateMutex;
 }
 servoStateDef;
 
 void servoInit (servoStateDef *servoDef, int channel, int defPos);
 void servoFree (servoStateDef *servoDef);
-void servoMove (servoStateDef *servoDef, int newPos);
+void servoMove (servoStateDef *servoDef, int newPos, int priority);
 int servoUpdate (servoStateDef *servoDef);
 

@@ -1049,7 +1049,8 @@ int main (int argc, char *argv[])
 	struct timeval timeout;
 	char inAddress[50] = "";
 	int i, c, p, connectedCount = 0;
-	time_t curRead = time(NULL) + 5;
+	time_t curRead = time (NULL) + 5;
+	time_t lastRxed = time (NULL);
 
 	while ((c = getopt(argc, argv, "c:dLID?")) != -1)
 	{
@@ -1161,6 +1162,7 @@ int main (int argc, char *argv[])
 	while (handleInfo[LISTEN_HANDLE].handle != -1 && running)
 	{
 		int selRetn;
+		time_t now = 0;
 		timeout.tv_sec = 1;
 		timeout.tv_usec = 0;
 
@@ -1282,6 +1284,8 @@ int main (int argc, char *argv[])
 						{
 							buffer[readBytes] = 0;
 							receiveNetwork (i, buffer, readBytes);
+							if (handleInfo[i].handleType == CONTRL_HTYPE)
+								lastRxed = time (NULL);
 						}
 						else if (readBytes == 0)
 						{
@@ -1309,10 +1313,19 @@ int main (int argc, char *argv[])
 				}
 			}
 		}
-		if (curRead < time (NULL) && trackCtrl.powerState == POWER_ON)
+		now = time (NULL);
+		if (curRead < now && trackCtrl.powerState == POWER_ON)
 		{
 			sendSerial ("<c>", 3);
-			curRead = time (NULL) + 2;
+			curRead = now + 2;
+		}
+		if (trackCtrl.idleOff > 0)
+		{
+			if (now - lastRxed > trackCtrl.idleOff)
+			{
+				putLogMessage (LOG_INFO, "Idle timeout reached turning off power");
+				sendSerial ("<0>", 3);
+			}
 		}
 	}
 	/**********************************************************************************************************************

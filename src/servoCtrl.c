@@ -85,7 +85,7 @@ void servoFree (servoStateDef *servoDef)
  *  \param newPos New servo position.
  *  \result None.
  */
-void servoMove (servoStateDef *servoDef, int newPos)
+void servoMove (servoStateDef *servoDef, int newPos, int priority)
 {
 	pthread_mutex_lock (&servoDef -> updateMutex);
 	if (newPos == 0)
@@ -93,17 +93,20 @@ void servoMove (servoStateDef *servoDef, int newPos)
 		servoDef -> currentPos = servoDef -> targetPos;
 		servoDef -> state = SERVO_SLEEP;
 		servoDef -> count = SERVO_WAIT;
+		servoDef -> priority = priority;
 	}
 	else if (newPos == servoDef -> currentPos)
 	{
 		servoDef -> state = SERVO_CHECK;
 		servoDef -> count = 0;
+		servoDef -> priority = priority;
 	}
 	else
 	{
 		servoDef -> state = SERVO_MOVE;
 		servoDef -> targetPos = newPos;
 		servoDef -> count = 0;
+		servoDef -> priority = priority;
 	}
 	pthread_mutex_unlock (&servoDef -> updateMutex);
 }
@@ -170,6 +173,7 @@ int servoUpdate (servoStateDef *servoDef)
 			pwmWrite(PIN_BASE + servoDef -> channel, 0);
 #endif
 			servoDef -> state = SERVO_OFF;
+			servoDef -> priority = 0;
 		}
 		update = 1;
 		break;

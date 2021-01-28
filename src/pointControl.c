@@ -46,8 +46,10 @@
 #include "pointControl.h"
 
 int servoFD = -1;
+int curPriority = 0;
 extern int running;
 pthread_t threadHandle;
+pthread_mutex_t priorityMutex;
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -318,9 +320,12 @@ void updatePoint (pointCtrlDef *pointCtrl, int handle, int server, int point, in
 			{
 				char tempBuff[81];
 
+				pthread_mutex_lock (&priorityMutex);
 				servoMove (&pointCtrl -> pointStates[i].servoState, state ?
 						pointCtrl -> pointStates[i].turnoutPos :
-						pointCtrl -> pointStates[i].defaultPos);
+						pointCtrl -> pointStates[i].defaultPos,
+						++curPriority);
+				pthread_mutex_unlock (&priorityMutex);
 				pointCtrl -> pointStates[i].state = state;
 				sprintf (tempBuff, "<y %d %d %d>", server, point, state);
 				SendSocket (handle, tempBuff, strlen (tempBuff));
@@ -382,9 +387,13 @@ void updateSignal (pointCtrlDef *pointCtrl, int handle, int server, int signal, 
 				}
 				else if (pointCtrl -> signalStates[i].type == 1)
 				{
+
+					pthread_mutex_lock (&priorityMutex);
 					servoMove (&pointCtrl -> signalStates[i].servoState, state == 0 ? 0 : state == 1 ?
 							pointCtrl -> signalStates[i].redOut :
-							pointCtrl -> signalStates[i].greenOut);
+							pointCtrl -> signalStates[i].greenOut,
+							++curPriority);
+					pthread_mutex_unlock (&priorityMutex);
 				}
 				pointCtrl -> signalStates[i].state = state;
 				sprintf (tempBuff, "<x %d %d %d>", server, signal, state);
@@ -577,24 +586,46 @@ void *checkPointsState (void *pointPtr)
 
 	while (running)
 	{
-		int i, update = 0;
-		for (i = 0; i < pointCtrl -> pointCount && !update; ++i)
+		int i, selServo = -1, selServoPrio = -1, selType = -1;
+
+		for (i = 0; i < pointCtrl -> pointCount; ++i)
 		{
-			update = servoUpdate (&pointCtrl -> pointStates[i].servoState);
+			int curPrio = pointCtrl -> pointStates[i].servoState.priority;
+			if (curPrio > 0)
+			{
+				if (selServo == -1 || curPrio < selServoPrio)
+				{
+					selType = 0;
+					selServo = i;
+					selServoPrio = curPrio;
+				}
+			}
 		}
-		for (i = 0; i < pointCtrl -> signalCount && !update; ++i)
+		for (i = 0; i < pointCtrl -> signalCount; ++i)
 		{
-			update = servoUpdate (&pointCtrl -> signalStates[i].servoState);
+			int curPrio = pointCtrl -> signalStates[i].servoState.priority;
+			if (curPrio > 0)
+			{
+				if (selServo == -1 || curPrio < selServoPrio)
+				{
+					selType = 1;
+					selServo = i;
+					selServoPrio = curPrio;
+				}
+			}
 		}
-		usleep (50000);
-		update = 0;
-		for (i = pointCtrl -> signalCount; i > 0 && !update; --i)
+		if (selType != -1)
 		{
-			update = servoUpdate (&pointCtrl -> signalStates[i - 1].servoState);
+			if (selType == 0)
+				servoUpdate (&pointCtrl -> pointStates[selServo].servoState);
+			else
+				servoUpdate (&pointCtrl -> signalStates[selServo].servoState);
 		}
-		for (i = pointCtrl -> pointCount; i > 0 && !update; --i)
+		else
 		{
-			update = servoUpdate (&pointCtrl -> pointStates[i - 1].servoState);
+			pthread_mutex_lock (&priorityMutex);
+			curPriority = 0;
+			pthread_mutex_unlock (&priorityMutex);
 		}
 		usleep (50000);
 	}
@@ -650,6 +681,7 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 		pointCtrl -> signalStates[i].state = 1;
 	}
 
+	pthread_mutex_init (&priorityMutex, NULL);
 	if (pthread_create (&threadHandle, NULL, checkPointsState, pointCtrl) != 0)
 	{
 		return 0;

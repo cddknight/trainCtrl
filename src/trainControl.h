@@ -130,6 +130,7 @@ typedef struct _trackCtrl
 	int connectRunning;
 	int shownCurrent;
 	int flags;
+	int idleOff;
 	char server[81];
 	char trackName[81];
 	char serialDevice[81];
