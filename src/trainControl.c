@@ -913,6 +913,10 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 		gtk_container_add (GTK_CONTAINER (trackCtrl -> windowTrack), eventBox);
 		gtk_widget_show_all (trackCtrl -> windowTrack);
 	}
+	else
+	{
+		gtk_window_present_with_time (GTK_WINDOW (trackCtrl -> windowTrack), time(NULL));
+	}
 }
 
 /**********************************************************************************************************************
