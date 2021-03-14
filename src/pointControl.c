@@ -201,6 +201,7 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 		if (curNode->type == XML_ELEMENT_NODE)
 		{
 			xmlChar *tempStr;
+			char clientName[41] = "";
 			if (level == 0 && strcmp ((char *)curNode->name, "pointControl") == 0)
 			{
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
@@ -249,8 +250,14 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 					sscanf ((char *)tempStr, "%d", &signalCount);
 					xmlFree (tempStr);
 				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"client")) != NULL)
+				{
+					strncpy (clientName, (char *)tempStr, 40);
+					xmlFree (tempStr);
+				}
 				if (readIdent == pointCtrl -> clientID)
 				{
+					strncpy (pointCtrl -> clientName, clientName, 40);
 					processPoints (pointCtrl, curNode -> children, pointCount, signalCount);
 				}
 			}

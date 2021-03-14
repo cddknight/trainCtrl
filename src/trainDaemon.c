@@ -817,7 +817,7 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 				SendSocket (handleInfo[handle].handle, buffer, strlen (buffer));
 				retn = 1;
 			}
-			else if (words[0][0] == 'P' && words[0][1] == 0 && wordNum == 2)
+			else if (words[0][0] == 'P' && words[0][1] == 0 && (wordNum == 2 || wordNum == 3))
 			{
 				if (handleInfo[handle].handleType == POINTC_HTYPE)
 				{
@@ -828,6 +828,7 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 						if (point -> intHandle == handle)
 						{
 							point -> ident = atoi (words[1]);
+							strncpy (point -> clientName, wordNum == 3 ? words[2] : words[1], 40);
 							setAllPointStates (point -> ident);
 							break;
 						}

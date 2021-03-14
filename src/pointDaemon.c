@@ -345,8 +345,8 @@ int main (int argc, char *argv[])
 						pointCtrl.conTimeout, pointCtrl.ipVersion, NULL);
 				if (serverHandle != -1)
 				{
-					char tempBuff[21];
-					sprintf (tempBuff, "<P %d>", pointCtrl.clientID);
+					char tempBuff[81];
+					sprintf (tempBuff, "<P %d %s>", pointCtrl.clientID, pointCtrl.clientName);
 					SendSocket (serverHandle, tempBuff, strlen (tempBuff));
 					lastCheck = time (NULL);
 					holdOffConnect = lastCheck + 15;

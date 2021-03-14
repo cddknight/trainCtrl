@@ -107,7 +107,7 @@ trainCtrlDef;
 
 typedef struct _pointCtrl
 {
-	char server[41];
+	char clientName[41];
 	int port;
 	int ident;
 	int intHandle;

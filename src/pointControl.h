@@ -53,6 +53,7 @@ typedef struct _pointCtrl
 	int ipVersion;
 	int pointCount;
 	int signalCount;
+	char clientName[41];
 	char serverName[81];
 	pointStateDef *pointStates;
 	signalStateDef *signalStates;
