@@ -66,6 +66,7 @@ trackLayoutDef;
 typedef struct _trainFunc
 {
 	int funcID;
+	int trigger;
 	char funcDesc[41];
 #ifdef __GTK_H__
 	GtkWidget *funcSwitch;
