@@ -33,14 +33,14 @@
   </pointDaemon>
   <pointDaemon ident="2" pCount="10" sCount="2" client="tinysix">
     <point ident="14" channel="11" default="300" turnout="350"/>
-    <point ident="15" channel="1" default="290" turnout="320"/>
+    <point ident="15" channel="10" default="290" turnout="320"/>
     <point ident="16" channel="2" default="350" turnout="310"/>
-    <point ident="17" channel="3" default="310" turnout="345"/>
+    <point ident="17" channel="8" default="310" turnout="345"/>
     <point ident="18" channel="4" default="335" turnout="310"/>
     <point ident="19" channel="0" default="355" turnout="295"/>
-    <point ident="20" channel="6" default="295" turnout="355"/>
+    <point ident="20" channel="3" default="360" turnout="310"/>
     <point ident="21" channel="7" default="290" turnout="320"/>
-    <point ident="22" channel="8" default="290" turnout="320"/>
+    <point ident="22" channel="1" default="240" turnout="200"/>
     <point ident="23" channel="9" default="290" turnout="320"/>
     <signal ident="3" type="0" channelRed="12" channelGreen="13" redOut="250" greenOut="125"/>
     <signal ident="4" type="1" channel="15" redOut="110" greenOut="170"/>
