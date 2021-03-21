@@ -91,8 +91,17 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 
 				if ((idStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{
-					xmlChar *descStr;
+					int trigger = 0;
+					xmlChar *descStr, *triggerStr;
 
+					if ((triggerStr = xmlGetProp(curNode, (const xmlChar*)"trigger")) != NULL)
+					{
+						sscanf ((char *)triggerStr, "%d", &trigger);
+						if (trigger != 0)
+							trigger = 1;
+							
+						xmlFree(triggerStr);
+					}
 					if ((descStr = xmlGetProp(curNode, (const xmlChar*)"desc")) != NULL)
 					{
 						int id = -1;
@@ -102,6 +111,7 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 						if (id != -1 && loop < count)
 						{
 							train -> trainFunc[loop].funcID = id;
+							train -> trainFunc[loop].trigger = trigger;
 							strncpy (train -> trainFunc[loop].funcDesc, (char *)descStr, 40);
 							++loop;
 						}
@@ -138,8 +148,9 @@ void processFunctions (trackCtrlDef *trackCtrl, xmlNode *inNode, trainCtrlDef *t
 		{
 			if (strcmp ((char *)curNode->name, "functions") == 0)
 			{
-				int count = -1, custom = 0;;
+				int count = -1, custom = 0;
 				xmlChar *tempStr;
+
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
 				{
 					sscanf ((char *)tempStr, "%d", &count);
