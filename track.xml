@@ -142,7 +142,6 @@
       <cell col="9" layout="85" />
       <cell col="10" layout="5"/>
       <cell col="11" layout="65"/>
-      <cell col="13" signal="64" sserver="1" sident="2"/>
       <cell col="14" layout="40"/>
       <cell col="15" layout="40"/>
     </cellRow>
@@ -154,8 +153,8 @@
       <cell col="11" layout="5"/>
       <cell col="12" layout="5"/>
       <cell col="13" layout="1"/>
-      <cell col="14" layout="10"/>
-      <cell col="15" layout="26"  point="24" link="16" server="1" ident="10"/>
+      <cell col="14" layout="10" signal="32" sserver="1" sident="2"/>
+      <cell col="15" layout="26" point="24" link="16" server="1" ident="10"/>
     </cellRow>
     <cellRow row="4">
       <cell col="7" layout="88" point="24" server="3" ident="11"/>
