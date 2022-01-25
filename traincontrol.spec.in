@@ -30,6 +30,7 @@ mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/pixmaps
 mkdir -p $RPM_BUILD_ROOT%{_datadir}/applications
 mkdir -p $RPM_BUILD_ROOT%{_sysconfdir}/train
+mkdir -p $RPM_BUILD_ROOT%{_unitdir}
 install -p -m 755 @PACKAGE_NAME@ $RPM_BUILD_ROOT%{_bindir}/
 install -p -m 755 traincalc $RPM_BUILD_ROOT%{_bindir}/traincalc
 install -p -m 755 traindaemon $RPM_BUILD_ROOT%{_bindir}/traindaemon
@@ -40,6 +41,8 @@ install -p -m 644 @PACKAGE_NAME@.png $RPM_BUILD_ROOT%{_datadir}/pixmaps/@PACKAGE
 install -m 644 trackrc.xml $RPM_BUILD_ROOT%{_sysconfdir}/train/trackrc.xml
 install -m 644 track.xml $RPM_BUILD_ROOT%{_sysconfdir}/train/track.xml
 install -m 644 points.xml $RPM_BUILD_ROOT%{_sysconfdir}/train/points.xml
+install -m 644 system/traindaemon.service $RPM_BUILD_ROOT%{_unitdir}/traindaemon.service
+install -m 644 system/pointdaemon.service $RPM_BUILD_ROOT%{_unitdir}/pointdaemon.service
 desktop-file-install --vendor="" --dir=${RPM_BUILD_ROOT}%{_datadir}/applications @PACKAGE_NAME@.desktop
 
 %clean
@@ -55,6 +58,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/pixmaps/@PACKAGE_NAME@.svg
 %{_datadir}/pixmaps/@PACKAGE_NAME@.png
 %{_datadir}/applications/@PACKAGE_NAME@.desktop
+%{_unitdir}/traindaemon.service
+%{_unitdir}/pointdaemon.service
 %config(noreplace) %{_sysconfdir}/train/trackrc.xml
 %config(noreplace) %{_sysconfdir}/train/track.xml
 %config(noreplace) %{_sysconfdir}/train/points.xml
