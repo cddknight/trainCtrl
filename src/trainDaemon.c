@@ -967,16 +967,18 @@ void sendConfigFile (int newSocket)
  */
 void sendAllFunctions (int handle)
 {
-	int t, i;
+	int t, i, j;
 	char tempBuff[81];
 	if (trackCtrl.trainCtrl != NULL)
 	{
 		for (t = 0; t < trackCtrl.trainCount; ++t)
 		{
 			trainCtrlDef *train = &trackCtrl.trainCtrl[t];
-			for (i = 0; i < 100; ++i)
+	
+			for (j = 0; j < train -> funcCount; ++j)
 			{
-				if (train -> funcState[i] != 0)
+				int funcID = train -> trainFunc[j].funcID;
+				if (train -> funcState[funcID] == 1)
 				{
 					sprintf (tempBuff, "<F %d %d 1>", train -> trainID, i);
 					SendSocket (handle, tempBuff, strlen (tempBuff));

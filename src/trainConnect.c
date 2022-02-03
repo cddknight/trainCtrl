@@ -401,8 +401,6 @@ void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int funcID, int 
 	{
 		if (trackCtrl -> trainCtrl[t].trainID == trainID)
 		{		
-printf ("Update train [%d] function [%d] to [%d] from [%d]\n", trainID, funcID, state, trackCtrl -> trainCtrl[t].funcState[funcID]);
-		
 			trackCtrl -> trainCtrl[t].funcState[funcID] = state;
 			break;
 		}

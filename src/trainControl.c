@@ -1339,7 +1339,9 @@ gboolean clockTickCallback (gpointer data)
 					int active = gtk_switch_get_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch)) ? 1 : 0;
 					
 					if (active != train -> funcState[funcID])
-						gtk_switch_set_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch), active ? TRUE : FALSE);
+					{
+						gtk_switch_set_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch), active ? FALSE : TRUE);
+					}
 				}
 			}
 		}
