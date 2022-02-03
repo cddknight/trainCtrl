@@ -79,6 +79,7 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 	if ((train -> trainFunc = (trainFuncDef *)malloc (count * sizeof (trainFuncDef))) == NULL)
 		return;
 
+	memset (train -> funcState, 0, 100);
 	memset (train -> trainFunc, 0, count * sizeof (trainFuncDef));
 
 	for (curNode = inNode; curNode; curNode = curNode->next)

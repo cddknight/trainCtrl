@@ -83,16 +83,16 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 			if (j)
 				words[++wordNum][0] = 0;
 
-/*------------------------------------------------------------------*
+/*------------------------------------------------------------------*/
 			int l = 0;
 			for (l = 0; l < wordNum; ++l)
 			{
 				printf ("[%s]", words[l]);
 			}
 			printf ("(%d)\n", wordNum);
-*------------------------------------------------------------------*/
+/*------------------------------------------------------------------*/
 			/* Track power status */
-			if (words[0][0] == 'p' && words[0][1] == 0 && wordNum == 2)
+			if (words[0][0] == 'p' && words[0][1] == 0 && (wordNum == 2 || wordNum == 3))
 			{
 				int power = atoi(words[1]);
 				trackCtrl -> remotePowerState = power;
@@ -129,7 +129,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 								words[3], words[4], binary);
 				}
 			}
-			/* Function update */
+			/* Function update *
 			else if (words[0][0] == 'f' && words[0][1] == 0 && (wordNum == 3 || wordNum == 4))
 			{
 				int trainID = atoi(words[1]);
@@ -140,7 +140,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 
 				trainUpdateFunction (trackCtrl, trainID, byteOne, byteTwo);
 			}
-			/* Initial function update */
+			* Initial function update */
 			else if (words[0][0] == 'F' && words[0][1] == 0 && wordNum == 4)
 			{
 				int t;
@@ -148,14 +148,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				int funcID = atoi(words[2]);
 				int active = atoi(words[3]);
 				
-				for (t = 0; t < trackCtrl -> trainCount; ++t)
-				{
-					if (trackCtrl -> trainCtrl[t].trainID == trainID)
-					{
-						trackCtrl -> trainCtrl[t].funcState[funcID] = active;
-						break;
-					}
-				}
+				trainUpdateFunction (trackCtrl, trainID, funcID, active);
 			}
 			/* Current monitor */
 			else if (words[0][0] == 'a' && words[0][1] == 0 && wordNum == 2)
@@ -407,7 +400,9 @@ void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int funcID, int 
 	for (t = 0; t < trackCtrl -> trainCount; ++t)
 	{
 		if (trackCtrl -> trainCtrl[t].trainID == trainID)
-		{
+		{		
+printf ("Update train [%d] function [%d] to [%d] from [%d]\n", trainID, funcID, state, trackCtrl -> trainCtrl[t].funcState[funcID]);
+		
 			trackCtrl -> trainCtrl[t].funcState[funcID] = state;
 			break;
 		}
