@@ -148,21 +148,13 @@ void processFunctions (trackCtrlDef *trackCtrl, xmlNode *inNode, trainCtrlDef *t
 		{
 			if (strcmp ((char *)curNode->name, "functions") == 0)
 			{
-				int count = -1, custom = 0;
+				int count = -1;
 				xmlChar *tempStr;
 
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
 				{
 					sscanf ((char *)tempStr, "%d", &count);
 					xmlFree(tempStr);
-
-					if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"custom")) != NULL)
-					{
-						sscanf ((char *)tempStr, "%d", &custom);
-						xmlFree(tempStr);
-					}
-					if (custom != 0)
-						train -> funcCustom = 1;
 
 					if (count > 0)
 						processFunction (trackCtrl, curNode -> children, count, train);

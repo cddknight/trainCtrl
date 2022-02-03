@@ -141,15 +141,18 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				trainUpdateFunction (trackCtrl, trainID, byteOne, byteTwo);
 			}
 			/* Initial function update */
-			else if (words[0][0] == 'F' && words[0][1] == 0 && wordNum == 3)
+			else if (words[0][0] == 'F' && words[0][1] == 0 && wordNum == 4)
 			{
 				int t;
 				int trainID = atoi(words[1]);
+				int funcID = atoi(words[2]);
+				int active = atoi(words[3]);
+				
 				for (t = 0; t < trackCtrl -> trainCount; ++t)
 				{
 					if (trackCtrl -> trainCtrl[t].trainID == trainID)
 					{
-						trackCtrl -> trainCtrl[t].functions = atoi(words[2]);
+						trackCtrl -> trainCtrl[t].funcState[funcID] = active;
 						break;
 					}
 				}
@@ -364,54 +367,19 @@ int trainSetSpeed (trackCtrlDef *trackCtrl, trainCtrlDef *train, int speed)
  *  \param function Function to set.
  *  \result 1 if sent OK.
  */
-int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int function)
+int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int funcID, int state)
 {
 	int retn = 0;
-	if (function >= 0 && function <= 28)
+	if (funcID >= 0 && funcID < 100)
 	{
 		char tempBuff[81];
-		int byteOne = 0, byteTwo = -1;
-
-		train -> functions ^= (1 << function);
-		/* Function 0 is on bit 4 and function 1 is on bit 0. */
-		if (function == 0)
-		{
-			byteOne = ((train -> functions >> 1) & 0x0F) + 128;
-			byteOne |= ((train -> functions & 0x01) << 4);
-		}
-		else if (function < 5)
-		{
-			byteOne = ((train -> functions >> 1) & 0x0F) + 128;
-			byteOne |= ((train -> functions & 0x01) << 4);
-		}
-		else if (function < 9)
-		{
-			byteOne = ((train -> functions >> 5) & 0x0F) + 176;
-		}
-		else if (function < 13)
-		{
-			byteOne = ((train -> functions >> 9) & 0x0F) + 160;
-		}
-		else if (function < 21)
-		{
-			byteOne = 222;
-			byteTwo = (train -> functions >> 13) & 0xFF;
-		}
-		else
-		{
-			byteOne = 223;
-			byteTwo = (train -> functions >> 21) & 0xFF;
-		}
-		if (byteTwo == -1)
-			sprintf (tempBuff, "<f %d %d>", train -> trainID, byteOne);
-		else
-			sprintf (tempBuff, "<f %d %d %d>", train -> trainID, byteOne, byteTwo);
+		
+		sprintf (tempBuff, "<F %d %d %d>", train -> trainID, funcID, state);
 
 		if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
 		{
-			sprintf (tempBuff, "Set function: %d to %s for train %d", function,
-					train -> functions & (1 << function) ? "on" : "off",
-					train -> trainNum);
+			train -> funcState[funcID] = state;
+			sprintf (tempBuff, "Set function: %d to %s for train %d", funcID, state ? "on" : "off", train -> trainNum);
 			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
 			retn = 1;
 		}
@@ -433,46 +401,14 @@ int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int funct
  *  \param byteTwo Second set of values (optional).
  *  \result None.
  */
-void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int byteOne, int byteTwo)
+void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int funcID, int state)
 {
 	int t;
 	for (t = 0; t < trackCtrl -> trainCount; ++t)
 	{
 		if (trackCtrl -> trainCtrl[t].trainID == trainID)
 		{
-			if ((byteOne & 0xE0) == 128)
-			{
-				/* Function 0 is on bit 4 and function 1 is on bit 0. */
-				trackCtrl -> trainCtrl[t].functions &= 0xFFFFFFE0;
-				trackCtrl -> trainCtrl[t].functions |= ((byteOne & 0x0F) << 1);
-				trackCtrl -> trainCtrl[t].functions |= ((byteOne >> 4) & 0x01);
-			}
-			else if ((byteOne & 0xF0) == 176)
-			{
-				trackCtrl -> trainCtrl[t].functions &= 0xFFFFFE1F;
-				trackCtrl -> trainCtrl[t].functions |= ((byteOne & 0x0F) << 5);
-			}
-			else if ((byteOne & 0xF0) == 160)
-			{
-				trackCtrl -> trainCtrl[t].functions &= 0xFFFFE1FF;
-				trackCtrl -> trainCtrl[t].functions |= ((byteOne & 0x0F) << 9);
-			}
-			else if (byteOne == 222)
-			{
-				trackCtrl -> trainCtrl[t].functions &= 0xFFE01FFF;
-				trackCtrl -> trainCtrl[t].functions |= ((byteTwo & 0xFF) << 13);
-			}
-			else if (byteOne == 223)
-			{
-				trackCtrl -> trainCtrl[t].functions &= 0xE01FFFFF;
-				trackCtrl -> trainCtrl[t].functions |= ((byteTwo & 0xFF) << 21);
-			}
-			if (trackCtrl -> windowFunctions != NULL)
-			{
-				char tempBuff[81];
-				sprintf (tempBuff, "[%08X]", trackCtrl -> trainCtrl[t].functions);
-				gtk_label_set_label (GTK_LABEL (trackCtrl -> funcLabel), tempBuff);
-			}
+			trackCtrl -> trainCtrl[t].funcState[funcID] = state;
 			break;
 		}
 	}

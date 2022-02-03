@@ -84,10 +84,9 @@ typedef struct _trainCtrl
 	int curSpeed;
 	int reverse;
 	int slowSpeed;
-	int functions;
 	int funcCount;
-	int funcCustom;
 	char trainDesc[41];
+	char funcState[100];
 
 	struct timeval lastChange;
 	int remoteCurSpeed;
@@ -179,7 +178,7 @@ int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level);
 int startConnectThread (trackCtrlDef *trackCtrl);
 int trainConnectSend (trackCtrlDef *trackCtrl, char *buffer, int len);
 int trainSetSpeed (trackCtrlDef *trackCtrl, trainCtrlDef *train, int speed);
-int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int function);
+int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int function, int state);
 void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int byteOne, int byteTwo);
 void stopConnectThread (trackCtrlDef *trackCtrl);
 

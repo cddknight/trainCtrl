@@ -309,41 +309,14 @@ void stopAllTrains ()
  *  \param byteTwo Second byte (dependant on first).
  *  \result None.
  */
-void trainUpdFunction (int trainID, int byteOne, int byteTwo)
+void trainUpdFunction (int trainID, int function, int state)
 {
 	int t;
 	for (t = 0; t < trackCtrl.trainCount; ++t)
 	{
-		if (trackCtrl.trainCtrl[t].trainID == trainID)
+		if (trackCtrl.trainCtrl[t].trainID == trainID && function >= 0 && function < 100)
 		{
-			if ((byteOne & 0xE0) == 128)
-			{
-				/* Function 0 is on bit 4 and function 1 is on bit 0. */
-				trackCtrl.trainCtrl[t].functions &= 0xFFFFFFE0;
-				trackCtrl.trainCtrl[t].functions |= ((byteOne & 0x0F) << 1);
-				trackCtrl.trainCtrl[t].functions |= ((byteOne >> 4) & 0x01);
-			}
-			else if ((byteOne & 0xF0) == 176)
-			{
-				trackCtrl.trainCtrl[t].functions &= 0xFFFFFE1F;
-				trackCtrl.trainCtrl[t].functions |= ((byteOne & 0x0F) << 5);
-			}
-			else if ((byteOne & 0xF0) == 160)
-			{
-				trackCtrl.trainCtrl[t].functions &= 0xFFFFE1FF;
-				trackCtrl.trainCtrl[t].functions |= ((byteOne & 0x0F) << 9);
-			}
-			else if (byteOne == 222)
-			{
-				trackCtrl.trainCtrl[t].functions &= 0xFFE01FFF;
-				trackCtrl.trainCtrl[t].functions |= ((byteTwo & 0xFF) << 13);
-			}
-			else if (byteOne == 223)
-			{
-				trackCtrl.trainCtrl[t].functions &= 0xE01FFFFF;
-				trackCtrl.trainCtrl[t].functions |= ((byteTwo & 0xFF) << 21);
-			}
-			break;
+			trackCtrl.trainCtrl[t].funcState[function] = state;
 		}
 	}
 }
@@ -779,17 +752,14 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 				retn = 1;
 			}
 			/* Record and tell everyone about a function change */
-			else if (words[0][0] == 'f' && words[0][1] == 0 && (wordNum == 3 || wordNum == 4))
+			else if (words[0][0] == 'F' && words[0][1] == 0 && wordNum == 4)
 			{
 				int h;
 				int trainID = atoi (words[1]);
-				int byteOne = atoi (words[2]);
-				int byteTwo = 0;
+				int function = atoi (words[2]);
+				int state = atoi (words[3]);
 
-				if (wordNum == 4)
-					byteTwo = atoi (words[3]);
-
-				trainUpdFunction (trainID, byteOne, byteTwo);
+				trainUpdFunction (trainID, function, state);
 				for (h = FIRST_HANDLE; h < MAX_HANDLES; ++h)
 				{
 					if (handleInfo[h].handle != -1 && handleInfo[h].handleType == CONTRL_HTYPE)
@@ -828,7 +798,7 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 						if (point -> intHandle == handle)
 						{
 							point -> ident = atoi (words[1]);
-							strncpy (point -> clientName, wordNum == 3 ? words[2] : words[1], 40);
+							strncpy (point -> clientName, wordNum == 3 ? words[2] : words[1], 41);
 							setAllPointStates (point -> ident);
 							break;
 						}
@@ -997,15 +967,21 @@ void sendConfigFile (int newSocket)
  */
 void sendAllFunctions (int handle)
 {
-	int t;
+	int t, i;
 	char tempBuff[81];
 	if (trackCtrl.trainCtrl != NULL)
 	{
 		for (t = 0; t < trackCtrl.trainCount; ++t)
 		{
 			trainCtrlDef *train = &trackCtrl.trainCtrl[t];
-			sprintf (tempBuff, "<F %d %d>", train -> trainID, train -> functions);
-			SendSocket (handle, tempBuff, strlen (tempBuff));
+			for (i = 0; i < 100; ++i)
+			{
+				if (train -> funcState[i] != 0)
+				{
+					sprintf (tempBuff, "<F %d %d 1>", train -> trainID, i);
+					SendSocket (handle, tempBuff, strlen (tempBuff));
+				}
+			}
 		}
 	}
 }

@@ -152,33 +152,6 @@ int checkConnected (trackCtrlDef *trackCtrl)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
- *  S E N D  F U N C T I O N                                                                                          *
- *  ========================                                                                                          *
- *                                                                                                                    *
- **********************************************************************************************************************/
-/**
- *  \brief Send an emergency stop command.
- *  \param widget Which button was pressed.
- *  \param data Which train to stop.
- *  \result None.
- */
-static void sendFunction (GtkWidget *widget, gpointer data)
-{
-	char tempBuff[81];
-	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
-	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
-
-	if (trackCtrl -> funcSpinner != NULL)
-	{
-		int func = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(trackCtrl -> funcSpinner));
-		trainToggleFunction (trackCtrl, train, func);
-	}
-	sprintf (tempBuff, "[%08X]", train -> functions);
-	gtk_label_set_label (GTK_LABEL (trackCtrl -> funcLabel), tempBuff);
-}
-
-/**********************************************************************************************************************
- *                                                                                                                    *
  *  S E N D  B U T T O N  F U N C                                                                                     *
  *  =============================                                                                                     *
  *                                                                                                                    *
@@ -191,24 +164,16 @@ static void sendFunction (GtkWidget *widget, gpointer data)
  */
 static void sendButtonFunc (GtkWidget *widget, gpointer data)
 {
-	char tempBuff[81];
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)g_object_get_data (G_OBJECT(widget), "track");
 	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
 	long index = (long)g_object_get_data (G_OBJECT(widget), "index");
-	gboolean active = gtk_switch_get_active (GTK_SWITCH (widget));
+	
+	int funcID = train -> trainFunc[index].funcID;
+	int active = gtk_switch_get_active (GTK_SWITCH (widget)) ? 1 : 0;
 
-/*	printf ("Active: %s(%d), Set: %s(%d), Function[%d]: %d, Functions: %02X\n", 
-			active ? "yes" : "No", active, 
-			train -> functions & (1 << train -> trainFunc[index].funcID) ? "yes" : "No",
-			train -> functions & (1 << train -> trainFunc[index].funcID) ? TRUE :FALSE,
-			index, train -> trainFunc[index].funcID, 
-			train -> functions);
-*/
-	if (active != ((train -> functions & (1 << train -> trainFunc[index].funcID)) ? TRUE :FALSE))
+	if (active != train -> funcState[funcID])
 	{
-		trainToggleFunction (trackCtrl, train, train -> trainFunc[index].funcID);
-		sprintf (tempBuff, "[%08X]", train -> functions);
-		gtk_label_set_label (GTK_LABEL (trackCtrl -> funcLabel), tempBuff);
+		trainToggleFunction (trackCtrl, train, funcID, active);
 	}
 }
 
@@ -265,12 +230,11 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 	if (trackCtrl -> windowFunctions != NULL)
 		gtk_widget_destroy (trackCtrl -> windowFunctions);
 
-	if (trackCtrl -> windowFunctions == NULL && (train -> funcCount || train -> funcCustom))
+	if (trackCtrl -> windowFunctions == NULL && train -> funcCount)
 	{
 		long i;
 		int row = 0;
 		char tempBuff[81];
-		GtkAdjustment *adjust;
 		GtkWidget *label, *grid, *vbox, *button;
 
 		trackCtrl -> windowFunctions = gtk_window_new (GTK_WINDOW_TOPLEVEL);
@@ -300,22 +264,6 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
 		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 0);
 
-		label = gtk_label_new ("Train");
-		gtk_widget_set_halign (label, GTK_ALIGN_END);
-		gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
-		sprintf (tempBuff, "%d", train -> trainNum);
-		label = gtk_label_new (tempBuff);
-		gtk_widget_set_halign (label, GTK_ALIGN_START);
-		gtk_grid_attach (GTK_GRID(grid), label, 1, row++, 1, 1);
-
-		label = gtk_label_new ("Current");
-		gtk_widget_set_halign (label, GTK_ALIGN_END);
-		gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
-		sprintf (tempBuff, "[%08X]", train -> functions);
-		trackCtrl -> funcLabel = gtk_label_new (tempBuff);
-		gtk_widget_set_halign (trackCtrl -> funcLabel, GTK_ALIGN_START);
-		gtk_grid_attach (GTK_GRID(grid), trackCtrl -> funcLabel, 1, row++, 1, 1);
-
 		for (i = 0; i < train -> funcCount; ++i)
 		{
 			sprintf (tempBuff, "%s", train -> trainFunc[i].funcDesc);
@@ -330,23 +278,6 @@ static void trainFunctions (GtkWidget *widget, gpointer data)
 			gtk_widget_set_halign (button, GTK_ALIGN_START);
 			g_signal_connect (button, "notify::active", G_CALLBACK (sendButtonFunc), trackCtrl);
 			gtk_grid_attach (GTK_GRID(grid), button, 1, row++, 1, 1);
-		}
-
-		if (train -> funcCustom)
-		{
-			label = gtk_label_new ("Function");
-			gtk_widget_set_halign (label, GTK_ALIGN_END);
-			gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
-			adjust = gtk_adjustment_new (0, 0, 29, 1.0, 1.0, 1.0);
-			trackCtrl -> funcSpinner = gtk_spin_button_new (adjust, 4, 0);
-			gtk_widget_set_halign (GTK_WIDGET (trackCtrl -> funcSpinner), GTK_ALIGN_FILL);
-			gtk_grid_attach (GTK_GRID(grid), trackCtrl -> funcSpinner, 1, row++, 1, 1);
-
-			button = gtk_button_new_with_label ("Toggle");
-			g_object_set_data (G_OBJECT(button), "train", train);
-			g_signal_connect (button, "clicked", G_CALLBACK (sendFunction), trackCtrl);
-			gtk_widget_set_halign (button, GTK_ALIGN_FILL);
-			gtk_grid_attach (GTK_GRID(grid), button, 0, row, 2, 1);
 		}
 		gtk_widget_show_all (trackCtrl -> windowFunctions);
 	}
@@ -470,12 +401,18 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
  */
 static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
 {
-	int i, newState;
+	int i, newState, okSend = 0;
 	char tempBuff[81];
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
 	newState = (trackCtrl -> powerState == POWER_ON ? POWER_OFF : POWER_ON);
-	if (trainConnectSend (trackCtrl, newState == POWER_ON ? "<1>" : "<0>", 3) == 3)
+	
+	if (newState == POWER_ON)
+		okSend = trainConnectSend (trackCtrl, "<1 MAIN>", 8) == 8;
+	else
+		okSend = trainConnectSend (trackCtrl, "<0>", 3) == 3;
+	
+	if (okSend)
 	{
 		trackCtrl -> powerState = newState;
 		sprintf (tempBuff, "Track power %s", trackCtrl -> powerState == POWER_ON ? "On" : "Off");
@@ -1118,6 +1055,7 @@ static void stopAllTrains (GtkWidget *widget, gpointer data)
 	int i;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
+	trainConnectSend (trackCtrl, "<!>", 3);
 	for (i = 0; i < trackCtrl -> trainCount; ++i)
 	{
 		trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
@@ -1184,6 +1122,10 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 	if (trackCtrl -> dialogProgram == NULL)
 	{
+	
+		if (trainConnectSend (trackCtrl, "<1 PROG>", 8) != 8)
+			return;
+	
 		trackCtrl -> dialogProgram = gtk_dialog_new_with_buttons ("Program Train",
 				GTK_WINDOW (trackCtrl -> windowCtrl),
 				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -1347,6 +1289,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		gtk_widget_destroy (trackCtrl -> dialogProgram);
 		trackCtrl -> dialogProgram = NULL;
 		trackCtrl -> entryProgram = NULL;
+		trainConnectSend (trackCtrl, "<0 PROG>", 8);
 	}
 }
 
@@ -1392,9 +1335,11 @@ gboolean clockTickCallback (gpointer data)
 			{
 				if (train -> trainFunc[j].funcSwitch != NULL)
 				{
-					gboolean active = gtk_switch_get_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch));
-					if (active != (train -> functions & (1 << train -> trainFunc[j].funcID) ? TRUE :FALSE))
-						gtk_switch_set_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch), !active);
+					int funcID = train -> trainFunc[j].funcID;
+					int active = gtk_switch_get_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch)) ? 1 : 0;
+					
+					if (active != train -> funcState[funcID])
+						gtk_switch_set_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch), active ? TRUE : FALSE);
 				}
 			}
 		}

@@ -257,7 +257,7 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 				}
 				if (readIdent == pointCtrl -> clientID)
 				{
-					strncpy (pointCtrl -> clientName, clientName, 40);
+					strncpy (pointCtrl -> clientName, clientName, 41);
 					processPoints (pointCtrl, curNode -> children, pointCount, signalCount);
 				}
 			}
