@@ -100,7 +100,7 @@ typedef struct _trainCtrl
 	GtkWidget *scaleSpeed;
 	GtkWidget *checkDir;
 #else
-	void *xPointers[4];
+	void *xPointers[5];
 #endif
 }
 trainCtrlDef;

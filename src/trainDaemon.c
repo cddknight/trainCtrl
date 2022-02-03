@@ -64,7 +64,6 @@ int	 debugOutput		=	0;
 int	 goDaemon			=	0;
 int	 inDaemonise		=	0;
 int	 running			=	1;
-trackCtrlDef trackCtrl;
 
 typedef struct _handleInfo
 {
@@ -78,6 +77,8 @@ typedef struct _handleInfo
 HANDLEINFO;
 
 HANDLEINFO handleInfo[MAX_HANDLES];
+
+trackCtrlDef trackCtrl;
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -917,7 +918,7 @@ void receiveNetwork (int handle, char *buffer, int len)
  */
 int loadConfigFile ()
 {
-	int retn = 0;
+	int retn = 0, t;
 	struct stat statbuf;
 
 	if (stat (xmlConfigFile, &statbuf) == 0)
@@ -929,7 +930,9 @@ int loadConfigFile ()
 			if ((xmlBuffer = (char *)malloc (xmlBufferSize + 10)) != NULL)
 			{
 				if (fread (xmlBuffer, 1, xmlBufferSize, inFile) == xmlBufferSize)
+				{
 					retn = parseMemoryXML (&trackCtrl, xmlBuffer);
+				}
 			}
 			fclose (inFile);
 		}
@@ -980,7 +983,7 @@ void sendAllFunctions (int handle)
 				int funcID = train -> trainFunc[j].funcID;
 				if (train -> funcState[funcID] == 1)
 				{
-					sprintf (tempBuff, "<F %d %d 1>", train -> trainID, i);
+					sprintf (tempBuff, "<F %d %d 1>", train -> trainID, funcID);
 					SendSocket (handle, tempBuff, strlen (tempBuff));
 				}
 			}
