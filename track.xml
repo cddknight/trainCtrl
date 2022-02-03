@@ -48,26 +48,26 @@
 -->
 <track name="The Office Line" server="tinyfive.theknight.home" port="28200" point="28201" config="28202" 
 		timeout="5" ipver="3" device="/dev/ttyACM0" flags="1" idleOff="15">
-  <trains count="10">
+  <trains count="9">
     <train num="4560" ident="320" slow="20" desc="Black GWR Class 5101 (2-6-2T)">
-      <functions count="2" custom="1">
-		<function desc="Front/Rear Lights" ident="0"/>
-		<function desc="Fireglow" ident="2"/>
+      <functions count="2">
+	<function desc="Front/Rear Lights" ident="1"/>
+	<function desc="Fireglow" ident="2"/>
       </functions>
     </train>
     <train num="4569" ident="340" slow="20" desc="Green GWR Class 5101 (2-6-2T)">
-      <functions count="2" custom="0">
-		<function desc="Front/Rear Lights" ident="0"/>
-		<function desc="Fire Glow" ident="1"/>
+      <functions count="2">
+	<function desc="Front/Rear Lights" ident="0"/>
+	<function desc="Fire Glow" ident="1"/>
       </functions>
-	</train>
+    </train>
     <train num="4666" ident="330" slow="10" desc="Black GWR Class 5700 (0-6-0PT)" />
     <train num="5601" ident="350" slow="15" desc="Green GWR Class 5600 (0-6-2T)" />
     <train num="5658" ident="390" slow="15" desc="Green GWR Class 5600 (0-6-2T)" />
     <train num="5749" ident="380" slow="15" desc="Black GWR Class 5700 (0-6-0PT)" />
     <train num="6419" ident="370" slow="15" desc="Green GWR Class 5700 (0-6-0PT)" />
     <train num="9479" ident="310" slow="15" desc="Black Class 94XX (0-6-0T)">
-      <functions count="18" custom="0">
+      <functions count="18">
         <function desc="Sound on/off" ident="1"/>
         <function desc="Brake [T]" ident="2"/>
         <function desc="Handbrake (stop)" ident="12"/>
@@ -88,7 +88,6 @@
         <function desc="Heavy Load" ident="5"/>
       </functions>
     </train>
-    <train num="42355" ident="360" slow="15" desc="Fowler Class 4P (2-6-4T)" />
     <train num="68035" ident="300" slow="15" desc="Austerity Saddle Tank J94 (0-6-0ST)" />
   </trains>
   <pointServers count="3"/>
