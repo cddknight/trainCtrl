@@ -615,9 +615,9 @@ void checkSerialRecvBuffer (char *buffer, int len)
 				words[++wordNum][0] = 0;
 
 			/* Track power status - power off stop trains */
-			if (words[0][0] == 'p' && (words[0][1] == '0' || words[0][1] == '1') && words[0][2] == 0)
+			if (words[0][0] == 'p' && wordNum >= 2)
 			{
-				int power = (words[0][1] == '0' ? 0 : 1);
+				int power = atoi (&words[1][0]);
 				if ((trackCtrl.powerState = power) == 0)
 					stopAllTrains ();
 			}
