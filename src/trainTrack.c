@@ -100,7 +100,7 @@ void processFunction (trackCtrlDef *trackCtrl, xmlNode *inNode, int count, train
 						sscanf ((char *)triggerStr, "%d", &trigger);
 						if (trigger != 0)
 							trigger = 1;
-							
+
 						xmlFree(triggerStr);
 					}
 					if ((descStr = xmlGetProp(curNode, (const xmlChar*)"desc")) != NULL)
@@ -218,6 +218,10 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 								trackCtrl -> trainCtrl[loop].trainNum = num;
 								trackCtrl -> trainCtrl[loop].slowSpeed = slow;
 								strncpy (trackCtrl -> trainCtrl[loop].trainDesc, (char *)descStr, 40);
+								if (loop == 0)
+								{
+									trackCtrl -> activeTrain = &trackCtrl -> trainCtrl[0];
+								}
 								processFunctions (trackCtrl, curNode -> children, &trackCtrl -> trainCtrl[loop]);
 								++loop;
 							}
@@ -229,6 +233,59 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 		}
 	}
 	trackCtrl -> trainCount = loop;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P R O C E S S  T H R O T T L E S                                                                                  *
+ *  ================================                                                                                  *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Process the trottle config in the XML.
+ *  \param trackCtrl Track config.
+ *  \param inNode Current node.
+ *  \param count Number of throttles (max).
+ *  \result None.
+ */
+void processThrottles (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
+{
+	int loop = 0;
+	xmlChar *tempStr, *descStr;
+	xmlNode *curNode = NULL;
+
+	if ((trackCtrl -> throttles = (throttleDef *)malloc (count * sizeof (throttleDef))) == NULL)
+		return;
+
+	memset (trackCtrl -> throttles, 0, count * sizeof (throttleDef));
+
+	for (curNode = inNode; curNode && loop < count; curNode = curNode->next)
+	{
+		if (curNode->type == XML_ELEMENT_NODE)
+		{
+			if (strcmp ((char *)curNode->name, "throttle") == 0)
+			{
+				int axis = -1, button = -1;
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"axis")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &axis);
+					xmlFree(tempStr);
+					if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"button")) != NULL)
+					{
+						sscanf ((char *)tempStr, "%d", &button);
+						xmlFree(tempStr);
+						if (axis != -1 && button != -1 && loop < count)
+						{
+							trackCtrl -> throttles[loop].axis = axis;
+							trackCtrl -> throttles[loop].button = button;
+							++loop;
+						}
+					}
+				}
+			}
+		}
+	}
+	trackCtrl -> throttleCount = loop;
 }
 
 /**********************************************************************************************************************
@@ -499,6 +556,21 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 
 							trackCtrl -> pServerCount = count;
 						}
+					}
+				}
+			}
+			else if (level == 1 && strcmp ((char *)curNode->name, "throttles") == 0)
+			{
+				int count = -1;
+				xmlChar *countStr;
+				if ((countStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
+				{
+					sscanf ((char *)countStr, "%d", &count);
+					xmlFree(countStr);
+					if (count > 0)
+					{
+						processThrottles (trackCtrl, curNode -> children, count);
+						pthread_mutex_init (&trackCtrl -> throttleMutex, NULL);
 					}
 				}
 			}

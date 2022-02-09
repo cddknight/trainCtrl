@@ -306,8 +306,8 @@ void stopAllTrains ()
 /**
  *  \brief Update the function value.
  *  \param trainID Train to update.
- *  \param byteOne First byte.
- *  \param byteTwo Second byte (dependant on first).
+ *  \param function Which function is being changed.
+ *  \param state What is the new state.
  *  \result None.
  */
 void trainUpdFunction (int trainID, int function, int state)
@@ -403,7 +403,7 @@ void setAllPointStates (int pSvrIdent)
 					{
 						if (cell -> signal.server == pSvrIdent)
 						{
-							sprintf (tempBuff, "<X %d %d %d>", pSvrIdent, cell -> signal.ident, 
+							sprintf (tempBuff, "<X %d %d %d>", pSvrIdent, cell -> signal.ident,
 								cell -> signal.state == 2 ? 2 : 1);
 							SendSocket (handleInfo[pointSever -> intHandle].handle, tempBuff, strlen (tempBuff));
 						}
@@ -477,7 +477,6 @@ void saveSignalState (int sSvrIdent, int ident, int state)
 		}
 	}
 }
-
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -977,7 +976,7 @@ void sendAllFunctions (int handle)
 		for (t = 0; t < trackCtrl.trainCount; ++t)
 		{
 			trainCtrlDef *train = &trackCtrl.trainCtrl[t];
-	
+
 			for (j = 0; j < train -> funcCount; ++j)
 			{
 				int funcID = train -> trainFunc[j].funcID;

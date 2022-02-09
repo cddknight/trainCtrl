@@ -129,25 +129,14 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 								words[3], words[4], binary);
 				}
 			}
-			/* Function update *
-			else if (words[0][0] == 'f' && words[0][1] == 0 && (wordNum == 3 || wordNum == 4))
-			{
-				int trainID = atoi(words[1]);
-				int byteOne = atoi(words[2]);
-				int byteTwo = -1;
-				if (wordNum == 4 && (byteOne == 222 || byteOne == 223))
-					byteTwo = atoi(words[3]);
-
-				trainUpdateFunction (trackCtrl, trainID, byteOne, byteTwo);
-			}
-			* Initial function update */
+			/* New style function update */
 			else if (words[0][0] == 'F' && words[0][1] == 0 && wordNum == 4)
 			{
 				int t;
 				int trainID = atoi(words[1]);
 				int funcID = atoi(words[2]);
 				int active = atoi(words[3]);
-				
+
 				trainUpdateFunction (trackCtrl, trainID, funcID, active);
 			}
 			/* Current monitor */
@@ -212,7 +201,7 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 			gtk_widget_queue_draw (trackCtrl -> drawingArea);
 	}
 	if (j || wordNum >= 0)
-	{ 
+	{
 		printf ("Rxed incomplete:[%s]\n", buffer);
 	}
 }
@@ -357,7 +346,8 @@ int trainSetSpeed (trackCtrlDef *trackCtrl, trainCtrlDef *train, int speed)
  *  \brief Toggle a train function on/off.
  *  \param trackCtrl Track configuration.
  *  \param train Train configuration.
- *  \param function Function to set.
+ *  \param funcID Which function is being changed.
+ *  \param state What is the new state.
  *  \result 1 if sent OK.
  */
 int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int funcID, int state)
@@ -366,7 +356,7 @@ int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int funcI
 	if (funcID >= 0 && funcID < 100)
 	{
 		char tempBuff[81];
-		
+
 		sprintf (tempBuff, "<F %d %d %d>", train -> trainID, funcID, state);
 
 		if (trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff)) > 0)
@@ -390,8 +380,8 @@ int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int funcI
  *  \brief Update the fuctions register from remote update.
  *  \param trackCtrl Track configuration.
  *  \param trainID Which train cab number.
- *  \param byteOne First set of values.
- *  \param byteTwo Second set of values (optional).
+ *  \param funcID Which function is being changed.
+ *  \param state What is the new state.
  *  \result None.
  */
 void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int funcID, int state)
@@ -400,7 +390,7 @@ void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int funcID, int 
 	for (t = 0; t < trackCtrl -> trainCount; ++t)
 	{
 		if (trackCtrl -> trainCtrl[t].trainID == trainID)
-		{		
+		{
 			trackCtrl -> trainCtrl[t].funcState[funcID] = state;
 			break;
 		}
@@ -439,5 +429,11 @@ void stopConnectThread(trackCtrlDef *trackCtrl)
 {
 	trackCtrl -> connectRunning = 0;
 	pthread_join (trackCtrl -> connectHandle, NULL);
+
+	if (trackCtrl -> throttlesRunning && trackCtrl -> throttlesHandle != 0)
+	{
+		trackCtrl -> throttlesRunning = 0;
+		pthread_join (trackCtrl -> throttlesHandle, NULL);
+	}
 }
 

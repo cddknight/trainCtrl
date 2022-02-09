@@ -107,7 +107,7 @@ gboolean clockTickCallback (gpointer data)
 			{
 				if (pointTest -> channel != newChannel && pointTest -> channel != -1)
 					pwmWrite (PIN_BASE + pointTest -> channel, 0);
-				
+
 				pwmWrite (PIN_BASE + newChannel, curVal);
 			}
 #endif

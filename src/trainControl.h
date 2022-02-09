@@ -25,6 +25,7 @@
 #define POWER_ON			1
 #define TRACK_FLAG_SLOW		1
 #define TRACK_FLAG_SHOW		2
+#define TRACK_FLAG_THRT		4
 
 typedef struct _pointCell
 {
@@ -97,10 +98,11 @@ typedef struct _trainCtrl
 	GtkWidget *buttonNum;
 	GtkWidget *buttonHalt;
 	GtkWidget *buttonSlow;
+	GtkWidget *buttonActive;
 	GtkWidget *scaleSpeed;
 	GtkWidget *checkDir;
 #else
-	void *xPointers[5];
+	void *xPointers[6];
 #endif
 }
 trainCtrlDef;
@@ -115,11 +117,22 @@ typedef struct _pointCtrl
 }
 pointCtrlDef;
 
+typedef struct _throttleDef
+{
+	int axis;
+	int button;
+	int curValue;
+	int curChanged;
+	int buttonPress;
+}
+throttleDef;
+
 typedef struct _trackCtrl
 {
 	int powerState;
 	int trainCount;
 	int pServerCount;
+	int throttleCount;
 	int serverHandle;
 	int serverSession;
 	int serverPort;
@@ -128,14 +141,18 @@ typedef struct _trackCtrl
 	int ipVersion;
 	int conTimeout;
 	int connectRunning;
+	int throttlesRunning;
 	int shownCurrent;
 	int flags;
 	int idleOff;
 	char server[81];
 	char trackName[81];
 	char serialDevice[81];
-	pthread_t connectHandle;
+	trainCtrlDef *activeTrain;
 	time_t trackRepaint;
+	pthread_t connectHandle;
+	pthread_t throttlesHandle;
+	pthread_mutex_t throttleMutex;
 
 	char addressBuffer[111];
 	char remoteProgMsg[111];
@@ -145,6 +162,7 @@ typedef struct _trackCtrl
 
 	trainCtrlDef *trainCtrl;
 	pointCtrlDef *pointCtrl;
+	throttleDef *throttles;
 	trackLayoutDef *trackLayout;
 
 #ifdef __GTK_H__
@@ -181,4 +199,5 @@ int trainSetSpeed (trackCtrlDef *trackCtrl, trainCtrlDef *train, int speed);
 int trainToggleFunction (trackCtrlDef *trackCtrl, trainCtrlDef *train, int function, int state);
 void trainUpdateFunction (trackCtrlDef *trackCtrl, int trainID, int byteOne, int byteTwo);
 void stopConnectThread (trackCtrlDef *trackCtrl);
+int startThrottleThread (trackCtrlDef *trackCtrl);
 

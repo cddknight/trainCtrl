@@ -167,7 +167,7 @@ static void sendButtonFunc (GtkWidget *widget, gpointer data)
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)g_object_get_data (G_OBJECT(widget), "track");
 	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
 	long index = (long)g_object_get_data (G_OBJECT(widget), "index");
-	
+
 	int funcID = train -> trainFunc[index].funcID;
 	int active = gtk_switch_get_active (GTK_SWITCH (widget)) ? 1 : 0;
 
@@ -349,6 +349,25 @@ static void slowTrain (GtkWidget *widget, gpointer data)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  A C T I V E  T R A I N                                                                                            *
+ *  ======================                                                                                            *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Radio button is changing the current train.
+ *  \param widget Which train is being selected.
+ *  \param data Which train is being selected.
+ *  \result None.
+ */
+static void activeTrain (GtkWidget *widget, gpointer data)
+{
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
+	trackCtrl -> activeTrain = train;
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  C H E C K  P O W E R  O N                                                                                         *
  *  =========================                                                                                         *
  *                                                                                                                    *
@@ -373,6 +392,8 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 				gtk_widget_set_sensitive (train -> buttonHalt, state);
 			if (train -> buttonSlow != NULL)
 				gtk_widget_set_sensitive (train -> buttonSlow, state);
+			if (train -> buttonActive != NULL)
+				gtk_widget_set_sensitive (train -> buttonActive, state);
 			if (train -> scaleSpeed != NULL)
 				gtk_widget_set_sensitive (train -> scaleSpeed, state);
 			if (train -> checkDir != NULL)
@@ -406,12 +427,12 @@ static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
 	newState = (trackCtrl -> powerState == POWER_ON ? POWER_OFF : POWER_ON);
-	
+
 	if (newState == POWER_ON)
 		okSend = trainConnectSend (trackCtrl, "<1 MAIN>", 8) == 8;
 	else
 		okSend = trainConnectSend (trackCtrl, "<0>", 3) == 3;
-	
+
 	if (okSend)
 	{
 		trackCtrl -> powerState = newState;
@@ -614,17 +635,17 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 					else
 						gdk_cairo_set_source_rgba (cr, &sigOffCol);
 
-					cairo_arc (cr, 
-							(j * cellSize) + (cellSize >> 2) + (xChangeMod[loop] >> 1), 
-							(i * cellSize) + (cellSize >> 2) + (yChangeMod[loop] >> 1), 
+					cairo_arc (cr,
+							(j * cellSize) + (cellSize >> 2) + (xChangeMod[loop] >> 1),
+							(i * cellSize) + (cellSize >> 2) + (yChangeMod[loop] >> 1),
 							(double)cellSize / 8.5, 0, 2 * G_PI);
 					cairo_fill (cr);
 					cairo_stroke (cr);
 
 					gdk_cairo_set_source_rgba (cr, &sigOutCol);
-					cairo_arc (cr, 
-							(j * cellSize) + (cellSize >> 2) + (xChangeMod[loop] >> 1), 
-							(i * cellSize) + (cellSize >> 2) + (yChangeMod[loop] >> 1), 
+					cairo_arc (cr,
+							(j * cellSize) + (cellSize >> 2) + (xChangeMod[loop] >> 1),
+							(i * cellSize) + (cellSize >> 2) + (yChangeMod[loop] >> 1),
 							(double)cellSize / 8.5, 0, 2 * G_PI);
 					cairo_stroke (cr);
 
@@ -1060,7 +1081,7 @@ static void stopAllTrains (GtkWidget *widget, gpointer data)
 	{
 		trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
 		if (train -> curSpeed > 0)
-		{		
+		{
 			trainSetSpeed (trackCtrl, train, -1);
 			train -> reverse = train -> remoteReverse = 0;
 			train -> curSpeed = train -> remoteCurSpeed = 0;
@@ -1084,6 +1105,8 @@ static void stopAllTrains (GtkWidget *widget, gpointer data)
  */
 static void programTrain (GtkWidget *widget, gpointer data)
 {
+	#define SPINCOUNT 6
+
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
 	static char *controlLables[] =
@@ -1093,6 +1116,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		"Byte Value (0 - 255)",
 		"Bit number (0 - 7)",
 		"Bit Value (0 - 1)",
+		"ACK Limit (10 - 100)",
 		"Read current value",
 		"Last reply",
 		"None"
@@ -1106,14 +1130,15 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		"+ If bit number is -1 then set the byte value.",
 		NULL
 	};
-	static double defValues[] = { 0.0, 1.0, 0.0, -1.0, 0.0 };
-	static double minValues[] = { 0.0, 1.0, 0.0, -1.0, 0.0 };
-	static double maxValues[] = { 10294.0, 1025.0, 256.0, 8.0, 2.0 };
+	static double defValues[SPINCOUNT] = { 0.0, 1.0, 0.0, -1.0, 0.0, 60.0 };
+	static double minValues[SPINCOUNT] = { 0.0, 1.0, 0.0, -1.0, 0.0, 10.0 };
+	static double maxValues[SPINCOUNT] = { 232.0, 1025.0, 256.0, 8.0, 2.0, 101.0 };
 
 	int i = 0;
+	double ackLimit = 60;
 	GtkWidget *contentArea;
-	GtkWidget *spinner[5];
-	GtkAdjustment *adjust[5];
+	GtkWidget *spinner[SPINCOUNT];
+	GtkAdjustment *adjust[SPINCOUNT];
 	GtkEntryBuffer *entryBuffer;
 	GtkWidget *label, *grid, *vbox, *checkButton;
 
@@ -1122,10 +1147,10 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 	if (trackCtrl -> dialogProgram == NULL)
 	{
-	
+
 		if (trainConnectSend (trackCtrl, "<1 PROG>", 8) != 8)
 			return;
-	
+
 		trackCtrl -> dialogProgram = gtk_dialog_new_with_buttons ("Program Train",
 				GTK_WINDOW (trackCtrl -> windowCtrl),
 				GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -1159,7 +1184,7 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 		gtk_box_pack_start (GTK_BOX(vbox), gtk_separator_new (GTK_ORIENTATION_HORIZONTAL), FALSE, FALSE, 3);
 
-		for (i = 0; i < 5; ++i)
+		for (i = 0; i < SPINCOUNT; ++i)
 		{
 			label = gtk_label_new (controlLables[i]);
 			gtk_widget_set_halign (label, GTK_ALIGN_END);
@@ -1188,13 +1213,23 @@ static void programTrain (GtkWidget *widget, gpointer data)
 		gtk_widget_show_all (trackCtrl -> dialogProgram);
 		while (gtk_dialog_run (GTK_DIALOG (trackCtrl -> dialogProgram)) == GTK_RESPONSE_APPLY)
 		{
-			int values[5], allOK = 0;
+			int values[SPINCOUNT], allOK = 0;
 			char sendBuffer[41], msgBuffer[161];
 			gboolean checkRead = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (checkButton));
 
 			sendBuffer[0] = 0;
-			for (i = 0; i < 5; ++i)
+			for (i = 0; i < SPINCOUNT; ++i)
 				values[i] = gtk_spin_button_get_value_as_int (GTK_SPIN_BUTTON(spinner[i]));
+
+			/* Has ACK limit changed */
+			if (values[5] != ackLimit)
+			{
+				ackLimit = values[5];
+				sprintf (sendBuffer, "<D ACK ON><D ACK LIMIT %d>", (int)ackLimit);
+				trainConnectSend (trackCtrl, sendBuffer, strlen (sendBuffer));
+				printf ("Sent: [%s]\n", sendBuffer);
+				sendBuffer[0] = 0;
+			}
 
 			/* Programming track, no train ID */
 			if (values[0] == 0)
@@ -1295,6 +1330,73 @@ static void programTrain (GtkWidget *widget, gpointer data)
 
 /**********************************************************************************************************************
  *                                                                                                                    *
+ *  C H E C K  T H R O T T L E  S T A T E                                                                             *
+ *  =====================================                                                                             *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Check to see if the joystick has been updated by the thread.
+ *  \param trackCtrl Track config.
+ *  \result None.
+ */
+void checkThrottleState (trackCtrlDef *trackCtrl)
+{
+	if (trackCtrl -> powerState == POWER_ON)
+	{
+		int newSpeed = -1, button = 0;
+		trainCtrlDef *train = trackCtrl -> activeTrain;
+
+		if (train != NULL && trackCtrl -> throttles != NULL && trackCtrl -> throttleCount)
+		{
+			pthread_mutex_lock (&trackCtrl -> throttleMutex);
+			if (trackCtrl -> throttles[0].curChanged)
+			{
+				newSpeed = trackCtrl -> throttles[0].curValue;
+				trackCtrl -> throttles[0].curChanged = 0;
+			}
+			if (trackCtrl -> throttles[0].buttonPress)
+			{
+				button = 1;
+				trackCtrl -> throttles[0].buttonPress = 0;
+			}
+			pthread_mutex_unlock (&trackCtrl -> throttleMutex);
+
+			if (newSpeed != -1)
+			{
+				if (train -> curSpeed != newSpeed)
+				{
+					if (trainSetSpeed (trackCtrl, train, newSpeed))
+					{
+						train -> curSpeed = train -> remoteCurSpeed = newSpeed;
+						gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), newSpeed);
+					}
+					else
+					{
+						gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
+					}
+				}
+			}
+			if (button)
+			{
+				char tempBuff[81];
+				int newState = train -> reverse ? 0 : 1;
+
+				train -> reverse = train -> remoteReverse = newState;
+				if (trainSetSpeed (trackCtrl, train, 0))
+				{
+					train -> curSpeed = train -> remoteCurSpeed = 0;
+					gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
+					gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), train -> reverse);
+				}
+				sprintf (tempBuff, "Set reverse %s for train %d", (train -> reverse ? "On" : "Off"), train -> trainNum);
+				gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
+			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
  *  C L O C K  T I C K  C A L L B A C K                                                                               *
  *  ===================================                                                                               *
  *                                                                                                                    *
@@ -1309,6 +1411,7 @@ gboolean clockTickCallback (gpointer data)
 	int i;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
+	checkThrottleState (trackCtrl);
 	if (trackCtrl -> powerState != trackCtrl -> remotePowerState)
 		gtk_switch_set_active (GTK_SWITCH(trackCtrl -> buttonPower), trackCtrl -> remotePowerState == POWER_ON ? TRUE : FALSE);
 
@@ -1337,7 +1440,7 @@ gboolean clockTickCallback (gpointer data)
 				{
 					int funcID = train -> trainFunc[j].funcID;
 					int active = gtk_switch_get_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch)) ? 1 : 0;
-					
+
 					if (active != train -> funcState[funcID])
 					{
 						gtk_switch_set_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch), active ? FALSE : TRUE);
@@ -1483,6 +1586,10 @@ static void activate (GtkApplication *app, gpointer userData)
 
 	if (parseRetn)
 	{
+		if (startThrottleThread (trackCtrl))
+		{
+			trackCtrl -> flags |= TRACK_FLAG_THRT;
+		}
 		if (startConnectThread (trackCtrl))
 		{
 			int screenWidth = trackCtrl -> trainCount * 100;
@@ -1586,6 +1693,18 @@ static void activate (GtkApplication *app, gpointer userData)
 						gtk_widget_set_halign (train -> buttonSlow, GTK_ALIGN_FILL);
 						gtk_grid_attach(GTK_GRID(grid), train -> buttonSlow, i, r++, 1, 1);
 					}
+					if (trackCtrl -> flags & TRACK_FLAG_THRT)
+					{
+						if (i == 0)
+							train -> buttonActive = gtk_radio_button_new_with_mnemonic (NULL, "Active");
+						else
+							train -> buttonActive = gtk_radio_button_new_with_mnemonic_from_widget
+									(GTK_RADIO_BUTTON (trackCtrl -> trainCtrl[0].buttonActive), "Active");
+						g_object_set_data (G_OBJECT(train -> buttonActive), "train", train);
+						g_signal_connect (train -> buttonActive, "clicked", G_CALLBACK (activeTrain), trackCtrl);
+						gtk_widget_set_halign (train -> buttonActive, GTK_ALIGN_FILL);
+						gtk_grid_attach(GTK_GRID(grid), train -> buttonActive, i, r++, 1, 1);
+					}
 
 					train -> checkDir = gtk_check_button_new_with_label ("Reverse");
 					g_object_set_data (G_OBJECT(train -> checkDir), "train", train);
@@ -1623,11 +1742,11 @@ static void activate (GtkApplication *app, gpointer userData)
 			}
 			gtk_widget_show_all (trackCtrl -> windowCtrl);
 			g_timeout_add (100, clockTickCallback, trackCtrl);
-			
+
 			if (trackCtrl -> flags & TRACK_FLAG_SHOW)
 			{
 				displayTrack (trackCtrl -> windowCtrl, trackCtrl);
-			}			
+			}
 		}
 		else
 		{

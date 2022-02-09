@@ -111,7 +111,7 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sC
 				{
 					sscanf ((char *)tempStr, "%d", &turnoutPos);
 					xmlFree (tempStr);
-				}								
+				}
 				if (ident != -1 && channel != -1 && defaultPos != -1 && turnoutPos != -1)
 				{
 					pointCtrl -> pointStates[pFound].ident = ident;
@@ -463,7 +463,6 @@ void updateAllSignals (pointCtrlDef *pointCtrl, int handle)
 	}
 }
 
-
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  C H E C K  R E C V  B U F F E R                                                                                   *
@@ -666,7 +665,7 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 
 	for (i = 0; i < pointCtrl -> pointCount; ++i)
 	{
-		servoInit (&pointCtrl -> pointStates[i].servoState, pointCtrl -> pointStates[i].servoChannel, 
+		servoInit (&pointCtrl -> pointStates[i].servoState, pointCtrl -> pointStates[i].servoChannel,
 				pointCtrl -> pointStates[i].defaultPos);
 	}
 	for (i = 0; i < pointCtrl -> signalCount; ++i)
@@ -682,9 +681,9 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 		}
 		else if (pointCtrl -> signalStates[i].type == 1)
 		{
-			servoInit (&pointCtrl -> signalStates[i].servoState, pointCtrl -> signalStates[i].servoChannel, 
+			servoInit (&pointCtrl -> signalStates[i].servoState, pointCtrl -> signalStates[i].servoChannel,
 					pointCtrl -> signalStates[i].redOut);
-		}		
+		}
 		pointCtrl -> signalStates[i].state = 1;
 	}
 

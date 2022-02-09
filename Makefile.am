@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = dist-bzip2
 bin_PROGRAMS = traincontrol traindaemon pointdaemon traincalc pointtest
-traincontrol_SOURCES = src/trainControl.c src/trainTrack.c src/trainConnect.c src/socketC.c src/trainControl.h src/socketC.h buildDate.h src/train.xpm
+traincontrol_SOURCES = src/trainControl.c src/trainTrack.c src/trainConnect.c src/socketC.c src/trainControl.h src/trainThrottle.c src/socketC.h buildDate.h src/train.xpm
 traincontrol_LDADD = $(DEPS_LIBS) -lpthread
 pointtest_SOURCES = src/pointTest.c src/pca9685.c src/pca9685.h
 pointtest_LDADD = $(DEPS_LIBS) -lpthread $(WIRING_LIBS)

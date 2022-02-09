@@ -47,7 +47,7 @@
 
 -->
 <track name="The Office Line" server="tinyfive.theknight.home" port="28200" point="28201" config="28202" 
-		timeout="5" ipver="3" device="/dev/ttyACM0" flags="1" idleOff="15">
+		timeout="5" ipver="3" device="/dev/ttyACM0" flags="3" idleOff="15">
   <trains count="9">
     <train num="4560" ident="320" slow="20" desc="Black GWR Class 5101 (2-6-2T)">
       <functions count="2">
@@ -91,6 +91,9 @@
     <train num="68035" ident="300" slow="15" desc="Austerity Saddle Tank J94 (0-6-0ST)" />
   </trains>
   <pointServers count="3"/>
+  <throttles count="1">
+    <throttle axis="3" button="10"/>
+  </throttles>
 <!--
 	Cell layout values are made buy adding up the following values:
 
@@ -100,7 +103,7 @@
 	   /  |  \
 	016  008  128
 -->
-  <cells rows="17" cols="16" size="32" pCount="18">
+  <cells rows="17" cols="16" size="36" pCount="18">
     <cellRow row="0">
       <cell col="2" layout="4"/>
       <cell col="3" layout="5"/>
