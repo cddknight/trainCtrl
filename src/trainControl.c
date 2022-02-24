@@ -1413,8 +1413,9 @@ gboolean clockTickCallback (gpointer data)
 
 	checkThrottleState (trackCtrl);
 	if (trackCtrl -> powerState != trackCtrl -> remotePowerState)
+	{
 		gtk_switch_set_active (GTK_SWITCH(trackCtrl -> buttonPower), trackCtrl -> remotePowerState == POWER_ON ? TRUE : FALSE);
-
+	}
 	for (i = 0; i < trackCtrl -> trainCount; ++i)
 	{
 		trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
@@ -1502,6 +1503,11 @@ gboolean clockTickCallback (gpointer data)
 			gtk_widget_queue_draw (trackCtrl -> drawingArea);
 			trackCtrl -> trackRepaint = now;
 		}
+	}
+	if (trackCtrl -> flags & TRACK_FLAG_SHOW && trackCtrl -> serverHandle != -1)
+	{
+		displayTrack (trackCtrl -> windowCtrl, trackCtrl);
+		trackCtrl -> flags &= ~TRACK_FLAG_SHOW;
 	}
 	return TRUE;
 }
@@ -1742,11 +1748,6 @@ static void activate (GtkApplication *app, gpointer userData)
 			}
 			gtk_widget_show_all (trackCtrl -> windowCtrl);
 			g_timeout_add (100, clockTickCallback, trackCtrl);
-
-			if (trackCtrl -> flags & TRACK_FLAG_SHOW)
-			{
-				displayTrack (trackCtrl -> windowCtrl, trackCtrl);
-			}
 		}
 		else
 		{
