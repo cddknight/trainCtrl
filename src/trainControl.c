@@ -401,7 +401,7 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 	}
 	for (i = 0; i < trackCtrl -> throttleCount; ++i)
 	{
-		if (trackCtrl -> throttles[i].trainSelect != NULL)	
+		if (trackCtrl -> throttles[i].trainSelect != NULL)
 			gtk_widget_set_sensitive (trackCtrl -> throttles[i].trainSelect, state);
 	}
 	if (trackCtrl -> buttonProgram != NULL)
@@ -1354,7 +1354,7 @@ void checkThrottleState (trackCtrlDef *trackCtrl)
 			{
 				int newSpeed = -1, button = 0;
 				trainCtrlDef *train = trackCtrl -> throttles[i].activeTrain;
-				
+
 				if (train != NULL)
 				{
 					pthread_mutex_lock (&trackCtrl -> throttleMutex);
@@ -1734,7 +1734,7 @@ static void activate (GtkApplication *app, gpointer userData)
 			if (trackCtrl -> flags & TRACK_FLAG_THRT)
 			{
 				GtkWidget *throttleHBox;
-				
+
 				throttleHBox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
 				gtk_widget_set_halign (throttleHBox, GTK_ALIGN_CENTER);
 				gtk_container_add (GTK_CONTAINER (vbox), throttleHBox);

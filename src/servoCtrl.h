@@ -28,12 +28,12 @@
 #define SERVO_SLEEP		2
 #define SERVO_CHECK		3
 
-#define SERVO_STEP 		5
+#define SERVO_STEP		5
 #define SERVO_WAIT		6
 
-#define PIN_BASE 		300
-#define MAX_PWM 		4096
-#define HERTZ 			50
+#define PIN_BASE		300
+#define MAX_PWM			4096
+#define HERTZ			50
 #define PWM_DELAY		100
 
 typedef struct _servoState

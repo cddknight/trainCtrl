@@ -52,7 +52,6 @@ void *throttleThread (void *param)
 	fd_set readfds;
 	int jsHandle, i;
 
-
 	sprintf (devName, "/dev/input/js%d", trackCtrl -> jStickNumber);
 	if ((jsHandle = open(devName, O_RDONLY)) == -1)
 	{
@@ -89,7 +88,7 @@ void *throttleThread (void *param)
 							int fixVal = event.value + 32767;
 							if (trackCtrl -> throttles[i].zeroHigh)
 								fixVal = 65534 - fixVal;
-								
+
 							fixVal *= 126;
 							fixVal /= 65534;
 

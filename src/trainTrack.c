@@ -262,7 +262,7 @@ void processThrottles (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 			if (strcmp ((char *)curNode->name, "throttle") == 0)
 			{
 				int axis = -1, button = -1, zeroHigh = 0;
-				
+
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"zero")) != NULL)
 				{
 					if (tempStr[0] == 'H')
