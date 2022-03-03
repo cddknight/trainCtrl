@@ -362,8 +362,9 @@ static void slowTrain (GtkWidget *widget, gpointer data)
 static void activeTrain (GtkWidget *widget, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
-	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
-	trackCtrl -> activeTrain = train;
+	throttleDef *throttle = (throttleDef *)g_object_get_data (G_OBJECT(widget), "throttle");
+	int selected = gtk_combo_box_get_active (GTK_COMBO_BOX (throttle -> trainSelect));
+	throttle -> activeTrain = &trackCtrl -> trainCtrl[selected];
 }
 
 /**********************************************************************************************************************
@@ -392,8 +393,6 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 				gtk_widget_set_sensitive (train -> buttonHalt, state);
 			if (train -> buttonSlow != NULL)
 				gtk_widget_set_sensitive (train -> buttonSlow, state);
-			if (train -> buttonActive != NULL)
-				gtk_widget_set_sensitive (train -> buttonActive, state);
 			if (train -> scaleSpeed != NULL)
 				gtk_widget_set_sensitive (train -> scaleSpeed, state);
 			if (train -> checkDir != NULL)
@@ -1343,53 +1342,60 @@ void checkThrottleState (trackCtrlDef *trackCtrl)
 {
 	if (trackCtrl -> powerState == POWER_ON)
 	{
-		int newSpeed = -1, button = 0;
-		trainCtrlDef *train = trackCtrl -> activeTrain;
-
-		if (train != NULL && trackCtrl -> throttles != NULL && trackCtrl -> throttleCount)
+		if (trackCtrl -> throttles != NULL)
 		{
-			pthread_mutex_lock (&trackCtrl -> throttleMutex);
-			if (trackCtrl -> throttles[0].curChanged)
+			int i;
+			for (i = 0; i < trackCtrl -> throttleCount; ++i)
 			{
-				newSpeed = trackCtrl -> throttles[0].curValue;
-				trackCtrl -> throttles[0].curChanged = 0;
-			}
-			if (trackCtrl -> throttles[0].buttonPress)
-			{
-				button = 1;
-				trackCtrl -> throttles[0].buttonPress = 0;
-			}
-			pthread_mutex_unlock (&trackCtrl -> throttleMutex);
-
-			if (newSpeed != -1)
-			{
-				if (train -> curSpeed != newSpeed)
+				int newSpeed = -1, button = 0;
+				trainCtrlDef *train = trackCtrl -> throttles[i].activeTrain;
+				
+				if (train != NULL)
 				{
-					if (trainSetSpeed (trackCtrl, train, newSpeed))
+					pthread_mutex_lock (&trackCtrl -> throttleMutex);
+					if (trackCtrl -> throttles[i].curChanged)
 					{
-						train -> curSpeed = train -> remoteCurSpeed = newSpeed;
-						gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), newSpeed);
+						newSpeed = trackCtrl -> throttles[i].curValue;
+						trackCtrl -> throttles[i].curChanged = 0;
 					}
-					else
+					if (trackCtrl -> throttles[i].buttonPress)
 					{
-						gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
+						button = 1;
+						trackCtrl -> throttles[i].buttonPress = 0;
+					}
+					pthread_mutex_unlock (&trackCtrl -> throttleMutex);
+
+					if (newSpeed != -1)
+					{
+						if (train -> curSpeed != newSpeed)
+						{
+							if (trainSetSpeed (trackCtrl, train, newSpeed))
+							{
+								train -> curSpeed = train -> remoteCurSpeed = newSpeed;
+								gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), newSpeed);
+							}
+							else
+							{
+								gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
+							}
+						}
+					}
+					if (button)
+					{
+						char tempBuff[81];
+						int newState = train -> reverse ? 0 : 1;
+
+						train -> reverse = train -> remoteReverse = newState;
+						if (trainSetSpeed (trackCtrl, train, 0))
+						{
+							train -> curSpeed = train -> remoteCurSpeed = 0;
+							gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
+							gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), train -> reverse);
+						}
+						sprintf (tempBuff, "Set reverse %s for train %d", (train -> reverse ? "On" : "Off"), train -> trainNum);
+						gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
 					}
 				}
-			}
-			if (button)
-			{
-				char tempBuff[81];
-				int newState = train -> reverse ? 0 : 1;
-
-				train -> reverse = train -> remoteReverse = newState;
-				if (trainSetSpeed (trackCtrl, train, 0))
-				{
-					train -> curSpeed = train -> remoteCurSpeed = 0;
-					gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), 0.0);
-					gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (train -> checkDir), train -> reverse);
-				}
-				sprintf (tempBuff, "Set reverse %s for train %d", (train -> reverse ? "On" : "Off"), train -> trainNum);
-				gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, tempBuff);
 			}
 		}
 	}
@@ -1699,19 +1705,6 @@ static void activate (GtkApplication *app, gpointer userData)
 						gtk_widget_set_halign (train -> buttonSlow, GTK_ALIGN_FILL);
 						gtk_grid_attach(GTK_GRID(grid), train -> buttonSlow, i, r++, 1, 1);
 					}
-					if (trackCtrl -> flags & TRACK_FLAG_THRT)
-					{
-						if (i == 0)
-							train -> buttonActive = gtk_radio_button_new_with_mnemonic (NULL, "Active");
-						else
-							train -> buttonActive = gtk_radio_button_new_with_mnemonic_from_widget
-									(GTK_RADIO_BUTTON (trackCtrl -> trainCtrl[0].buttonActive), "Active");
-						g_object_set_data (G_OBJECT(train -> buttonActive), "train", train);
-						g_signal_connect (train -> buttonActive, "clicked", G_CALLBACK (activeTrain), trackCtrl);
-						gtk_widget_set_halign (train -> buttonActive, GTK_ALIGN_FILL);
-						gtk_grid_attach(GTK_GRID(grid), train -> buttonActive, i, r++, 1, 1);
-					}
-
 					train -> checkDir = gtk_check_button_new_with_label ("Reverse");
 					g_object_set_data (G_OBJECT(train -> checkDir), "train", train);
 					g_signal_connect (train -> checkDir, "clicked", G_CALLBACK (reverseTrain), trackCtrl);
@@ -1731,6 +1724,30 @@ static void activate (GtkApplication *app, gpointer userData)
 					gtk_widget_set_halign (train -> scaleSpeed, GTK_ALIGN_CENTER);
 					gtk_grid_attach(GTK_GRID(grid), train -> scaleSpeed, i, r++, 1, 1);
 					gettimeofday(&train -> lastChange, NULL);
+				}
+			}
+			if (trackCtrl -> flags & TRACK_FLAG_THRT)
+			{
+				GtkWidget *throttleHBox;
+				
+				throttleHBox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
+				gtk_widget_set_halign (throttleHBox, GTK_ALIGN_CENTER);
+				gtk_container_add (GTK_CONTAINER (vbox), throttleHBox);
+				for (i = 0; i < trackCtrl -> throttleCount; ++i)
+				{
+					int j;
+					throttleDef *throttle = &trackCtrl -> throttles[i];
+					throttle -> trainSelect = gtk_combo_box_text_new ();
+					for (j = 0; j < trackCtrl -> trainCount; ++j)
+					{
+						trainCtrlDef *train = &trackCtrl -> trainCtrl[j];
+						sprintf (tempBuff, "%d", train -> trainNum);
+						gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (throttle -> trainSelect), tempBuff);
+					}
+					g_object_set_data (G_OBJECT(throttle -> trainSelect), "throttle", throttle);
+					g_signal_connect (throttle -> trainSelect, "changed", G_CALLBACK (activeTrain), trackCtrl);
+					gtk_combo_box_set_active (GTK_COMBO_BOX (throttle -> trainSelect), 0);
+					gtk_container_add (GTK_CONTAINER (throttleHBox), throttle -> trainSelect);
 				}
 			}
 			checkPowerOn (trackCtrl);

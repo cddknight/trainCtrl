@@ -218,10 +218,6 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 								trackCtrl -> trainCtrl[loop].trainNum = num;
 								trackCtrl -> trainCtrl[loop].slowSpeed = slow;
 								strncpy (trackCtrl -> trainCtrl[loop].trainDesc, (char *)descStr, 40);
-								if (loop == 0)
-								{
-									trackCtrl -> activeTrain = &trackCtrl -> trainCtrl[0];
-								}
 								processFunctions (trackCtrl, curNode -> children, &trackCtrl -> trainCtrl[loop]);
 								++loop;
 							}
@@ -251,7 +247,7 @@ void processTrains (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 void processThrottles (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 {
 	int loop = 0;
-	xmlChar *tempStr, *descStr;
+	xmlChar *tempStr;
 	xmlNode *curNode = NULL;
 
 	if ((trackCtrl -> throttles = (throttleDef *)malloc (count * sizeof (throttleDef))) == NULL)
@@ -265,7 +261,14 @@ void processThrottles (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 		{
 			if (strcmp ((char *)curNode->name, "throttle") == 0)
 			{
-				int axis = -1, button = -1;
+				int axis = -1, button = -1, zeroHigh = 0;
+				
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"zero")) != NULL)
+				{
+					if (tempStr[0] == 'H')
+						zeroHigh = 1;
+					xmlFree(tempStr);
+				}
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"axis")) != NULL)
 				{
 					sscanf ((char *)tempStr, "%d", &axis);
@@ -278,6 +281,7 @@ void processThrottles (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 						{
 							trackCtrl -> throttles[loop].axis = axis;
 							trackCtrl -> throttles[loop].button = button;
+							trackCtrl -> throttles[loop].zeroHigh = zeroHigh;
 							++loop;
 						}
 					}
@@ -561,8 +565,15 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "throttles") == 0)
 			{
-				int count = -1;
-				xmlChar *countStr;
+				int count = -1, jsNum = -1;
+				xmlChar *countStr, *jsNumStr;
+				if ((jsNumStr = xmlGetProp(curNode, (const xmlChar*)"num")) != NULL)
+				{
+					sscanf ((char *)jsNumStr, "%d", &jsNum);
+					xmlFree(jsNumStr);
+					if (jsNum >= 0)
+						trackCtrl -> jStickNumber = jsNum;
+				}
 				if ((countStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
 				{
 					sscanf ((char *)countStr, "%d", &count);

@@ -98,11 +98,10 @@ typedef struct _trainCtrl
 	GtkWidget *buttonNum;
 	GtkWidget *buttonHalt;
 	GtkWidget *buttonSlow;
-	GtkWidget *buttonActive;
 	GtkWidget *scaleSpeed;
 	GtkWidget *checkDir;
 #else
-	void *xPointers[6];
+	void *xPointers[5];
 #endif
 }
 trainCtrlDef;
@@ -121,9 +120,16 @@ typedef struct _throttleDef
 {
 	int axis;
 	int button;
+	int zeroHigh;
 	int curValue;
 	int curChanged;
 	int buttonPress;
+	trainCtrlDef *activeTrain;
+#ifdef __GTK_H__
+	GtkWidget *trainSelect;
+#else
+	void *xPointers;
+#endif
 }
 throttleDef;
 
@@ -141,6 +147,7 @@ typedef struct _trackCtrl
 	int ipVersion;
 	int conTimeout;
 	int connectRunning;
+	int jStickNumber;
 	int throttlesRunning;
 	int shownCurrent;
 	int flags;
@@ -148,7 +155,6 @@ typedef struct _trackCtrl
 	char server[81];
 	char trackName[81];
 	char serialDevice[81];
-	trainCtrlDef *activeTrain;
 	time_t trackRepaint;
 	pthread_t connectHandle;
 	pthread_t throttlesHandle;

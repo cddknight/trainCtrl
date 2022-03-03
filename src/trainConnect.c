@@ -132,7 +132,6 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 			/* New style function update */
 			else if (words[0][0] == 'F' && words[0][1] == 0 && wordNum == 4)
 			{
-				int t;
 				int trainID = atoi(words[1]);
 				int funcID = atoi(words[2]);
 				int active = atoi(words[3]);

@@ -45,48 +45,70 @@
  */
 void *throttleThread (void *param)
 {
+	char devName[81];
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)param;
+	struct timeval timeout;
 	struct js_event event;
-	int jsHandle;
+	fd_set readfds;
+	int jsHandle, i;
 
-	if ((jsHandle = open("/dev/input/js0", O_RDONLY)) == -1)
+
+	sprintf (devName, "/dev/input/js%d", trackCtrl -> jStickNumber);
+	if ((jsHandle = open(devName, O_RDONLY)) == -1)
 	{
 		return NULL;
 	}
 
 	while (trackCtrl -> throttlesRunning)
 	{
-		if (read (jsHandle, &event, sizeof(event)) == sizeof(event))
+		timeout.tv_sec = 1;
+		timeout.tv_usec = 0;
+
+		FD_ZERO(&readfds);
+		FD_SET (jsHandle, &readfds);
+
+		if (select(FD_SETSIZE, &readfds, NULL, NULL, &timeout) > 0)
 		{
-/*
-			struct js_event 
+			if (FD_ISSET(jsHandle, &readfds))
 			{
-				__u32 time;     // event timestamp in milliseconds
-				__s16 value;    // value
-				__u8 type;      // event type
-				__u8 number;    // axis/button number
-			};
-*/
-
-			if (event.type == JS_EVENT_AXIS && trackCtrl -> throttles[0].axis == event.number)
-			{
-				int fixVal = event.value + 32767;
-				fixVal *= 126;
-				fixVal /= 65534;
-
-				pthread_mutex_lock (&trackCtrl -> throttleMutex);
-				if (trackCtrl -> throttles[0].curValue != fixVal)
+				if (read (jsHandle, &event, sizeof(event)) == sizeof(event))
 				{
-					trackCtrl -> throttles[0].curValue = fixVal;
-					trackCtrl -> throttles[0].curChanged = 1;
+					/*
+					struct js_event 
+					{
+						__u32 time;     // event timestamp in milliseconds
+						__s16 value;    // value
+						__u8 type;      // event type
+						__u8 number;    // axis/button number
+					};
+					*/
+					for (i = 0; i < trackCtrl -> throttleCount; ++i)
+					{
+						if (event.type == JS_EVENT_AXIS && trackCtrl -> throttles[i].axis == event.number)
+						{
+							int fixVal = event.value + 32767;
+							if (trackCtrl -> throttles[i].zeroHigh)
+								fixVal = 65534 - fixVal;
+								
+							fixVal *= 126;
+							fixVal /= 65534;
+
+							pthread_mutex_lock (&trackCtrl -> throttleMutex);
+							if (trackCtrl -> throttles[i].curValue != fixVal)
+							{
+								trackCtrl -> throttles[i].curValue = fixVal;
+								trackCtrl -> throttles[i].curChanged = 1;
+							}
+							pthread_mutex_unlock (&trackCtrl -> throttleMutex);
+						}
+						if (event.type == JS_EVENT_BUTTON && trackCtrl -> throttles[i].button == event.number && event.value != 0)
+						{
+							pthread_mutex_lock (&trackCtrl -> throttleMutex);
+							trackCtrl -> throttles[i].buttonPress = 1;
+							pthread_mutex_unlock (&trackCtrl -> throttleMutex);
+						}
+					}
 				}
-				pthread_mutex_unlock (&trackCtrl -> throttleMutex);
-			}
-			if (event.type == JS_EVENT_BUTTON && trackCtrl -> throttles[0].button == event.number && event.value != 0)
-			{
-				pthread_mutex_lock (&trackCtrl -> throttleMutex);
-				trackCtrl -> throttles[0].buttonPress = 1;
-				pthread_mutex_unlock (&trackCtrl -> throttleMutex);
 			}
 		}
 	}
@@ -112,7 +134,9 @@ int startThrottleThread (trackCtrlDef *trackCtrl)
 
 	if (trackCtrl -> throttles != NULL && trackCtrl -> throttleCount)
 	{
-		if ((jsHandle = open ("/dev/input/js0", O_RDONLY)) != -1)
+		char devName[81];
+		sprintf (devName, "/dev/input/js%d", trackCtrl -> jStickNumber);
+		if ((jsHandle = open(devName, O_RDONLY)) != -1)
 		{
 			retn = 1;
 			close (jsHandle);
@@ -126,11 +150,14 @@ int startThrottleThread (trackCtrlDef *trackCtrl)
 				printf ("startThrottleThread: create failed\n");
 				retn = 0;
 			}
+			else
+			{
+				printf ("startThrottleThread: %s\n", devName);
+			}
 		}
 		else
 			printf ("startThrottleThread: js open failed\n");
 	}
-	printf ("startThrottleThread: %d\n", retn);
 	return retn;
 }
 

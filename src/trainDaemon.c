@@ -917,7 +917,7 @@ void receiveNetwork (int handle, char *buffer, int len)
  */
 int loadConfigFile ()
 {
-	int retn = 0, t;
+	int retn = 0;
 	struct stat statbuf;
 
 	if (stat (xmlConfigFile, &statbuf) == 0)
@@ -969,7 +969,7 @@ void sendConfigFile (int newSocket)
  */
 void sendAllFunctions (int handle)
 {
-	int t, i, j;
+	int t, j;
 	char tempBuff[81];
 	if (trackCtrl.trainCtrl != NULL)
 	{
