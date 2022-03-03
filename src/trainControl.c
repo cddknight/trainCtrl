@@ -399,6 +399,11 @@ void checkPowerOn (trackCtrlDef *trackCtrl)
 				gtk_widget_set_sensitive (train -> checkDir, state);
 		}
 	}
+	for (i = 0; i < trackCtrl -> throttleCount; ++i)
+	{
+		if (trackCtrl -> throttles[i].trainSelect != NULL)	
+			gtk_widget_set_sensitive (trackCtrl -> throttles[i].trainSelect, state);
+	}
 	if (trackCtrl -> buttonProgram != NULL)
 		gtk_widget_set_sensitive (trackCtrl -> buttonProgram, state);
 
