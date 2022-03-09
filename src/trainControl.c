@@ -1733,14 +1733,17 @@ static void activate (GtkApplication *app, gpointer userData)
 			}
 			if (trackCtrl -> flags & TRACK_FLAG_THRT)
 			{
-				GtkWidget *throttleHBox;
-
-				throttleHBox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
+				GtkWidget *throttleHBox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
 				gtk_widget_set_halign (throttleHBox, GTK_ALIGN_CENTER);
+				gtk_container_add (GTK_CONTAINER (throttleHBox), gtk_label_new ("Train throttle:"));
 				gtk_container_add (GTK_CONTAINER (vbox), throttleHBox);
 				for (i = 0; i < trackCtrl -> throttleCount; ++i)
 				{
 					int j;
+					
+					sprintf (tempBuff, " T%d ", i + 1);
+					gtk_container_add (GTK_CONTAINER (throttleHBox), gtk_label_new (tempBuff));
+
 					throttleDef *throttle = &trackCtrl -> throttles[i];
 					throttle -> trainSelect = gtk_combo_box_text_new ();
 					for (j = 0; j < trackCtrl -> trainCount; ++j)
