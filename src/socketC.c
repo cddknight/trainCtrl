@@ -51,8 +51,9 @@ int ServerSocketSetup (int port)
 	int on = 1, mSocket = socket (AF_INET6, SOCK_STREAM, 0);
 
 	if (!SocketValid (mSocket))
+	{
 		return -1;
-
+	}
 	if (setsockopt (mSocket, SOL_SOCKET, SO_REUSEADDR, (const char*)&on, sizeof (on)) == -1)
 	{
 		close (mSocket);
@@ -93,8 +94,9 @@ int ServerSocketFile (char *fileName)
 	struct sockaddr_un mAddress;
 
 	if (!SocketValid (mSocket))
+	{
 		return -1;
-
+	}
 	mAddress.sun_family = AF_UNIX;
 	strcpy (mAddress.sun_path, fileName);
 	unlink (mAddress.sun_path);
@@ -137,10 +139,13 @@ int ServerSocketAccept (int socket, char *address)
 	FD_ZERO (&fdset);
 	FD_SET (socket, &fdset);
 	if (select (FD_SETSIZE, &fdset, NULL, NULL, &timeout) < 1)
+	{
 		return -1;
-
+	}
 	if (!FD_ISSET(socket, &fdset))
+	{
 		return -1;
+	}
 
 	clientSocket = accept (socket, NULL, NULL);
 	if (clientSocket != -1)
@@ -151,7 +156,9 @@ int ServerSocketAccept (int socket, char *address)
 
 		getpeername (clientSocket, (struct sockaddr *)&clientaddr, &addrlen);
 		if (inet_ntop (AF_INET6, &clientaddr.sin6_addr, str, sizeof(str)))
+		{
 			strcpy (address, str);
+		}
 	}
 	return clientSocket;
 }
@@ -173,8 +180,9 @@ int ConnectSocketFile (char *fileName)
 	int len, mSocket = socket(AF_UNIX, SOCK_STREAM, 0);
 
 	if (!SocketValid (mSocket))
+	{
 		return -1;
-
+	}
 	mAddress.sun_family = AF_UNIX;
 	strcpy(mAddress.sun_path, fileName);
 	len = strlen(mAddress.sun_path) + sizeof(mAddress.sun_family);
@@ -247,7 +255,7 @@ int TimedConnect (int socket, int secs, struct sockaddr *addr, int addrSize)
  *  \param host Host address to connecto to.
  *  \param port Host port to connect to.
  *  \param timeout Seconds to wait for the connect.
- *  \param useIPVer What version of addressing to use IPv4 or IPv6.
+ *  \param useIPVer What IP version to use.
  *  \param retnAddr Optional (can be NULL) pointer to return used address.
  *  \result Handle of socket or -1 if failed.
  */
@@ -279,12 +287,15 @@ int ConnectClientSocket (char *host, int port, int timeout, int useIPVer, char *
 					{
 						struct sockaddr_in *address4 = (struct sockaddr_in *)res -> ai_addr;
 						if (retnAddr != NULL)
+						{
 							inet_ntop (AF_INET, &(address4->sin_addr), retnAddr, INET_ADDRSTRLEN);
-
+						}
 						address4 -> sin_port = htons (port);
 
 						if (TimedConnect (mSocket, timeout, (struct sockaddr *)address4, sizeof (struct sockaddr_in)) == 0)
+						{
 							connected = 1;
+						}
 					}
 				}
 				break;
@@ -296,12 +307,15 @@ int ConnectClientSocket (char *host, int port, int timeout, int useIPVer, char *
 					{
 						struct sockaddr_in6 *address6 = (struct sockaddr_in6 *)res -> ai_addr;
 						if (retnAddr != NULL)
+						{
 							inet_ntop(AF_INET6, &(address6->sin6_addr), retnAddr, INET6_ADDRSTRLEN);
-
+						}
 						address6 -> sin6_port = htons (port);
 
 						if (TimedConnect (mSocket, timeout, (struct sockaddr *)address6, sizeof (struct sockaddr_in6)) == 0)
+						{
 							connected = 1;
+						}
 					}
 				}
 				break;
@@ -338,10 +352,13 @@ void setNonBlocking (int socket, int set)
 		if (opts >= 0)
 		{
 			if (set)
+			{
 				opts = (opts | O_NONBLOCK);
+			}
 			else
+			{
 				opts = (opts & ~O_NONBLOCK);
-
+			}
 			fcntl(socket, F_SETFL, opts);
 		}
 	}
@@ -384,8 +401,9 @@ int WaitRecvSocket (int socket, char *buffer, int size, int secs)
 	int retn = WaitSocket (socket, secs);
 
 	if (retn == 1)
+	{
 		retn = RecvSocket (socket, buffer, size);
-
+	}
 	return retn;
 }
 
@@ -481,7 +499,7 @@ int SocketValid (int socket)
  *  \brief Convert and addess to an IP address with a lookup.
  *  \param name Name to look up.
  *  \param address Out out the address here.
- *  \param useIPVer What version of addressing to use IPv4 or IPv6.
+ *  \param useIPVer What IP version to use.
  *  \result 1 if address resolved.
  */
 int GetAddressFromName (char *name, char *address, int useIPVer)
@@ -509,7 +527,9 @@ int GetAddressFromName (char *name, char *address, int useIPVer)
 				{
 					struct sockaddr_in *address4 = (struct sockaddr_in *)res -> ai_addr;
 					if (inet_ntop (AF_INET, &(address4->sin_addr), address, INET_ADDRSTRLEN) != NULL)
+					{
 						retn = 1;
+					}
 				}
 				break;
 
@@ -518,7 +538,9 @@ int GetAddressFromName (char *name, char *address, int useIPVer)
 				{
 					struct sockaddr_in6 *address6 = (struct sockaddr_in6 *)res -> ai_addr;
 					if (inet_ntop(AF_INET6, &(address6->sin6_addr), address, INET6_ADDRSTRLEN) != NULL)
+					{
 						retn = 1;
+					}
 				}
 				break;
 			}

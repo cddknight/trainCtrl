@@ -261,12 +261,17 @@ void processThrottles (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 		{
 			if (strcmp ((char *)curNode->name, "throttle") == 0)
 			{
-				int axis = -1, button = -1, zeroHigh = 0;
+				int axis = -1, button = -1, train = -1, zeroHigh = 0;
 
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"zero")) != NULL)
 				{
 					if (tempStr[0] == 'H')
 						zeroHigh = 1;
+					xmlFree(tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"train")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &train);
 					xmlFree(tempStr);
 				}
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"axis")) != NULL)
@@ -281,6 +286,7 @@ void processThrottles (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 						{
 							trackCtrl -> throttles[loop].axis = axis;
 							trackCtrl -> throttles[loop].button = button;
+							trackCtrl -> throttles[loop].defTrain = train;
 							trackCtrl -> throttles[loop].zeroHigh = zeroHigh;
 							++loop;
 						}

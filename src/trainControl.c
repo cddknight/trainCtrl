@@ -1731,8 +1731,10 @@ static void activate (GtkApplication *app, gpointer userData)
 					gettimeofday(&train -> lastChange, NULL);
 				}
 			}
-			if (trackCtrl -> flags & TRACK_FLAG_THRT)
+			if (trackCtrl -> flags & TRACK_FLAG_THRT && trackCtrl -> trainCount > 0)
 			{
+				int trainNum = 0;
+				trainCtrlDef *train = &trackCtrl -> trainCtrl[0];
 				GtkWidget *throttleHBox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
 				gtk_widget_set_halign (throttleHBox, GTK_ALIGN_CENTER);
 				gtk_container_add (GTK_CONTAINER (throttleHBox), gtk_label_new ("Train throttle:"));
@@ -1740,7 +1742,11 @@ static void activate (GtkApplication *app, gpointer userData)
 				for (i = 0; i < trackCtrl -> throttleCount; ++i)
 				{
 					int j;
-					
+					if (i < trackCtrl -> trainCount)
+					{
+						trainNum = i;
+						train = &trackCtrl -> trainCtrl[i];
+					}
 					sprintf (tempBuff, " T%d ", i + 1);
 					gtk_container_add (GTK_CONTAINER (throttleHBox), gtk_label_new (tempBuff));
 
@@ -1748,13 +1754,20 @@ static void activate (GtkApplication *app, gpointer userData)
 					throttle -> trainSelect = gtk_combo_box_text_new ();
 					for (j = 0; j < trackCtrl -> trainCount; ++j)
 					{
-						trainCtrlDef *train = &trackCtrl -> trainCtrl[j];
-						sprintf (tempBuff, "%d", train -> trainNum);
+						if (throttle -> defTrain != -1)
+						{
+							if (trackCtrl -> trainCtrl[j].trainNum == throttle -> defTrain)
+							{
+								trainNum = j;
+								train = &trackCtrl -> trainCtrl[j];
+							}
+						}
+						sprintf (tempBuff, "%d", trackCtrl -> trainCtrl[j].trainNum);
 						gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (throttle -> trainSelect), tempBuff);
 					}
 					g_object_set_data (G_OBJECT(throttle -> trainSelect), "throttle", throttle);
 					g_signal_connect (throttle -> trainSelect, "changed", G_CALLBACK (activeTrain), trackCtrl);
-					gtk_combo_box_set_active (GTK_COMBO_BOX (throttle -> trainSelect), 0);
+					gtk_combo_box_set_active (GTK_COMBO_BOX (throttle -> trainSelect), trainNum);
 					gtk_container_add (GTK_CONTAINER (throttleHBox), throttle -> trainSelect);
 				}
 			}

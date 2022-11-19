@@ -120,6 +120,7 @@ typedef struct _throttleDef
 {
 	int axis;
 	int button;
+	int defTrain;
 	int zeroHigh;
 	int curValue;
 	int curChanged;
