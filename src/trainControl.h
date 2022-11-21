@@ -125,7 +125,9 @@ typedef struct _throttleDef
 	int curValue;
 	int curChanged;
 	int buttonPress;
+	struct timeval lastChange;
 	trainCtrlDef *activeTrain;
+
 #ifdef __GTK_H__
 	GtkWidget *trainSelect;
 #else

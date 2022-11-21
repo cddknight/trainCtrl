@@ -119,7 +119,7 @@ long diffTime (struct timeval *start, struct timeval *end)
 long diffTimeToNow (struct timeval *start)
 {
 	struct timeval now;
-	gettimeofday(&now, NULL);
+	gettimeofday (&now, NULL);
 	return diffTime (start, &now);
 }
 
@@ -495,7 +495,7 @@ static void moveTrain (GtkWidget *widget, gpointer data)
 		int newValue = (int)value;
 		if (trainSetSpeed (trackCtrl, train, newValue))
 		{
-			gettimeofday(&train -> lastChange, NULL);
+			gettimeofday (&train -> lastChange, NULL);
 			train -> curSpeed = train -> remoteCurSpeed = newValue;
 		}
 		else
@@ -1353,20 +1353,25 @@ void checkThrottleState (trackCtrlDef *trackCtrl)
 			for (i = 0; i < trackCtrl -> throttleCount; ++i)
 			{
 				int newSpeed = -1, button = 0;
-				trainCtrlDef *train = trackCtrl -> throttles[i].activeTrain;
+				throttleDef *throttle = &trackCtrl -> throttles[i];
+				trainCtrlDef *train = throttle -> activeTrain;
 
 				if (train != NULL)
 				{
 					pthread_mutex_lock (&trackCtrl -> throttleMutex);
-					if (trackCtrl -> throttles[i].curChanged)
+					if (throttle -> curChanged)
 					{
-						newSpeed = trackCtrl -> throttles[i].curValue;
-						trackCtrl -> throttles[i].curChanged = 0;
+						if (diffTimeToNow (&throttle -> lastChange) > 750)
+						{
+							gettimeofday (&throttle -> lastChange, NULL);
+							newSpeed = throttle -> curValue;
+							throttle -> curChanged = 0;
+						}
 					}
-					if (trackCtrl -> throttles[i].buttonPress)
+					if (throttle -> buttonPress)
 					{
 						button = 1;
-						trackCtrl -> throttles[i].buttonPress = 0;
+						throttle -> buttonPress = 0;
 					}
 					pthread_mutex_unlock (&trackCtrl -> throttleMutex);
 
@@ -1727,8 +1732,8 @@ static void activate (GtkApplication *app, gpointer userData)
 						gtk_scale_add_mark (GTK_SCALE(train -> scaleSpeed), j, GTK_POS_LEFT, NULL);
 
 					gtk_widget_set_halign (train -> scaleSpeed, GTK_ALIGN_CENTER);
-					gtk_grid_attach(GTK_GRID(grid), train -> scaleSpeed, i, r++, 1, 1);
-					gettimeofday(&train -> lastChange, NULL);
+					gtk_grid_attach (GTK_GRID(grid), train -> scaleSpeed, i, r++, 1, 1);
+					gettimeofday (&train -> lastChange, NULL);
 				}
 			}
 			if (trackCtrl -> flags & TRACK_FLAG_THRT && trackCtrl -> trainCount > 0)
