@@ -149,10 +149,6 @@ int startThrottleThread (trackCtrlDef *trackCtrl)
 				printf ("startThrottleThread: create failed\n");
 				retn = 0;
 			}
-			else
-			{
-				printf ("startThrottleThread: %s\n", devName);
-			}
 		}
 		else
 			printf ("startThrottleThread: js open failed\n");
