@@ -63,6 +63,8 @@ static GActionEntry appEntries[] =
 static GdkPixbuf *defaultIcon;
 #include "train.xpm"
 
+#define UPDATE_HOLD	500
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  D I F F  T I M E                                                                                                  *
@@ -485,18 +487,16 @@ static gboolean trackPower (GtkWidget *widget, GParamSpec *pspec, gpointer data)
  */
 static void moveTrain (GtkWidget *widget, gpointer data)
 {
-	double value = 0.0;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 	trainCtrlDef *train = (trainCtrlDef *)g_object_get_data (G_OBJECT(widget), "train");
 
-	value = gtk_range_get_value (GTK_RANGE (train -> scaleSpeed));
-	if (train -> curSpeed != (int)value)
+	int value = (int)gtk_range_get_value (GTK_RANGE (train -> scaleSpeed));
+	if (train -> curSpeed != value)
 	{
-		int newValue = (int)value;
-		if (trainSetSpeed (trackCtrl, train, newValue))
+		if (trainSetSpeed (trackCtrl, train, value))
 		{
 			gettimeofday (&train -> lastChange, NULL);
-			train -> curSpeed = train -> remoteCurSpeed = newValue;
+			train -> curSpeed = train -> remoteCurSpeed = value;
 		}
 		else
 		{
@@ -1361,7 +1361,7 @@ void checkThrottleState (trackCtrlDef *trackCtrl)
 					pthread_mutex_lock (&trackCtrl -> throttleMutex);
 					if (throttle -> curChanged)
 					{
-						if (diffTimeToNow (&throttle -> lastChange) > 750)
+						if (diffTimeToNow (&throttle -> lastChange) > UPDATE_HOLD)
 						{
 							gettimeofday (&throttle -> lastChange, NULL);
 							newSpeed = throttle -> curValue;
@@ -1437,7 +1437,7 @@ gboolean clockTickCallback (gpointer data)
 		trainCtrlDef *train = &trackCtrl -> trainCtrl[i];
 		if (train -> curSpeed != train -> remoteCurSpeed)
 		{
-			if (diffTimeToNow (&train -> lastChange) > 750)
+			if (diffTimeToNow (&train -> lastChange) > UPDATE_HOLD)
 			{
 				train -> curSpeed = train -> remoteCurSpeed;
 				gtk_range_set_value (GTK_RANGE (train -> scaleSpeed), (double)train -> curSpeed);
