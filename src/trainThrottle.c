@@ -29,7 +29,6 @@
 #include <linux/joystick.h>
 
 #include "config.h"
-#include "buildDate.h"
 #include "trainControl.h"
 
 /**********************************************************************************************************************

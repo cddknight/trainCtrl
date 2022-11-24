@@ -1739,7 +1739,6 @@ static void activate (GtkApplication *app, gpointer userData)
 			if (trackCtrl -> flags & TRACK_FLAG_THRT && trackCtrl -> trainCount > 0)
 			{
 				int trainNum = 0;
-				trainCtrlDef *train = &trackCtrl -> trainCtrl[0];
 				GtkWidget *throttleHBox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
 				gtk_widget_set_halign (throttleHBox, GTK_ALIGN_CENTER);
 				gtk_container_add (GTK_CONTAINER (throttleHBox), gtk_label_new ("Train throttle:"));
@@ -1750,7 +1749,6 @@ static void activate (GtkApplication *app, gpointer userData)
 					if (i < trackCtrl -> trainCount)
 					{
 						trainNum = i;
-						train = &trackCtrl -> trainCtrl[i];
 					}
 					sprintf (tempBuff, " T%d ", i + 1);
 					gtk_container_add (GTK_CONTAINER (throttleHBox), gtk_label_new (tempBuff));
@@ -1764,7 +1762,6 @@ static void activate (GtkApplication *app, gpointer userData)
 							if (trackCtrl -> trainCtrl[j].trainNum == throttle -> defTrain)
 							{
 								trainNum = j;
-								train = &trackCtrl -> trainCtrl[j];
 							}
 						}
 						sprintf (tempBuff, "%d", trackCtrl -> trainCtrl[j].trainNum);
@@ -1863,8 +1860,8 @@ static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer 
 
 	gtk_show_about_dialog (GTK_WINDOW (NULL),
 			"program-name", "Train Control",
-			"version", g_strdup_printf ("Version: %s\nBuilt: %s %s",
-				 VERSION, buildDate, buildTime),
+			"version", g_strdup_printf ("Version: %s\nBuilt: %s",
+				 VERSION, buildDate),
 			"copyright", "Copyright © 2018 - 2022 TheKnight",
 			"license-type", GTK_LICENSE_LGPL_2_1,
 			"website", "http://www.theknight.co.uk",
