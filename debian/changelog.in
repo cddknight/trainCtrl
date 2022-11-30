@@ -1,7 +1,7 @@
 @PACKAGE@ (@VERSION@-@REVISION@) stable; urgency=low
 
-  * First build of a true .deb file.
+  * Continued developments.
   
   - Bug fixing.
 
- -- Chris Knight (Developer) <chris@theknight.co.uk>  Fri, 30 Nov 2018 14:30:00 +0000
+ -- Chris Knight (Developer) <chris@theknight.co.uk>  Wed, 30 Nov 2022 12:34:56 +0000
