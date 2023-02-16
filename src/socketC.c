@@ -289,6 +289,7 @@ int ConnectClientSocket (char *host, int port, int timeout, int useIPVer, char *
 						if (retnAddr != NULL)
 						{
 							inet_ntop (AF_INET, &(address4->sin_addr), retnAddr, INET_ADDRSTRLEN);
+							printf ("Trying addr4: %s\n", retnAddr);
 						}
 						address4 -> sin_port = htons (port);
 
@@ -309,6 +310,7 @@ int ConnectClientSocket (char *host, int port, int timeout, int useIPVer, char *
 						if (retnAddr != NULL)
 						{
 							inet_ntop(AF_INET6, &(address6->sin6_addr), retnAddr, INET6_ADDRSTRLEN);
+							printf ("Trying addr6: %s\n", retnAddr);
 						}
 						address6 -> sin6_port = htons (port);
 
