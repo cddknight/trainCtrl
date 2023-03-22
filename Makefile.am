@@ -19,3 +19,7 @@ Configdir = /etc/train
 Config_DATA = trackrc.xml track.xml points.xml
 systemddir = /etc/systemd/system
 systemd_DATA = system/pointdaemon.service system/traindaemon.service
+BUILT_SOURCES = buildDate.h
+CLEANFILES = buildDate.h
+buildDate.h:
+	setBuildDate -c
