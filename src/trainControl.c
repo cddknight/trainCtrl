@@ -65,6 +65,7 @@ static GdkPixbuf *defaultIcon;
 #include "train.xpm"
 
 #define UPDATE_HOLD	500
+#define BUTTON_HOLD	500
 
 /**********************************************************************************************************************
  *                                                                                                                    *
@@ -1371,7 +1372,11 @@ void checkThrottleState (trackCtrlDef *trackCtrl)
 					}
 					if (throttle -> buttonPress)
 					{
-						button = 1;
+						if (diffTimeToNow (&throttle -> lastButton) > BUTTON_HOLD)
+						{
+							gettimeofday (&throttle -> lastButton, NULL);
+							button = 1;
+						}
 						throttle -> buttonPress = 0;
 					}
 					pthread_mutex_unlock (&trackCtrl -> throttleMutex);
