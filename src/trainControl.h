@@ -152,7 +152,6 @@ typedef struct _trackCtrl
 	int ipVersion;
 	int conTimeout;
 	int connectRunning;
-	int jStickNumber;
 	int throttlesRunning;
 	int shownCurrent;
 	int flags;
@@ -160,6 +159,7 @@ typedef struct _trackCtrl
 	char server[81];
 	char trackName[81];
 	char serialDevice[81];
+	char throttleName[81];
 	time_t trackRepaint;
 	pthread_t connectHandle;
 	pthread_t throttlesHandle;

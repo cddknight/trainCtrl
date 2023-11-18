@@ -27,7 +27,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <linux/joystick.h>
+#include <libevdev-1.0/libevdev/libevdev.h>
+
+//#include <linux/joystick.h>
 
 #include "config.h"
 #include "trainControl.h"
@@ -45,20 +47,25 @@
  */
 void *throttleThread (void *param)
 {
-	char devName[81];
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)param;
+	struct libevdev *dev = NULL;
 	struct timeval timeout;
-	struct js_event event;
+	char openDev[256];
 	fd_set readfds;
-	int jsHandle, i;
-
-	sprintf (devName, "/dev/input/js%d", trackCtrl -> jStickNumber);
-	if ((jsHandle = open(devName, O_RDONLY)) == -1)
+	int jsHandle, rc;
+	
+	sprintf (openDev, "/dev/input/by-id/usb-%s-event-joystick", trackCtrl -> throttleName);
+	if ((jsHandle = open (openDev, O_RDONLY|O_NONBLOCK)) != -1)
+	{
+		rc = libevdev_new_from_fd(jsHandle, &dev);
+	}
+	if (jsHandle == -1 || rc < 0)
 	{
 		return NULL;
 	}
+	trackCtrl -> throttlesRunning = 1;
 
-	while (trackCtrl -> throttlesRunning)
+	do 
 	{
 		timeout.tv_sec = 1;
 		timeout.tv_usec = 0;
@@ -70,28 +77,27 @@ void *throttleThread (void *param)
 		{
 			if (FD_ISSET(jsHandle, &readfds))
 			{
-				if (read (jsHandle, &event, sizeof(event)) == sizeof(event))
+				struct input_event event;
+				rc = libevdev_next_event(dev, LIBEVDEV_READ_FLAG_NORMAL, &event);
+				if (rc == 0)
 				{
-					/*
-					struct js_event 
-					{
-						__u32 time;     // event timestamp in milliseconds
-						__s16 value;    // value
-						__u8 type;      // event type
-						__u8 number;    // axis/button number
-					};
-					*/
+					int i;
+					
+/*					printf("Event: Type(%d):%s Code(%d):%s Value(%d): %s\n",
+							event.type, libevdev_event_type_get_name(event.type),
+							event.code, libevdev_event_code_get_name(event.type, event.code),
+							event.value, libevdev_event_value_get_name(event.type, event.code, event.value));
+*/								
 					for (i = 0; i < trackCtrl -> throttleCount; ++i)
 					{
-						if (event.type == JS_EVENT_AXIS && trackCtrl -> throttles[i].axis == event.number)
+						if (event.type == 3 && trackCtrl -> throttles[i].axis == event.code)
 						{
-							int fixVal = event.value + 32767;
+							int fixVal = (event.value * 126 / 255);
+							
 							if (trackCtrl -> throttles[i].zeroHigh)
-								fixVal = 65534 - fixVal;
-
-							fixVal *= 126;
-							fixVal /= 65534;
-
+							{
+								fixVal = 126 - fixVal;
+							}
 							pthread_mutex_lock (&trackCtrl -> throttleMutex);
 							if (trackCtrl -> throttles[i].curValue != fixVal)
 							{
@@ -100,7 +106,7 @@ void *throttleThread (void *param)
 							}
 							pthread_mutex_unlock (&trackCtrl -> throttleMutex);
 						}
-						if (event.type == JS_EVENT_BUTTON && trackCtrl -> throttles[i].button == event.number && event.value != 0)
+						if (event.type == 1 && trackCtrl -> throttles[i].button == event.code && event.value != 0)
 						{
 							pthread_mutex_lock (&trackCtrl -> throttleMutex);
 							trackCtrl -> throttles[i].buttonPress = 1;
@@ -111,7 +117,9 @@ void *throttleThread (void *param)
 			}
 		}
 	}
+	while ((rc == 1 || rc == 0 || rc == -11) && trackCtrl -> throttlesRunning);
 
+	trackCtrl -> throttlesRunning = 0;
 	close (jsHandle);
 	return NULL;
 }
@@ -133,25 +141,14 @@ int startThrottleThread (trackCtrlDef *trackCtrl)
 
 	if (trackCtrl -> throttles != NULL && trackCtrl -> throttleCount)
 	{
-		char devName[81];
-		sprintf (devName, "/dev/input/js%d", trackCtrl -> jStickNumber);
-		if ((jsHandle = open(devName, O_RDONLY)) != -1)
+		if (pthread_create (&trackCtrl -> throttlesHandle, NULL, throttleThread, trackCtrl) != 0)
 		{
-			retn = 1;
-			close (jsHandle);
-		}
-		if (retn == 1)
-		{
-			trackCtrl -> throttlesRunning = 1;
-			if (pthread_create (&trackCtrl -> throttlesHandle, NULL, throttleThread, trackCtrl) != 0)
-			{
-				trackCtrl -> throttlesRunning = 0;
-				printf ("startThrottleThread: create failed\n");
-				retn = 0;
-			}
+			trackCtrl -> throttlesRunning = 0;
+			printf ("startThrottleThread: create failed\n");
+			retn = 0;
 		}
 		else
-			printf ("startThrottleThread: js open failed\n");
+			retn = 1;
 	}
 	return retn;
 }

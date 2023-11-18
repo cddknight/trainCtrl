@@ -573,13 +573,12 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 			else if (level == 1 && strcmp ((char *)curNode->name, "throttles") == 0)
 			{
 				int count = -1, jsNum = -1;
-				xmlChar *countStr, *jsNumStr;
-				if ((jsNumStr = xmlGetProp(curNode, (const xmlChar*)"num")) != NULL)
+				xmlChar *countStr, *jsNameStr;
+				if ((jsNameStr = xmlGetProp(curNode, (const xmlChar*)"name")) != NULL)
 				{
-					sscanf ((char *)jsNumStr, "%d", &jsNum);
-					xmlFree(jsNumStr);
-					if (jsNum >= 0)
-						trackCtrl -> jStickNumber = jsNum;
+					strncpy (trackCtrl -> throttleName, jsNameStr, 80);
+					trackCtrl -> throttleName[80] = 0;
+					xmlFree(jsNameStr);
 				}
 				if ((countStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
 				{
