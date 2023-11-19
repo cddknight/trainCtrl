@@ -572,11 +572,11 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "throttles") == 0)
 			{
-				int count = -1, jsNum = -1;
+				int count = -1;
 				xmlChar *countStr, *jsNameStr;
 				if ((jsNameStr = xmlGetProp(curNode, (const xmlChar*)"name")) != NULL)
 				{
-					strncpy (trackCtrl -> throttleName, jsNameStr, 80);
+					strncpy (trackCtrl -> throttleName, (char *)jsNameStr, 80);
 					trackCtrl -> throttleName[80] = 0;
 					xmlFree(jsNameStr);
 				}

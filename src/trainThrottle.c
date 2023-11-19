@@ -137,7 +137,7 @@ void *throttleThread (void *param)
  */
 int startThrottleThread (trackCtrlDef *trackCtrl)
 {
-	int jsHandle, retn = 0;
+	int retn = 0;
 
 	if (trackCtrl -> throttles != NULL && trackCtrl -> throttleCount)
 	{
