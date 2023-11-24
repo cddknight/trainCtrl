@@ -44,6 +44,7 @@ static const GdkRGBA sigRedCol = { 0.9, 0.0, 0.0, 1.0 };
 static const GdkRGBA sigGrnCol = { 0.0, 0.9, 0.0, 1.0 };
 static const GdkRGBA sigOffCol = { 0.2, 0.2, 0.2, 1.0 };
 static const GdkRGBA sigOutCol = { 0.8, 0.8, 0.8, 1.0 };
+static const GdkRGBA trkBckCol = { 0.2, 0.2, 0.2, 1.0 };
 static const double xChange[8] = { 0, 1, 2, 1, 0, 0, 2, 2 };
 static const double yChange[8] = { 1, 0, 1, 2, 2, 0, 0, 2 };
 
@@ -577,6 +578,11 @@ gboolean drawTrackCallback (GtkWidget *widget, cairo_t *cr, gpointer data)
 
 	cairo_save (cr);
 	gtk_render_background (context, cr, 0, 0, width, height);
+	gdk_cairo_set_source_rgba (cr, &trkBckCol);
+	cairo_rectangle (cr, 0, 0, width, height);
+	cairo_fill (cr);
+	cairo_stroke (cr);
+
 	gdk_cairo_set_source_rgba (cr, &blackCol);
 	cairo_set_line_width (cr, 1.0);
 
@@ -1433,6 +1439,23 @@ gboolean clockTickCallback (gpointer data)
 	int i;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
+	if (trackCtrl -> serverHandle == -1)
+	{
+		if (trackCtrl -> connected == 1)
+		{
+			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
+			trackCtrl -> connected = 0;
+		}
+	}
+	else
+	{
+		if (trackCtrl -> connected == 0)
+		{
+			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, "Train control connected");
+			trackCtrl -> connected = 1;
+		}
+	}
+
 	checkThrottleState (trackCtrl);
 	if (trackCtrl -> powerState != trackCtrl -> remotePowerState)
 	{
@@ -1549,6 +1572,7 @@ gboolean clockTickCallback (gpointer data)
 static void windowDestroy (GtkWidget *window, gpointer userData)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)userData;
+	trackCtrl -> connected = 2;
 	stopConnectThread (trackCtrl);
 }
 
@@ -1787,10 +1811,12 @@ static void activate (GtkApplication *app, gpointer userData)
 			if (trackCtrl -> serverHandle == -1)
 			{
 				gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
+				trackCtrl -> connected = 0;
 			}
 			else
 			{
 				gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, "Train control connected");
+				trackCtrl -> connected = 1;
 			}
 			gtk_widget_show_all (trackCtrl -> windowCtrl);
 			g_timeout_add (100, clockTickCallback, trackCtrl);

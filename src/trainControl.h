@@ -140,6 +140,7 @@ throttleDef;
 
 typedef struct _trackCtrl
 {
+	int connected;
 	int powerState;
 	int trainCount;
 	int pServerCount;
