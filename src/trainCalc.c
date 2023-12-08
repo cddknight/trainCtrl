@@ -43,6 +43,7 @@ void helpThem ()
 	printf ("    -d . . . DC operation.\n");
 	printf ("    -a . . . Railcom.\n");
 	printf ("    -c . . . Complex speed curve.\n");
+	printf ("    -o . . . Other CVs to set.\n");
 }
 
 /**********************************************************************************************************************
@@ -77,7 +78,7 @@ int main (int argc, char *argv[])
 {
 	int i, trainID = 3, cv29 = 0, done = 0;
 
-	while ((i = getopt(argc, argv, "rsdac")) != -1)
+	while ((i = getopt(argc, argv, "rsdaco")) != -1)
 	{
 		switch (i)
 		{
@@ -96,6 +97,15 @@ int main (int argc, char *argv[])
 		case 'c':
 			cv29 |= 16;
 			break;
+		case 'o':
+			printf ("My setup for Steam Locos:\n");
+			printf ("CV 03: %3d (0x%02X)\n"
+				"CV 04: %3d (0x%02X)\n"
+				"CV 05: %3d (0x%02X)\n"
+				"CV 06: %3d (0x%02X)\n"
+				"CV 61: %3d (0x%02X)\n",
+					20, 20, 24, 24, 188, 188, 60, 60, 1, 1);
+			return 0;
 		case '?':
 			helpThem();
 			exit (1);
