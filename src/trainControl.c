@@ -1888,7 +1888,7 @@ static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer 
 			"program-name", "Train Control",
 			"version", g_strdup_printf ("Version: %s\nBuilt: %s",
 				 VERSION, buildDate),
-			"copyright", "Copyright © 2018 - 2023 TheKnight",
+			"copyright", "Copyright © 2018 - 2024 TheKnight",
 			"license-type", GTK_LICENSE_LGPL_2_1,
 			"website", "http://www.theknight.co.uk",
 			"comments", "Program to control trains with DCC++.",
