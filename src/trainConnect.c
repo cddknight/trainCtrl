@@ -176,6 +176,14 @@ void checkRecvBuffer (trackCtrlDef *trackCtrl, char *buffer, int len)
 				updateSignalState (trackCtrl, server, signal, state);
 				++queueDraw;
 			}
+			/* Relay change update */
+			else if (words[0][0] == 'w' && words[0][1] == 0 && wordNum == 4)
+			{
+				int server = atoi (words[1]);
+				int relay = atoi (words[2]);
+				int state = atoi (words[3]);
+				updateRelayState (trackCtrl, server, relay, state);
+			}
 			inType = 0;
 			wordNum = -1;
 			j = 0;

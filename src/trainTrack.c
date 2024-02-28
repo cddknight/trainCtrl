@@ -299,6 +299,19 @@ void processThrottles (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 	trackCtrl -> throttleCount = loop;
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  P R O C E S S  R E L A Y S                                                                                        *
+ *  ==========================                                                                                        *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Process any relay config.
+ *  \param trackCtrl Pointer to track config.
+ *  \param inNode Current node.
+ *  \param count Number of relays to expect.
+ *  \result None.
+ */
 void processRelays (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 {
 	int loop = 0;
@@ -634,6 +647,20 @@ void parseTree(trackCtrlDef *trackCtrl, xmlNode *inNode, int level)
 					{
 						processThrottles (trackCtrl, curNode -> children, count);
 						pthread_mutex_init (&trackCtrl -> throttleMutex, NULL);
+					}
+				}
+			}
+			else if (level == 1 && strcmp ((char *)curNode->name, "relays") == 0)
+			{
+				int count = -1;
+				xmlChar *countStr;
+				if ((countStr = xmlGetProp(curNode, (const xmlChar*)"count")) != NULL)
+				{
+					sscanf ((char *)countStr, "%d", &count);
+					xmlFree(countStr);
+					if (count > 0)
+					{
+						processRelays (trackCtrl, curNode -> children, count);
 					}
 				}
 			}

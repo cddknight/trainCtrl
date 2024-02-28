@@ -64,6 +64,7 @@ pthread_mutex_t priorityMutex;
  *  \param inNode Current node under this you will find the points.
  *  \param pCount Number of points to expect.
  *  \param sCount Number od signals to expect.
+ *  \param rCount Number of relays to expect.
  *  \result None.
  */
 void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sCount, int rCount)
@@ -446,6 +447,21 @@ void updateSignal (pointCtrlDef *pointCtrl, int handle, int server, int signal, 
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  U P D A T E  R E L A Y                                                                                            *
+ *  ======================                                                                                            *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Actually switch the relay on or off.
+ *  \param pointCtrl Pointer to point control structure.
+ *  \param handle Handle of the socket.
+ *  \param server Which server is this for.
+ *  \param relay Which relay is this for.
+ *  \param state What state should it be set to.
+ *  \result None.
+ */
 void updateRelay (pointCtrlDef *pointCtrl, int handle, int server, int relay, int state)
 {
 	if (server == pointCtrl -> clientID)
@@ -457,9 +473,8 @@ void updateRelay (pointCtrlDef *pointCtrl, int handle, int server, int relay, in
 			{
 				char tempBuff[81];
 
-				// TODO: Update the state
-
 				pointCtrl -> relayStates[i].state = state;
+				digitalWrite (pointCtrl -> relayStates[i].pinOut, state ? HIGH : LOW);
 				sprintf (tempBuff, "<w %d %d %d>", server, signal, state);
 				SendSocket (handle, tempBuff, strlen (tempBuff));
 				break;
@@ -520,6 +535,18 @@ void updateAllSignals (pointCtrlDef *pointCtrl, int handle)
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  U P D A T E  A L L  R E L A Y S                                                                                   *
+ *  ===============================                                                                                   *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Sent out an update for all relays.
+ *  \param pointCtrl Pointer to point control structure.
+ *  \param handle Handle of the socket.
+ *  \result None.
+ */
 void updateAllRelays (pointCtrlDef *pointCtrl, int handle)
 {
 	int i;
@@ -736,10 +763,10 @@ void *checkPointsState (void *pointPtr)
  */
 int pointControlSetup (pointCtrlDef *pointCtrl)
 {
-	int i;
+	int i, piSetup = 0;
 
 	if (pointCtrl -> pointCount || pointCtrl -> signalCount)
-	{
+	{	
 #ifdef HAVE_WIRINGPI_H
 		wiringPiSetup();
 		if ((servoFD = pca9685Setup(PIN_BASE, 0x40, HERTZ)) < 0)
@@ -748,6 +775,7 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 			return 0;
 		}
 		pca9685PWMReset (servoFD);
+		piSetup = 1;
 #endif
 
 		for (i = 0; i < pointCtrl -> pointCount; ++i)
@@ -774,6 +802,19 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 			pointCtrl -> signalStates[i].state = 1;
 		}
 	}
+	if (pointCtrl -> relayCount)
+	{
+#ifdef HAVE_WIRINGPI_H
+		if (!piSetup)
+			wiringPiSetup();
+
+		for (i = 0; i < pointCtrl -> relayCount; ++i)
+		{
+			pinMode (pointCtrl -> relayStates[i].pinOut, OUTPUT);
+		}
+#endif
+	}
+
 	pthread_mutex_init (&priorityMutex, NULL);
 	if (pthread_create (&threadHandle, NULL, checkPointsState, pointCtrl) != 0)
 	{

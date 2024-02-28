@@ -98,10 +98,10 @@
     <throttle axis="2" button="8" zero="H"/>
   </throttles>
 -->
-  <relays>
+  <relays count="2">
     <relay server="4" ident="1" desc="Farm house" />
     <relay server="4" ident="2" desc="Farm sun" />
-  <relays>
+  </relays>
 <!--
 	Cell layout values are made buy adding up the following values:
 

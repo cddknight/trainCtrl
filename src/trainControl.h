@@ -219,6 +219,7 @@ trackCtrlDef;
 
 void updatePointPosn (trackCtrlDef *trackCtrl, int server, int point, int state);
 void updateSignalState (trackCtrlDef *trackCtrl, int server, int signal, int state);
+void updateRelayState (trackCtrlDef *trackCtrl, int server, int relay, int state);
 int parseMemoryXML (trackCtrlDef *trackCtrl, char *buffer);
 int parseTrackXML (trackCtrlDef *trackCtrl, const char *fileName, int level);
 int startConnectThread (trackCtrlDef *trackCtrl);

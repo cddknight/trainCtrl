@@ -182,6 +182,18 @@ static void sendButtonFunc (GtkWidget *widget, gpointer data)
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  S E N D  B U T T O N  R E L A Y                                                                                   *
+ *  ===============================                                                                                   *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Button clicked so send out an update.
+ *  \param widget Which button clicked.
+ *  \param data Not used.
+ *  \result None.
+ */
 static void sendButtonRelay (GtkWidget *widget, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)g_object_get_data (G_OBJECT(widget), "track");
@@ -192,7 +204,9 @@ static void sendButtonRelay (GtkWidget *widget, gpointer data)
 
 	if (active != trackCtrl -> relays[index].active)
 	{
-//		toggleRelay (trackCtrl, relayID, active);
+		char tempBuff[81];
+		sprintf (tempBuff, "<W %d %d %d>", trackCtrl -> relays[index].server, relayID, active);
+		trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff));
 	}
 }
 
@@ -853,6 +867,18 @@ static void closeTrack (GtkWidget *widget, gpointer data)
 	trackCtrl -> windowTrack = NULL;
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  C L O S E  R E L A Y S                                                                                            *
+ *  ======================                                                                                            *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Close the relays window.
+ *  \param widget Window being closed.
+ *  \param data Not used.
+ *  \result None.
+ */
 static void closeRelays (GtkWidget *widget, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
@@ -908,6 +934,18 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 	}
 }
 
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  D I S P L A Y  R E L A Y S                                                                                        *
+ *  ==========================                                                                                        *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief Display a window with the switches for the relays.
+ *  \param widget Parent window.
+ *  \param data Pointer to trackCtrl.
+ *  \result None.
+ */
 static void displayRelays (GtkWidget *widget, gpointer data)
 {
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
@@ -935,7 +973,7 @@ static void displayRelays (GtkWidget *widget, gpointer data)
 		gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
 		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
 		gtk_widget_set_valign (vbox, GTK_ALIGN_FILL);
-		gtk_container_add (GTK_CONTAINER (trackCtrl -> windowFunctions), vbox);
+		gtk_container_add (GTK_CONTAINER (trackCtrl -> windowRelays), vbox);
 
 		grid = gtk_grid_new();
 		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
@@ -1032,6 +1070,34 @@ void updateSignalState (trackCtrlDef *trackCtrl, int server, int signal, int sta
 					gtk_widget_queue_draw (trackCtrl -> drawingArea);
 				break;
 			}
+		}
+	}
+}
+
+/**********************************************************************************************************************
+ *                                                                                                                    *
+ *  U P D A T E  R E L A Y  S T A T E                                                                                 *
+ *  =================================                                                                                 *
+ *                                                                                                                    *
+ **********************************************************************************************************************/
+/**
+ *  \brief If another client has updated the state it is updated here.
+ *  \param trackCtrl pointer to the track config.
+ *  \param server Pointer server sending the update.
+ *  \param relay Relay to update.
+ *  \param state New relay state.
+ *  \result None.
+ */
+void updateRelayState (trackCtrlDef *trackCtrl, int server, int relay, int state)
+{
+	int i;
+
+	for (i = 0; i < trackCtrl -> relayCount; ++i)
+	{
+		relayDef *relayPtr = &trackCtrl -> relays[i];
+		if (relayPtr -> server == server && relayPtr -> ident == relay)
+		{
+			relayPtr -> active = state;
 		}
 	}
 }
@@ -1561,6 +1627,21 @@ gboolean clockTickCallback (gpointer data)
 					if (active != train -> funcState[funcID])
 					{
 						gtk_switch_set_active (GTK_SWITCH (train -> trainFunc[j].funcSwitch), active ? FALSE : TRUE);
+					}
+				}
+			}
+		}
+		if (trackCtrl -> windowRelays != NULL)
+		{
+			int j;
+			for (j = 0; j < trackCtrl -> relayCount; ++j)
+			{
+				if (trackCtrl -> relays[j].relaySwitch != NULL)
+				{
+					int active = gtk_switch_get_active (GTK_SWITCH (trackCtrl -> relays[j].relaySwitch)) ? 1 : 0;
+					if (active != trackCtrl -> relays[j].active)
+					{
+						gtk_switch_set_active (GTK_SWITCH (trackCtrl -> relays[j].relaySwitch), active ? FALSE : TRUE);
 					}
 				}
 			}
