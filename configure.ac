@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 #
 AC_PREREQ([2.69])
-AC_INIT([traincontrol],[1.9],[chris@theknight.co.uk])
+AC_INIT([traincontrol],[1.10],[chris@theknight.co.uk])
 AM_INIT_AUTOMAKE([subdir-objects])
 AC_CONFIG_SRCDIR([src/trainControl.c])
 AC_CONFIG_HEADERS([config.h])
