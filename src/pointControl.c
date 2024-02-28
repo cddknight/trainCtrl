@@ -66,9 +66,9 @@ pthread_mutex_t priorityMutex;
  *  \param sCount Number od signals to expect.
  *  \result None.
  */
-void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sCount)
+void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sCount, int rCount)
 {
-	int pFound = 0, sFound = 0;
+	int pFound = 0, sFound = 0, rFound = 0;
 	xmlChar *tempStr;
 	xmlNode *curNode = NULL;
 
@@ -83,6 +83,12 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sC
 		if ((pointCtrl -> signalStates = (signalStateDef *)malloc (sCount * sizeof (signalStateDef))) == NULL)
 			return;
 		memset (pointCtrl -> signalStates, 0, sCount * sizeof (signalStateDef));
+	}
+	if (rCount > 0)
+	{
+		if ((pointCtrl -> relayStates = (relayStateDef *)malloc (rCount * sizeof (relayStateDef))) == NULL)
+			return;
+		memset (pointCtrl -> relayStates, 0, rCount * sizeof (relayStateDef));
 	}
 
 	for (curNode = inNode; curNode; curNode = curNode->next)
@@ -174,10 +180,33 @@ void processPoints (pointCtrlDef *pointCtrl, xmlNode *inNode, int pCount, int sC
 					++sFound;
 				}
 			}
+			else if (strcmp ((char *)curNode->name, "relay") == 0 && rFound < rCount)
+			{
+				int ident = -1, pinOut = -1;
+
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &ident);
+					xmlFree (tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"pinout")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &pinOut);
+					xmlFree (tempStr);
+				}
+				if (ident != -1 && pinOut != -1)
+				{
+					pointCtrl -> relayStates[rFound].ident = ident;
+					pointCtrl -> relayStates[rFound].pinOut = pinOut;
+					pointCtrl -> relayStates[rFound].state = 0;
+					++rFound;
+				}
+			}
 		}
 	}
 	pointCtrl -> pointCount = pFound;
 	pointCtrl -> signalCount = sFound;
+	pointCtrl -> relayCount = rCount;
 }
 
 /**********************************************************************************************************************
@@ -234,7 +263,7 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 			}
 			else if (level == 1 && strcmp ((char *)curNode->name, "pointDaemon") == 0)
 			{
-				int readIdent = -1, pointCount = 0, signalCount = 0;
+				int readIdent = -1, pointCount = 0, signalCount = 0, relayCount = 0;
 
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
 				{
@@ -251,6 +280,11 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 					sscanf ((char *)tempStr, "%d", &signalCount);
 					xmlFree (tempStr);
 				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"rCount")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &relayCount);
+					xmlFree (tempStr);
+				}
 				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"client")) != NULL)
 				{
 					strncpy (clientName, (char *)tempStr, 40);
@@ -259,7 +293,7 @@ void parseTree(pointCtrlDef *pointCtrl, xmlNode *inNode, int level)
 				if (readIdent == pointCtrl -> clientID)
 				{
 					strncpy (pointCtrl -> clientName, clientName, 41);
-					processPoints (pointCtrl, curNode -> children, pointCount, signalCount);
+					processPoints (pointCtrl, curNode -> children, pointCount, signalCount, relayCount);
 				}
 			}
 		}
@@ -412,6 +446,28 @@ void updateSignal (pointCtrlDef *pointCtrl, int handle, int server, int signal, 
 	}
 }
 
+void updateRelay (pointCtrlDef *pointCtrl, int handle, int server, int relay, int state)
+{
+	if (server == pointCtrl -> clientID)
+	{
+		int i;
+		for (i = 0; i < pointCtrl -> relayCount; ++i)
+		{
+			if (pointCtrl -> relayStates[i].ident == relay)
+			{
+				char tempBuff[81];
+
+				// TODO: Update the state
+
+				pointCtrl -> relayStates[i].state = state;
+				sprintf (tempBuff, "<w %d %d %d>", server, signal, state);
+				SendSocket (handle, tempBuff, strlen (tempBuff));
+				break;
+			}
+		}
+	}
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  U P D A T E  A L L  P O I N T S                                                                                   *
@@ -460,6 +516,20 @@ void updateAllSignals (pointCtrlDef *pointCtrl, int handle)
 		sprintf (tempBuff, "<x %d %d %d>", pointCtrl -> clientID,
 				pointCtrl -> signalStates[i].ident,
 				pointCtrl -> signalStates[i].state);
+		SendSocket (handle, tempBuff, strlen (tempBuff));
+	}
+}
+
+void updateAllRelays (pointCtrlDef *pointCtrl, int handle)
+{
+	int i;
+	char tempBuff[81];
+
+	for (i = 0; i < pointCtrl -> relayCount; ++i)
+	{
+		sprintf (tempBuff, "<w %d %d %d>", pointCtrl -> clientID,
+				pointCtrl -> relayStates[i].ident,
+				pointCtrl -> relayStates[i].state);
 		SendSocket (handle, tempBuff, strlen (tempBuff));
 	}
 }
@@ -553,6 +623,20 @@ void checkRecvBuffer (pointCtrlDef *pointCtrl, int handle, char *buffer, int len
 				else
 				{
 					updateAllSignals (pointCtrl, handle);
+				}
+			}
+			else if (words[0][0] == 'W' && words[0][1] == 0)
+			{
+				if (wordNum == 4)
+				{
+					int server = atoi (words[1]);
+					int relay = atoi (words[2]);
+					int state = atoi (words[3]);
+					updateRelay (pointCtrl, handle, server, relay, state);
+				}
+				else
+				{
+					updateAllRelays (pointCtrl, handle);
 				}
 			}
 			inType = 0;
@@ -654,40 +738,42 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 {
 	int i;
 
-#ifdef HAVE_WIRINGPI_H
-	wiringPiSetup();
-	if ((servoFD = pca9685Setup(PIN_BASE, 0x40, HERTZ)) < 0)
+	if (pointCtrl -> pointCount || pointCtrl -> signalCount)
 	{
-		putLogMessage (LOG_ERR, "Error setting up point control");
-		return 0;
-	}
-	pca9685PWMReset (servoFD);
+#ifdef HAVE_WIRINGPI_H
+		wiringPiSetup();
+		if ((servoFD = pca9685Setup(PIN_BASE, 0x40, HERTZ)) < 0)
+		{
+			putLogMessage (LOG_ERR, "Error setting up point control");
+			return 0;
+		}
+		pca9685PWMReset (servoFD);
 #endif
 
-	for (i = 0; i < pointCtrl -> pointCount; ++i)
-	{
-		servoInit (&pointCtrl -> pointStates[i].servoState, pointCtrl -> pointStates[i].servoChannel,
-				pointCtrl -> pointStates[i].defaultPos);
-	}
-	for (i = 0; i < pointCtrl -> signalCount; ++i)
-	{
-		if (pointCtrl -> signalStates[i].type == 0)
+		for (i = 0; i < pointCtrl -> pointCount; ++i)
 		{
+			servoInit (&pointCtrl -> pointStates[i].servoState, pointCtrl -> pointStates[i].servoChannel,
+					pointCtrl -> pointStates[i].defaultPos);
+		}
+		for (i = 0; i < pointCtrl -> signalCount; ++i)
+		{
+			if (pointCtrl -> signalStates[i].type == 0)
+			{
 #ifdef HAVE_WIRINGPI_H
-			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
-			delay (PWM_DELAY);
-			pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
-			delay (PWM_DELAY);
+				pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelRed, pointCtrl -> signalStates[i].redOut);
+				delay (PWM_DELAY);
+				pwmWrite (PIN_BASE + pointCtrl -> signalStates[i].channelGreen, 0);
+				delay (PWM_DELAY);
 #endif
+			}
+			else if (pointCtrl -> signalStates[i].type == 1)
+			{
+				servoInit (&pointCtrl -> signalStates[i].servoState, pointCtrl -> signalStates[i].servoChannel,
+						pointCtrl -> signalStates[i].redOut);
+			}
+			pointCtrl -> signalStates[i].state = 1;
 		}
-		else if (pointCtrl -> signalStates[i].type == 1)
-		{
-			servoInit (&pointCtrl -> signalStates[i].servoState, pointCtrl -> signalStates[i].servoChannel,
-					pointCtrl -> signalStates[i].redOut);
-		}
-		pointCtrl -> signalStates[i].state = 1;
 	}
-
 	pthread_mutex_init (&priorityMutex, NULL);
 	if (pthread_create (&threadHandle, NULL, checkPointsState, pointCtrl) != 0)
 	{

@@ -299,6 +299,52 @@ void processThrottles (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
 	trackCtrl -> throttleCount = loop;
 }
 
+void processRelays (trackCtrlDef *trackCtrl, xmlNode *inNode, int count)
+{
+	int loop = 0;
+	xmlChar *tempStr, *descStr;
+	xmlNode *curNode = NULL;
+
+	if ((trackCtrl -> relays = (relayDef *)malloc (count * sizeof (relayDef))) == NULL)
+		return;
+
+	memset (trackCtrl -> relays, 0, count * sizeof (relayDef));
+
+	for (curNode = inNode; curNode && loop < count; curNode = curNode->next)
+	{
+		if (curNode->type == XML_ELEMENT_NODE)
+		{
+			if (strcmp ((char *)curNode->name, "relay") == 0)
+			{
+				int server = -1, ident = -1;
+
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"server")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &server);
+					xmlFree(tempStr);
+				}
+				if ((tempStr = xmlGetProp(curNode, (const xmlChar*)"ident")) != NULL)
+				{
+					sscanf ((char *)tempStr, "%d", &ident);
+					xmlFree(tempStr);
+				}
+				if ((descStr = xmlGetProp(curNode, (const xmlChar*)"desc")) != NULL)
+				{
+					if (server != -1 && ident != -1 && loop < count)
+					{
+						trackCtrl -> relays[loop].server = server;
+						trackCtrl -> relays[loop].ident = ident;
+						strncpy (trackCtrl -> relays[loop].relayDesc, (char *)descStr, 40);
+						++loop;
+					}
+					xmlFree(descStr);
+				}
+			}
+		}
+	}
+	trackCtrl -> relayCount = loop;
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  P R O C E S S  C E L L                                                                                            *

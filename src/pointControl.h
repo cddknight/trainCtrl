@@ -46,6 +46,14 @@ typedef struct _signalState
 }
 signalStateDef;
 
+typedef struct _relayState
+{
+	int ident;
+	int pinOut;
+	int state;
+}
+relayStateDef;
+
 typedef struct _pointCtrl
 {
 	int clientID;
@@ -54,10 +62,12 @@ typedef struct _pointCtrl
 	int ipVersion;
 	int pointCount;
 	int signalCount;
+	int relayCount;
 	char clientName[41];
 	char serverName[81];
 	pointStateDef *pointStates;
 	signalStateDef *signalStates;
+	relayStateDef *relayStates;
 }
 pointCtrlDef;
 

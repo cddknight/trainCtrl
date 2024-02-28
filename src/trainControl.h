@@ -138,6 +138,20 @@ typedef struct _throttleDef
 }
 throttleDef;
 
+typedef struct _relayDef
+{
+	int server;
+	int ident;
+	int active;
+	char relayDesc[41];
+#ifdef __GTK_H__
+	GtkWidget *relaySwitch;
+#else
+	void *xPointer;
+#endif
+}
+relayDef;
+
 typedef struct _trackCtrl
 {
 	int connected;
@@ -145,6 +159,7 @@ typedef struct _trackCtrl
 	int trainCount;
 	int pServerCount;
 	int throttleCount;
+	int relayCount;
 	int serverHandle;
 	int serverSession;
 	int serverPort;
@@ -175,28 +190,29 @@ typedef struct _trackCtrl
 	trainCtrlDef *trainCtrl;
 	pointCtrlDef *pointCtrl;
 	throttleDef *throttles;
+	relayDef *relays;
 	trackLayoutDef *trackLayout;
 
 #ifdef __GTK_H__
 	GtkWidget *windowCtrl;				//  1
 	GtkWidget *windowTrack;				//  2
-	GtkWidget *windowFunctions;			//  3
-	GtkWidget *dialogProgram;			//  4
-	GtkWidget *connectionDialog;		//  5
-	GtkWidget *labelPower;				//  6
-	GtkWidget *buttonPower;				//  7
-	GtkWidget *buttonTrack;				//  8
-	GtkWidget *buttonConnection;		//  9
-	GtkWidget *buttonProgram;			// 10
-	GtkWidget *entryProgram;			// 11
-	GtkWidget *drawingArea;				// 12
-	GtkWidget *statusBar;				// 13
-	GtkWidget *funcSpinner;				// 14
-	GtkWidget *funcLabel;				// 15
+	GtkWidget *windowRelays;			//	3
+	GtkWidget *windowFunctions;			//  4
+	GtkWidget *dialogProgram;			//  5
+	GtkWidget *connectionDialog;		//  6
+	GtkWidget *labelPower;				//  7
+	GtkWidget *buttonPower;				//  8
+	GtkWidget *buttonTrack;				//  9
+	GtkWidget *buttonRelays;			// 10
+	GtkWidget *buttonConnection;		// 11
+	GtkWidget *buttonProgram;			// 12
+	GtkWidget *entryProgram;			// 13
+	GtkWidget *drawingArea;				// 14
+	GtkWidget *statusBar;				// 15
 	GtkWidget *buttonStopAll;			// 16
-	GtkWidget *connectionLabels[8];		// 22
+	GtkWidget *connectionLabels[8];		// 16 + 8 = 24
 #else
-	void *xPointers[22];
+	void *xPointers[24];
 #endif
 }
 trackCtrlDef;

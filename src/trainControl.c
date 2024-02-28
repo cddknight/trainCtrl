@@ -182,6 +182,20 @@ static void sendButtonFunc (GtkWidget *widget, gpointer data)
 	}
 }
 
+static void sendButtonRelay (GtkWidget *widget, gpointer data)
+{
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)g_object_get_data (G_OBJECT(widget), "track");
+	long index = (long)g_object_get_data (G_OBJECT(widget), "index");
+
+	int relayID = trackCtrl -> relays[index].ident;
+	int active = gtk_switch_get_active (GTK_SWITCH (widget)) ? 1 : 0;
+
+	if (active != trackCtrl -> relays[index].active)
+	{
+//		toggleRelay (trackCtrl, relayID, active);
+	}
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  C L O S E  F U N C T I O N S                                                                                      *
@@ -208,7 +222,6 @@ static void closeFunctions (GtkWidget *widget, gpointer data)
 		}
 	}
 	trackCtrl -> windowFunctions = NULL;
-	trackCtrl -> funcSpinner = NULL;
 }
 
 /**********************************************************************************************************************
@@ -840,6 +853,12 @@ static void closeTrack (GtkWidget *widget, gpointer data)
 	trackCtrl -> windowTrack = NULL;
 }
 
+static void closeRelays (GtkWidget *widget, gpointer data)
+{
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+	trackCtrl -> windowRelays = NULL;
+}
+
 /**********************************************************************************************************************
  *                                                                                                                    *
  *  D I S P L A Y  T R A C K                                                                                          *
@@ -886,6 +905,64 @@ static void displayTrack (GtkWidget *widget, gpointer data)
 	else
 	{
 		gtk_window_present_with_time (GTK_WINDOW (trackCtrl -> windowTrack), time(NULL));
+	}
+}
+
+static void displayRelays (GtkWidget *widget, gpointer data)
+{
+	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
+	if (!checkConnected (trackCtrl))
+		return;
+
+	if (trackCtrl -> windowRelays == NULL && trackCtrl -> relayCount)
+	{
+		long i;
+		int row = 0;
+		char tempBuff[81];
+		GtkWidget *label, *grid, *vbox, *button;
+
+		trackCtrl -> windowRelays = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+		gtk_window_set_title (GTK_WINDOW (trackCtrl -> windowRelays), "Relay Control");
+		if (!gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowRelays),
+				"/usr/share/pixmaps/traincontrol.svg", NULL))
+		{
+			gtk_window_set_icon_from_file (GTK_WINDOW (trackCtrl -> windowRelays),
+					"/usr/share/pixmaps/traincontrol.png", NULL);
+		}
+		g_signal_connect (G_OBJECT (trackCtrl -> windowRelays), "destroy", G_CALLBACK (closeRelays), trackCtrl);
+
+		vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+		gtk_container_set_border_width (GTK_CONTAINER(vbox), 10);
+		gtk_widget_set_halign (vbox, GTK_ALIGN_FILL);
+		gtk_widget_set_valign (vbox, GTK_ALIGN_FILL);
+		gtk_container_add (GTK_CONTAINER (trackCtrl -> windowFunctions), vbox);
+
+		grid = gtk_grid_new();
+		gtk_widget_set_halign (grid, GTK_ALIGN_FILL);
+		gtk_widget_set_valign (grid, GTK_ALIGN_FILL);
+		gtk_grid_set_row_spacing (GTK_GRID (grid), 5);
+		gtk_grid_set_column_spacing (GTK_GRID (grid), 6);
+		gtk_box_pack_start (GTK_BOX (vbox), grid, TRUE, TRUE, 0);
+
+		for (i = 0; i < trackCtrl -> relayCount; ++i)
+		{
+			sprintf (tempBuff, "%s", trackCtrl -> relays[i].relayDesc);
+			label = gtk_label_new (tempBuff);
+			gtk_widget_set_halign (label, GTK_ALIGN_END);
+			gtk_grid_attach (GTK_GRID(grid), label, 0, row, 1, 1);
+
+			trackCtrl -> relays[i].relaySwitch = button = gtk_switch_new();
+			g_object_set_data (G_OBJECT(button), "track", trackCtrl);
+			g_object_set_data (G_OBJECT(button), "index", (void *)i);
+			gtk_widget_set_halign (button, GTK_ALIGN_START);
+			g_signal_connect (button, "notify::active", G_CALLBACK (sendButtonRelay), trackCtrl);
+			gtk_grid_attach (GTK_GRID(grid), button, 1, row++, 1, 1);
+		}
+		gtk_widget_show_all (trackCtrl -> windowRelays);
+	}
+	else
+	{
+		gtk_window_present_with_time (GTK_WINDOW (trackCtrl -> windowRelays), time(NULL));
 	}
 }
 
@@ -1698,6 +1775,13 @@ static void activate (GtkApplication *app, gpointer userData)
 			gtk_widget_set_halign (trackCtrl -> buttonTrack, GTK_ALIGN_CENTER);
 			gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonTrack);
 
+			if (trackCtrl -> relayCount > 0)
+			{
+				trackCtrl -> buttonRelays = gtk_button_new_with_mnemonic ("_Relays");
+				g_signal_connect (trackCtrl -> buttonRelays, "clicked", G_CALLBACK (displayRelays), trackCtrl);
+				gtk_widget_set_halign (trackCtrl -> buttonRelays, GTK_ALIGN_CENTER);
+				gtk_container_add (GTK_CONTAINER (hbox), trackCtrl -> buttonRelays);
+			}
 			trackCtrl -> buttonProgram = gtk_button_new_with_mnemonic ("_Program");
 			g_signal_connect (trackCtrl -> buttonProgram, "clicked", G_CALLBACK (programTrain), trackCtrl);
 			gtk_widget_set_halign (trackCtrl -> buttonProgram, GTK_ALIGN_CENTER);

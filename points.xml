@@ -21,7 +21,7 @@
 				greenOut - Brightness for green channel.
 -->
 <pointControl server="tinyfive.theknight.home" port="28201" timeout="5" ipver="3">
-  <pointDaemon ident="1" pCount="6" sCount="2" client="tinyeight">
+  <pointDaemon ident="1" pCount="6" sCount="2" rCount="0" client="tinyeight">
     <point ident="2" channel="0" default="240" turnout="212"/>
     <point ident="5" channel="1" default="260" turnout="295"/>
     <point ident="6" channel="2" default="335" turnout="290"/>
@@ -31,7 +31,7 @@
     <signal ident="1" type="0" channelRed="12" channelGreen="13" redOut="250" greenOut="125"/>
     <signal ident="2" type="1" channel="15" redOut="200" greenOut="290"/>
   </pointDaemon>
-  <pointDaemon ident="2" pCount="10" sCount="2" client="tinysix">
+  <pointDaemon ident="2" pCount="10" sCount="2" rCount="0" client="tinysix">
     <point ident="14" channel="11" default="300" turnout="350"/>
     <point ident="15" channel="10" default="290" turnout="320"/>
     <point ident="16" channel="2" default="350" turnout="310"/>
@@ -45,7 +45,7 @@
     <signal ident="3" type="0" channelRed="12" channelGreen="13" redOut="250" greenOut="125"/>
     <signal ident="4" type="1" channel="15" redOut="110" greenOut="170"/>
   </pointDaemon>
-  <pointDaemon ident="3" pCount="7" sCount="0" client="tinyfive">
+  <pointDaemon ident="3" pCount="7" sCount="0" rCount="0" client="tinyfive">
     <point ident="1" channel="0" default="350" turnout="290"/>
     <point ident="3" channel="1" default="255" turnout="215"/>
     <point ident="4" channel="2" default="290" turnout="350"/>
@@ -53,6 +53,10 @@
     <point ident="9" channel="4" default="250" turnout="290"/>
     <point ident="11" channel="5" default="210" turnout="250"/>
     <point ident="13" channel="6" default="270" turnout="220"/>
+  </pointDaemon>
+  <pointDaemon ident="4" pCount="0" sCount="0" rCount="2" client="tinyeleven">
+    <relay ident="1" pinout="6"/>
+    <relay ident="2" pinout="13"/>
   </pointDaemon>
 </pointControl>
 
