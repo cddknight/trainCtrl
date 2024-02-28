@@ -206,6 +206,7 @@ static void sendButtonRelay (GtkWidget *widget, gpointer data)
 	{
 		char tempBuff[81];
 		sprintf (tempBuff, "<W %d %d %d>", trackCtrl -> relays[index].server, relayID, active);
+printf ("Send: %s\n", tempBuff);
 		trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff));
 	}
 }

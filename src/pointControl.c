@@ -474,8 +474,10 @@ void updateRelay (pointCtrlDef *pointCtrl, int handle, int server, int relay, in
 				char tempBuff[81];
 
 				pointCtrl -> relayStates[i].state = state;
+#ifdef HAVE_WIRINGPI_H
 				digitalWrite (pointCtrl -> relayStates[i].pinOut, state ? HIGH : LOW);
-				sprintf (tempBuff, "<w %d %d %d>", server, signal, state);
+#endif
+				sprintf (tempBuff, "<w %d %d %d>", server, relay, state);
 				SendSocket (handle, tempBuff, strlen (tempBuff));
 				break;
 			}

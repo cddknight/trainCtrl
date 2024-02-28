@@ -348,6 +348,7 @@ void getAllPointStates ()
 				{
 					SendSocket (handleInfo[point -> intHandle].handle, "<Y>", 3);
 					SendSocket (handleInfo[point -> intHandle].handle, "<X>", 3);
+					SendSocket (handleInfo[point -> intHandle].handle, "<W>", 3);
 				}
 			}
 		}
