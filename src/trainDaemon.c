@@ -533,7 +533,7 @@ void sendPointServer (int pSvrIdent, int ident, int direc)
  *  \param state State of the signal.
  *  \result None.
  */
-void sendSignalServer (int sSvrIdent, int ident, int state)
+void sendSignalServer (int sSvrIdent, int ident, int state, int type)
 {
 	int p;
 
@@ -549,7 +549,7 @@ void sendSignalServer (int sSvrIdent, int ident, int state)
 					if (handleInfo[pointCtrl -> intHandle].handle != -1)
 					{
 						char tempBuff[81];
-						sprintf (tempBuff, "<X %d %d %d>", sSvrIdent, ident, state);
+						sprintf (tempBuff, "<%c %d %d %d>", type == 0 ? 'X' : 'W', sSvrIdent, ident, state);
 						SendSocket (handleInfo[pointCtrl -> intHandle].handle,
 								tempBuff, strlen (tempBuff));
 						saveSignalState (sSvrIdent, ident, state);
@@ -733,16 +733,16 @@ int checkNetworkRecvBuffer (int handle, char *buffer, int len)
 				retn = 1;
 			}
 			/* Set signal state */
-			else if (words[0][0] == 'X' && words[0][1] == 0 && wordNum == 4)
+			else if ((words[0][0] == 'X' || words[0][0] == 'W') && words[0][1] == 0 && wordNum == 4)
 			{
 				int server = atoi (words[1]);
 				int ident = atoi (words[2]);
 				int state = atoi (words[3]);
-				sendSignalServer (server, ident, state);
+				sendSignalServer (server, ident, state, words[0][0] == 'X' ? 0 : 1);
 				retn = 1;
 			}
 			/* Reply signal server state */
-			else if (words[0][0] == 'x' && words[0][1] == 0 && wordNum == 4)
+			else if ((words[0][0] == 'x' || words[0][0] == 'w') && words[0][1] == 0 && wordNum == 4)
 			{
 				int h;
 				for (h = FIRST_HANDLE; h < MAX_HANDLES; ++h)
