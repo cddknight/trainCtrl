@@ -205,6 +205,7 @@ static void sendButtonRelay (GtkWidget *widget, gpointer data)
 	if (active != trackCtrl -> relays[index].active)
 	{
 		char tempBuff[81];
+		trackCtrl -> relays[index].active = active;
 		sprintf (tempBuff, "<W %d %d %d>", trackCtrl -> relays[index].server, relayID, active);
 		trainConnectSend (trackCtrl, tempBuff, strlen (tempBuff));
 	}
