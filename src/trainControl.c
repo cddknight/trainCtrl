@@ -1516,21 +1516,15 @@ gboolean clockTickCallback (gpointer data)
 	int i;
 	trackCtrlDef *trackCtrl = (trackCtrlDef *)data;
 
-	if (trackCtrl -> serverHandle == -1)
+	if (trackCtrl -> serverHandle == -1 && trackCtrl -> connected == 1)
 	{
-		if (trackCtrl -> connected == 1)
-		{
-			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
-			trackCtrl -> connected = 0;
-		}
+		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, notConnected);
+		trackCtrl -> connected = 0;
 	}
-	else
+	if (trackCtrl -> serverHandle != -1 && trackCtrl -> connected == 0)
 	{
-		if (trackCtrl -> connected == 0)
-		{
-			gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, "Train control connected");
-			trackCtrl -> connected = 1;
-		}
+		gtk_statusbar_push (GTK_STATUSBAR (trackCtrl -> statusBar), 1, "Train control connected");
+		trackCtrl -> connected = 1;
 	}
 
 	checkThrottleState (trackCtrl);
@@ -1978,7 +1972,7 @@ static void aboutCallback (GSimpleAction *action, GVariant *parameter, gpointer 
 			"program-name", "Train Control",
 			"version", g_strdup_printf ("Version: %s\nBuilt: %s",
 				 VERSION, buildDate),
-			"copyright", "Copyright © 2018 - 2023 TheKnight",
+			"copyright", "Copyright © 2018 - 2024 TheKnight",
 			"license-type", GTK_LICENSE_LGPL_2_1,
 			"website", "http://www.theknight.co.uk",
 			"comments", "Program to control trains with DCC++.",
