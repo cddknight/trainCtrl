@@ -532,6 +532,7 @@ void sendPointServer (int pSvrIdent, int ident, int direc)
  *  \param sSvrIdent Identity of the server.
  *  \param ident Identity of the signal.
  *  \param state State of the signal.
+ *  \param type Is the a signal or a relay.
  *  \result None.
  */
 void sendSignalServer (int sSvrIdent, int ident, int state, int type)
