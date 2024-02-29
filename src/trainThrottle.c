@@ -53,7 +53,7 @@ void *throttleThread (void *param)
 	char openDev[256];
 	fd_set readfds;
 	int jsHandle, rc;
-	
+
 	sprintf (openDev, "/dev/input/by-id/usb-%s-event-joystick", trackCtrl -> throttleName);
 	if ((jsHandle = open (openDev, O_RDONLY|O_NONBLOCK)) != -1)
 	{
@@ -65,7 +65,7 @@ void *throttleThread (void *param)
 	}
 	trackCtrl -> throttlesRunning = 1;
 
-	do 
+	do
 	{
 		timeout.tv_sec = 1;
 		timeout.tv_usec = 0;
@@ -82,18 +82,18 @@ void *throttleThread (void *param)
 				if (rc == 0)
 				{
 					int i;
-					
+
 /*					printf("Event: Type(%d):%s Code(%d):%s Value(%d): %s\n",
 							event.type, libevdev_event_type_get_name(event.type),
 							event.code, libevdev_event_code_get_name(event.type, event.code),
 							event.value, libevdev_event_value_get_name(event.type, event.code, event.value));
-*/								
+*/
 					for (i = 0; i < trackCtrl -> throttleCount; ++i)
 					{
 						if (event.type == 3 && trackCtrl -> throttles[i].axis == event.code)
 						{
 							int fixVal = (event.value * 126 / 255);
-							
+
 							if (trackCtrl -> throttles[i].zeroHigh)
 							{
 								fixVal = 126 - fixVal;

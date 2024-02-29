@@ -65,8 +65,8 @@ static GActionEntry appEntries[] =
 static GdkPixbuf *defaultIcon;
 #include "train.xpm"
 
-#define UPDATE_HOLD	500
-#define BUTTON_HOLD	500
+#define UPDATE_HOLD 500
+#define BUTTON_HOLD 500
 
 /**********************************************************************************************************************
  *                                                                                                                    *

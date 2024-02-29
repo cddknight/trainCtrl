@@ -768,7 +768,7 @@ int pointControlSetup (pointCtrlDef *pointCtrl)
 	int i, piSetup = 0;
 
 	if (pointCtrl -> pointCount || pointCtrl -> signalCount)
-	{	
+	{
 #ifdef HAVE_WIRINGPI_H
 		wiringPiSetup();
 		if ((servoFD = pca9685Setup(PIN_BASE, 0x40, HERTZ)) < 0)
