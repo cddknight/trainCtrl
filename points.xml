@@ -54,9 +54,10 @@
     <point ident="11" channel="5" default="210" turnout="250"/>
     <point ident="13" channel="6" default="270" turnout="220"/>
   </pointDaemon>
-  <pointDaemon ident="4" pCount="0" sCount="0" rCount="2" client="tinyeleven">
+  <pointDaemon ident="4" pCount="0" sCount="0" rCount="3" client="tinyeleven">
     <relay ident="1" pinout="22"/>
     <relay ident="2" pinout="23"/>
+    <relay ident="3" pinout="25"/>
   </pointDaemon>
 </pointControl>
 
